@@ -3,7 +3,10 @@ My solutions in Ruby for the puzzles at [adventofcode.com](http://adventofcode.c
 
 SPOILER ALERT! Don't read the code in the `lib` directory if you haven't already solved the puzzles yourself.
 
-Run all the tests with `rake`. Or run a single test with `rake TEST=test/test-foo`.
+To print a puzzle's answer(s), run the source file: `ruby lib/day-1-not-quite-lisp.rb`. Note that this will use my
+personalized input data, which is probably different from yours.
+
+Run all the tests with `rake`. Or run a single test file with `rake TEST=test/test-day-1-not-quite-lisp`.
 
 ---
 
