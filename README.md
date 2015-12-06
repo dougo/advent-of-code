@@ -3,6 +3,8 @@ My solutions in Ruby for the puzzles at [adventofcode.com](http://adventofcode.c
 
 SPOILER ALERT! Don't read the code in the `lib` directory if you haven't already solved the puzzles yourself.
 
+Run all the tests with `rake`. Or run a single test with `rake TEST=test/test-foo.rb`.
+
 ---
 
 Copyright (C) 2015 Doug Orleans
