@@ -21,8 +21,11 @@ All numbers in the elves' list are in feet. How many total square feet of wrappi
 =end
 
 class Present
-  def wrapping_paper_needed(dimensions)
-    l, w, h = dimensions.split('x').map &:to_i
-    2*l*w + 2*w*h + 2*h*l + [l*w, w*h, h*l].min
+  def initialize(dimensions)
+    @l, @w, @h = dimensions.split('x').map &:to_i
+  end
+
+  def wrapping_paper_needed
+    2*@l*@w + 2*@w*@h + 2*@h*@l + [@l*@w, @w*@h, @h*@l].min
   end
 end
