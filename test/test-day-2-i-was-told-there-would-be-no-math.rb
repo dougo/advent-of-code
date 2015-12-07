@@ -11,4 +11,12 @@ class TestDay2IWasToldThereWouldBeNoMath < Minitest::Test
     # foot of slack, for a total of 43 square feet.
     assert_equal 43, Present.new('1x1x10').wrapping_paper_needed
   end
+
+  def test_total_wrapping_paper_needed
+    list_of_dimensions = <<END
+2x3x4
+1x1x10
+END
+    assert_equal 101, Present.total_wrapping_paper_needed(list_of_dimensions)
+  end
 end
