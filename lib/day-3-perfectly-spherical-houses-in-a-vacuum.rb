@@ -37,43 +37,41 @@ For example:
 =end
 
 class Santa
+  def initialize(map = { [0, 0] => true })
+    @x, @y = 0, 0
+    @map = map
+  end
+
   def houses_visited(instructions)
-    coords = [0,0]
-    map = { coords => true }
     instructions.chars.each do |instr|
-      coords = move(coords, instr)
-      map[coords] = true
+      visit(instr)
     end
-    map.size
+    @map.size
   end
 
   def houses_visited_with_robo_santa(instructions)
-    santa_coords = [0,0]
-    robo_coords = [0,0]
-    map = { santa_coords => true }
+    robo_santa = Santa.new(@map)
     instructions.chars.each_slice(2) do |santa, robo|
-      santa_coords = move(santa_coords, santa)
-      map[santa_coords] = true
-      robo_coords = move(robo_coords, robo)
-      map[robo_coords] = true
+      visit(santa)
+      robo_santa.visit(robo)
     end
-    map.size
+    @map.size
   end
 
-  private
+  protected
 
-  def move(coords, instr)
-    x, y = coords
+  def visit(instr)
     case instr
     when '^'
-      [x, y-1]
+      @y -= 1
     when 'v'
-      [x, y+1]
+      @y += 1
     when '>'
-      [x+1, y]
+      @x += 1
     when '<'
-      [x-1, y]
+      @x -= 1
     end
+    @map[[@x, @y]] = true
   end
 end
 
