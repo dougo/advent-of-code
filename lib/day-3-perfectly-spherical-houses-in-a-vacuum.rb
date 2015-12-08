@@ -36,10 +36,13 @@ For example:
 
 =end
 
+require 'set'
+
 class Santa
-  def initialize(map = { [0, 0] => true })
+  def initialize(map = Set.new)
     @x, @y = 0, 0
     @map = map
+    @map.add([@x, @y])
   end
 
   def houses_visited(instructions)
@@ -71,7 +74,7 @@ class Santa
     when '<'
       @x -= 1
     end
-    @map[[@x, @y]] = true
+    @map.add([@x, @y])
   end
 end
 
