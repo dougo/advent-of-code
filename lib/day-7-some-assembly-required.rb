@@ -58,43 +58,43 @@ class Circuit
   end
 
   def wire_signals
-    @wires.map { |wire, proc| [wire.to_sym, proc.call] }.to_h
+    @wires.map { |name, wire| [name.to_sym, wire.signal] }.to_h
   end
 
-  def wire_signal(wire)
-    @wires[wire.to_s].call
+  def wire_signal(name)
+    @wires[name.to_s].signal
   end
 
   private
 
   def connect(wire_spec)
     return unless wire_spec =~ /^(.+) -> ([a-z]+)$/
-    wire = $2
+    name = $2
     atom = /(\d+|[a-z]+)/
     case $1
     when /^#{atom}$/
       input = $1
-      @wires[wire] = -> { signal(input) }
+      @wires[name] = Wire.new { signal(input) }
     when /^#{atom} (AND|OR) #{atom}$/
       in1, op, in2 = $1, $2, $3
-      @wires[wire] = -> { binary_gate(op, signal(in1), signal(in2)) }
+      @wires[name] = Wire.new { binary_gate(op, signal(in1), signal(in2)) }
     when /^#{atom} (LSHIFT|RSHIFT) (\d+)$/
       input, op, shift = $1, $2, $3
-      @wires[wire] = -> { shift_gate(op, signal(input), shift.to_i) }
+      @wires[name] = Wire.new { shift_gate(op, signal(input), shift.to_i) }
     when /^NOT #{atom}$/
       input = $1
-      @wires[wire] = -> { not_gate(signal(input)) }
+      @wires[name] = Wire.new { not_gate(signal(input)) }
     else
       raise "Unrecognized wire spec: #{wire_spec}"
     end
   end
 
-  def signal(signal_or_wire)
-    case signal_or_wire
+  def signal(signal_or_wire_name)
+    case signal_or_wire_name
     when /^(\d+)$/
       $1.to_i
     else
-      wire_signal(signal_or_wire)
+      wire_signal(signal_or_wire_name)
     end
   end
 
@@ -118,6 +118,16 @@ class Circuit
 
   def not_gate(signal)
     ~signal % 65536 # convert to unsigned 16-bit
+  end
+
+  class Wire
+    def initialize(&block)
+      @block = block
+    end
+
+    def signal
+      @signal ||= @block.call
+    end
   end
 end
 
