@@ -49,6 +49,11 @@ y: 456
 In little Bobby's kit's instructions booklet (provided as your puzzle input), what signal is ultimately provided to
 wire a?
 
+--- Part Two ---
+
+Now, take the signal you got on wire a, override wire b to that signal, and reset the other wires (including wire
+a). What new signal is ultimately provided to wire a?
+
 =end
 
 class Circuit
@@ -132,7 +137,10 @@ class Circuit
 end
 
 if defined? DATA
-  puts Circuit.new(DATA.read).wire_signal('a')
+  input = DATA.read
+  a = Circuit.new(input).wire_signal('a')
+  puts a
+  puts Circuit.new(input + "\n#{a} -> b").wire_signal('a')
 end
 
 __END__
