@@ -42,12 +42,12 @@ class Santa
   def initialize(map = Set.new)
     @x, @y = 0, 0
     @map = map
-    @map.add([@x, @y])
+    visit
   end
 
   def houses_visited(instructions)
     instructions.chars.each do |instr|
-      visit(instr)
+      move(instr)
     end
     @map.size
   end
@@ -55,15 +55,15 @@ class Santa
   def houses_visited_with_robo_santa(instructions)
     robo_santa = Santa.new(@map)
     instructions.chars.each_slice(2) do |santa, robo|
-      visit(santa)
-      robo_santa.visit(robo)
+      move(santa)
+      robo_santa.move(robo)
     end
     @map.size
   end
 
   protected
 
-  def visit(instr)
+  def move(instr)
     case instr
     when '^'
       @y -= 1
@@ -74,6 +74,12 @@ class Santa
     when '<'
       @x -= 1
     end
+    visit
+  end
+
+  private
+
+  def visit
     @map.add([@x, @y])
   end
 end
