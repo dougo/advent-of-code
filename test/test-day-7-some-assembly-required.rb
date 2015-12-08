@@ -2,7 +2,7 @@ require 'test-helper'
 require 'day-7-some-assembly-required'
 
 class TestDay7SomeAssemblyRequired < Minitest::Test
-  def test_wires
+  def test_wire_signals
     input = <<END
 123 -> x
 456 -> y
@@ -23,6 +23,7 @@ END
       x: 123,
       y: 456
     }
-    assert_equal expected_signals, Circuit.new(input).wires
+    assert_equal expected_signals, Circuit.new(input).wire_signals
+    assert_equal 114, Circuit.new(input).wire_signal(:g)
   end
 end
