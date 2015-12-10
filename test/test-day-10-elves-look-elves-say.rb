@@ -7,8 +7,6 @@ class TestDay10ElvesLookElvesSay < Minitest::Test
   end
 
   def test_look_and_say
-    assert_equal 1, @subject.length
-
     # 1 becomes 11 (1 copy of digit 1).
     assert_equal '11', @subject.look_and_say
 
@@ -23,7 +21,9 @@ class TestDay10ElvesLookElvesSay < Minitest::Test
 
     # 111221 becomes 312211 (three 1s, two 2s, and one 1).
     assert_equal '312211', @subject.look_and_say
+  end
 
-    assert_equal 6, @subject.length
+  def test_repeated_look_and_say
+    assert_equal '312211', @subject.look_and_say(5)
   end
 end

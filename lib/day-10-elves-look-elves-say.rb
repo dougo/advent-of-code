@@ -33,21 +33,16 @@ class Elves
     @seq = seq
   end
 
-  def look_and_say
-    @seq = @seq.chars.chunk {|d| d}.map { |digit, chunk| "#{chunk.length}#{digit}" }.join
-  end
-
-  def length
-    @seq.length
+  def look_and_say(n = 1)
+    n.times { @seq = @seq.chars.chunk {|d| d}.map { |digit, chunk| "#{chunk.length}#{digit}" }.join }
+    @seq
   end
 end
 
 if defined? DATA
   elves = Elves.new(DATA.read.chomp)
-  40.times { elves.look_and_say }
-  puts elves.length
-  10.times { elves.look_and_say }
-  puts elves.length
+  puts elves.look_and_say(40).length
+  puts elves.look_and_say(10).length
 end
 
 __END__
