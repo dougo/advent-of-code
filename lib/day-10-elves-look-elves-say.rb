@@ -34,8 +34,18 @@ class Elves
   end
 
   def look_and_say(n = 1)
-    n.times { @seq = @seq.chars.chunk {|d| d}.map { |digit, chunk| "#{chunk.length}#{digit}" }.join }
+    n.times { say(look) }
     @seq
+  end
+
+  private
+
+  def look
+    @seq.chars.chunk { |digit| digit }
+  end
+
+  def say(chunks)
+    @seq = chunks.map { |digit, chunk| "#{chunk.length}#{digit}" }.join
   end
 end
 
