@@ -30,17 +30,17 @@ new result?
 
 class Elves
   def look_and_say(seq)
-    seq.to_s.chars.chunk {|d| d}.map { |digit, chunk| "#{chunk.length}#{digit}" }.join.to_i
+    seq.chars.chunk {|d| d}.map { |digit, chunk| "#{chunk.length}#{digit}" }.join
   end
 end
 
 if defined? DATA
   elves = Elves.new
-  seq = DATA.read.to_i
+  seq = DATA.read.chomp
   40.times.each { seq = elves.look_and_say(seq) }
-  puts seq.to_s.length
+  puts seq.length
   10.times.each { seq = elves.look_and_say(seq) }
-  puts seq.to_s.length
+  puts seq.length
 end
 
 __END__
