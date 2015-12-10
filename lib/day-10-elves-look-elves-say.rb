@@ -29,18 +29,25 @@ new result?
 =end
 
 class Elves
-  def look_and_say(seq)
-    seq.chars.chunk {|d| d}.map { |digit, chunk| "#{chunk.length}#{digit}" }.join
+  def initialize(seq)
+    @seq = seq
+  end
+
+  def look_and_say
+    @seq = @seq.chars.chunk {|d| d}.map { |digit, chunk| "#{chunk.length}#{digit}" }.join
+  end
+
+  def length
+    @seq.length
   end
 end
 
 if defined? DATA
-  elves = Elves.new
-  seq = DATA.read.chomp
-  40.times.each { seq = elves.look_and_say(seq) }
-  puts seq.length
-  10.times.each { seq = elves.look_and_say(seq) }
-  puts seq.length
+  elves = Elves.new(DATA.read.chomp)
+  40.times { elves.look_and_say }
+  puts elves.length
+  10.times { elves.look_and_say }
+  puts elves.length
 end
 
 __END__
