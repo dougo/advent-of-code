@@ -30,26 +30,7 @@ new result?
 
 class Elves
   def look_and_say(seq)
-    last = nil
-    i = 0
-    new_seq = ''
-    seq.to_s.chars.each do |digit|
-      if digit == last
-        i += 1
-      else
-        new_seq << say(i, last) if last
-        i = 1
-      end
-      last = digit
-    end
-    new_seq << say(i, last)
-    new_seq.to_i
-  end
-
-  private
-
-  def say(i, digit)
-    "#{i}#{digit}"
+    seq.to_s.chars.chunk {|d| d}.map { |digit, chunk| "#{chunk.length}#{digit}" }.join.to_i
   end
 end
 
