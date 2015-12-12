@@ -40,12 +40,12 @@ class Document
     @root = JSON.parse(json_string)
   end
 
-  def sum_numbers(node = @root)
-    sum(leaves(node))
+  def sum_numbers
+    sum(leaves(@root))
   end
 
-  def sum_numbers_ignoring_red(node = @root)
-    sum(leaves(node, true))
+  def sum_numbers_ignoring_red
+    sum(leaves(@root, true))
   end
 
   private
