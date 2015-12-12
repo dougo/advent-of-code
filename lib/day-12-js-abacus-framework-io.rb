@@ -41,20 +41,20 @@ class Document
   end
 
   def sum_numbers
-    sum(leaves(@root))
+    sum(numbers(@root))
   end
 
   def sum_numbers_ignoring_red
-    sum(leaves(@root, true))
+    sum(numbers(@root, true))
   end
 
   private
 
-  def sum(leaves)
-    leaves.reduce(:+) || 0
+  def sum(numbers)
+    numbers.reduce(:+) || 0
   end
 
-  def leaves(node, ignoring_red = false)
+  def numbers(node, ignoring_red = false)
     case node
     when Numeric
       [node]
@@ -62,7 +62,7 @@ class Document
       if ignoring_red && node.is_a?(Hash) && node.has_value?("red")
         []
       else
-        node.flat_map { |node| leaves(node, ignoring_red) }
+        node.flat_map { |node| numbers(node, ignoring_red) }
       end
     else
       []
