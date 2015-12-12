@@ -41,11 +41,11 @@ class Document
   end
 
   def sum_numbers
-    sum(numbers(@root))
+    sum(@root.numbers)
   end
 
   def sum_numbers_ignoring_red
-    sum(numbers(@root, true))
+    sum(@root.numbers(true))
   end
 
   private
@@ -53,19 +53,32 @@ class Document
   def sum(numbers)
     numbers.reduce(:+) || 0
   end
+end
 
-  def numbers(node, ignoring_red = false)
-    case node
-    when Numeric
-      [node]
-    when Enumerable
-      if ignoring_red && node.is_a?(Hash) && node.has_value?("red")
-        []
-      else
-        node.flat_map { |node| numbers(node, ignoring_red) }
-      end
-    else
+class Object
+  def numbers(ignoring_red = false)
+    []
+  end
+end
+
+class Numeric
+  def numbers(ignoring_red = false)
+    [self]
+  end
+end
+
+module Enumerable
+  def numbers(ignoring_red = false)
+    flat_map { |node| node.numbers(ignoring_red) }
+  end
+end
+
+class Hash
+  def numbers(ignoring_red = false)
+    if ignoring_red && has_value?('red')
       []
+    else
+      super
     end
   end
 end
