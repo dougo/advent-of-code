@@ -107,15 +107,20 @@ class Kitchen
       props = @kitchen.property_names - %w(calories)
       props.map { |prop| [0, property(prop)].max }.reduce(:*)
     end
+
+    def add(amounts)
+      self.class.new(@kitchen, @amounts.merge(amounts))
+    end
   end
 
-  def cookies(total_tsp = 100, amounts = {})
-    ingr_remaining = @ingredients.keys - amounts.keys
-    ingr = ingr_remaining.first
-    if ingr_remaining.length > 1
-      (0..total_tsp).flat_map { |tsp| cookies(total_tsp - tsp, amounts.merge(ingr => tsp)) }
+  def cookies(total_tsp = 100, ingredients = @ingredients.keys)
+    ingr, *rest = ingredients
+    if rest.empty?
+      [cookie(ingr => total_tsp)]
     else
-      [cookie(amounts.merge(ingr => total_tsp))]
+      (0..total_tsp).flat_map do |tsp|
+        cookies(total_tsp - tsp, rest).map { |c| c.add(ingr => tsp) }
+      end
     end
   end
 
