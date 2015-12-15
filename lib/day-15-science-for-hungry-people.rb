@@ -109,26 +109,25 @@ class Kitchen
     end
   end
 
-  def best_cookie(cals = nil, amounts = {})
+  def cookies(total_tsp = 100, amounts = {})
     ingr_remaining = @ingredients.keys - amounts.keys
-    return cookie(amounts) if ingr_remaining.empty?
     ingr = ingr_remaining.first
-    tsp_used = amounts.values.reduce(:+) || 0
-    tsp_remaining = 100 - tsp_used
     if ingr_remaining.length > 1
-      tsps = 0..tsp_remaining
+      (0..total_tsp).flat_map { |tsp| cookies(total_tsp - tsp, amounts.merge(ingr => tsp)) }
     else
-      tsps = [tsp_remaining]
+      [cookie(amounts.merge(ingr => total_tsp))]
     end
-    cookies = tsps.map { |tsp| best_cookie(cals, amounts.merge(ingr => tsp)) }
+  end
+
+  def best_cookie(cals = nil)
     cookies.max_by { |cookie| (!cals || cookie.calories == cals) ? cookie.score : 0 }
   end
 end
 
 if defined? DATA
-  ingredients = Kitchen.new(DATA.read.chomp)
-  puts ingredients.max_score
-  puts ingredients.max_score(500)
+  kitchen = Kitchen.new(DATA.read.chomp)
+  puts kitchen.best_cookie.score
+  puts kitchen.best_cookie(500).score
 end
 
 __END__

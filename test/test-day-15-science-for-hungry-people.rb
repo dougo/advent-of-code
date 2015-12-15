@@ -40,6 +40,14 @@ END
     assert_equal 62842880, @subject.best_cookie.score
   end
 
+  def cookies
+    cookies = @subject.cookies(2)
+    assert_equal 3, cookies.length
+    assert_equal 6,  cookies[0].calories # 0 butterscotch, 2 cinnamon
+    assert_equal 11, cookies[1].calories # 1 butterscotch, 1 cinnamon
+    assert_equal 16, cookies[2].calories # 2 butterscotch, 0 cinnamon
+  end
+
   def test_max_score_fixed_calories
     # For example, given the ingredients above, if you had instead selected 40 teaspoons of butterscotch and 60
     # teaspoons of cinnamon (which still adds to 100), the total calorie count would be 40*8 + 60*3 = 500.
