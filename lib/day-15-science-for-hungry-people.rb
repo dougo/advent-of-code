@@ -63,8 +63,14 @@ class Kitchen
     @ingredients.values.each { |i| @property_names.merge(i.properties.keys) }
   end
 
+  attr_reader :property_names
+
   def [](name)
     @ingredients[name]
+  end
+
+  def cookie(amounts)
+    Cookie.new(self, amounts)
   end
 
   class Ingredient
@@ -83,23 +89,29 @@ class Kitchen
     end
   end
 
-  def property(prop, amounts)
-    amounts.map { |name, amount|  @ingredients[name][prop] * amount }.reduce(:+)
-  end
-
-  def calories(amounts)
-    property('calories', amounts)
-  end
-
-  def score(amounts)
-    (@property_names - %w(calories)).map { |prop| [0, property(prop, amounts)].max }.reduce(:*)
-  end
-
-  def max_score(cals = nil, amounts = {})
-    ingr_remaining = @ingredients.keys - amounts.keys
-    if ingr_remaining.empty?
-      return (!cals || calories(amounts) == cals) ? score(amounts) : 0
+  class Cookie
+    def initialize(kitchen, amounts)
+      @kitchen = kitchen
+      @amounts = amounts
     end
+
+    def property(prop)
+      @amounts.map { |name, amount|  @kitchen[name][prop] * amount }.reduce(:+)
+    end
+
+    def calories
+      property('calories')
+    end
+
+    def score
+      props = @kitchen.property_names - %w(calories)
+      props.map { |prop| [0, property(prop)].max }.reduce(:*)
+    end
+  end
+
+  def best_cookie(cals = nil, amounts = {})
+    ingr_remaining = @ingredients.keys - amounts.keys
+    return cookie(amounts) if ingr_remaining.empty?
     ingr = ingr_remaining.first
     tsp_used = amounts.values.reduce(:+) || 0
     tsp_remaining = 100 - tsp_used
@@ -108,7 +120,8 @@ class Kitchen
     else
       tsps = [tsp_remaining]
     end
-    tsps.map { |tsp| max_score(cals, amounts.merge(ingr => tsp)) }.max
+    cookies = tsps.map { |tsp| best_cookie(cals, amounts.merge(ingr => tsp)) }
+    cookies.max_by { |cookie| (!cals || cookie.calories == cals) ? cookie.score : 0 }
   end
 end
 
