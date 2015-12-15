@@ -7,7 +7,7 @@ class TestDay15ScienceForHungryPeople < Minitest::Test
 Butterscotch: capacity -1, durability -2, flavor 6, texture 3, calories 8
 Cinnamon: capacity 2, durability 3, flavor -2, texture -1, calories 3
 END
-    @subject = Ingredients.new(@input)
+    @subject = Kitchen.new(@input)
   end
 
   def test_ingredients

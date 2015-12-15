@@ -55,7 +55,7 @@ you can make with a calorie total of 500?
 
 require 'set'
 
-class Ingredients
+class Kitchen
   def initialize(input)
     ingredients = input.split("\n").map(&Ingredient.method(:new))
     @ingredients = ingredients.map(&:name).zip(ingredients).to_h # aka ingredients.index_by &:name in Rails...
@@ -113,7 +113,7 @@ class Ingredients
 end
 
 if defined? DATA
-  ingredients = Ingredients.new(DATA.read.chomp)
+  ingredients = Kitchen.new(DATA.read.chomp)
   puts ingredients.max_score
   puts ingredients.max_score(500)
 end
