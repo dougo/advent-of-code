@@ -65,12 +65,8 @@ class Kitchen
 
   attr_reader :property_names
 
-  def [](name)
+  def ingredient(name)
     @ingredients[name]
-  end
-
-  def cookie(amounts)
-    Cookie.new(self, amounts)
   end
 
   class Ingredient
@@ -89,6 +85,10 @@ class Kitchen
     end
   end
 
+  def cookie(amounts)
+    Cookie.new(self, amounts)
+  end
+
   class Cookie
     def initialize(kitchen, amounts)
       @kitchen = kitchen
@@ -96,7 +96,7 @@ class Kitchen
     end
 
     def property(prop)
-      @amounts.map { |name, amount|  @kitchen[name][prop] * amount }.reduce(:+)
+      @amounts.map { |name, amount| @kitchen.ingredient(name)[prop] * amount }.reduce(:+)
     end
 
     def calories
@@ -120,7 +120,7 @@ class Kitchen
   end
 
   def best_cookie(cals = nil)
-    cookies.max_by { |cookie| (!cals || cookie.calories == cals) ? cookie.score : 0 }
+    (cals ? cookies.select { |c| c.calories == cals } : cookies).max_by &:score
   end
 end
 

@@ -11,10 +11,12 @@ END
   end
 
   def test_ingredients
-    assert_equal 6, @subject['Butterscotch']['flavor']
-    assert_equal -1, @subject['Butterscotch']['capacity']
-    assert_equal -1, @subject['Cinnamon']['texture']
-    assert_equal 3, @subject['Cinnamon']['calories']
+    butterscotch = @subject.ingredient('Butterscotch')
+    assert_equal 6, butterscotch['flavor']
+    assert_equal -1, butterscotch['capacity']
+    cinnamon = @subject.ingredient('Cinnamon')
+    assert_equal -1, cinnamon['texture']
+    assert_equal 3, cinnamon['calories']
   end
 
   def test_cookie
@@ -40,7 +42,7 @@ END
     assert_equal 62842880, @subject.best_cookie.score
   end
 
-  def cookies
+  def test_cookies
     cookies = @subject.cookies(2)
     assert_equal 3, cookies.length
     assert_equal 6,  cookies[0].calories # 0 butterscotch, 2 cinnamon
