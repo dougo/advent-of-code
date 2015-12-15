@@ -59,8 +59,8 @@ class Ingredients
   def initialize(input)
     ingredients = input.split("\n").map(&Ingredient.method(:new))
     @ingredients = ingredients.map(&:name).zip(ingredients).to_h # aka ingredients.index_by &:name in Rails...
-    @properties = Set.new
-    @ingredients.values.each { |i| @properties.merge(i.properties.keys) }
+    @property_names = Set.new
+    @ingredients.values.each { |i| @property_names.merge(i.properties.keys) }
   end
 
   def [](name)
@@ -92,7 +92,7 @@ class Ingredients
   end
 
   def score(amounts)
-    (@properties - %w(calories)).map { |prop| [0, property(prop, amounts)].max }.reduce(:*)
+    (@property_names - %w(calories)).map { |prop| [0, property(prop, amounts)].max }.reduce(:*)
   end
 
   def max_score(cals = nil, amounts = {})
