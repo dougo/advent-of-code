@@ -40,6 +40,7 @@ What is the distance of the longest route?
 =end
 
 require 'set'
+require 'util'
 
 class SantaMap
   def initialize(distances)
@@ -61,7 +62,7 @@ class SantaMap
   end
 
   def route_distance(route)
-    route[0..-2].zip(route[1..-1]).map(&method(:distance)).reduce(:+)
+    route[0..-2].zip(route[1..-1]).sum(&method(:distance))
   end
 
   private

@@ -39,6 +39,8 @@ How many total feet of ribbon should they order?
 
 =end
 
+require 'util'
+
 class Present
   def initialize(dimensions)
     @l, @w, @h = dimensions.split('x').map &:to_i
@@ -46,7 +48,7 @@ class Present
 
   def wrapping_paper_needed
     areas = faces.map &:area
-    2 * areas.reduce(:+) + areas.min
+    2 * areas.sum + areas.min
   end
 
   def ribbon_needed
@@ -54,11 +56,11 @@ class Present
   end
 
   def self.total_wrapping_paper_needed(list_of_dimensions)
-    presents(list_of_dimensions).map(&:wrapping_paper_needed).reduce(:+)
+    presents(list_of_dimensions).sum(&:wrapping_paper_needed)
   end
 
   def self.total_ribbon_needed(list_of_dimensions)
-    presents(list_of_dimensions).map(&:ribbon_needed).reduce(:+)
+    presents(list_of_dimensions).sum(&:ribbon_needed)
   end
 
   private

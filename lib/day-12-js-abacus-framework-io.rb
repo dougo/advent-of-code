@@ -34,6 +34,7 @@ Ignore any object (and all of its children) which has any property with the valu
 =end
 
 require 'json'
+require 'util'
 
 class Document
   def initialize(json_string)
@@ -41,17 +42,11 @@ class Document
   end
 
   def sum_numbers
-    sum(@root.numbers)
+    @root.numbers.sum
   end
 
   def sum_numbers_ignoring_red
-    sum(@root.numbers(true))
-  end
-
-  private
-
-  def sum(numbers)
-    numbers.reduce(:+) || 0
+    @root.numbers(true).sum
   end
 end
 

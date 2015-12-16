@@ -50,6 +50,8 @@ this puzzle) is 42 - 23 = 19.
 
 =end
 
+require 'util'
+
 class SantaList
   def initialize(input)
     @strings = input.split("\n").map &SantaString.method(:new)
@@ -60,11 +62,11 @@ class SantaList
   end
 
   def sizediff
-    @strings.map { |s| s.codesize - s.datasize }.reduce(:+)
+    @strings.sum { |s| s.codesize - s.datasize }
   end
 
   def encoded_sizediff
-    @strings.map { |s| s.encodedsize - s.codesize }.reduce(:+)
+    @strings.sum { |s| s.encodedsize - s.codesize }
   end
 
   class SantaString

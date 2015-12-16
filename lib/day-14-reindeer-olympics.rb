@@ -49,8 +49,7 @@ does the winning reindeer have?
 
 class ReindeerOlympics
   def initialize(reindeer_specs)
-    reindeer = reindeer_specs.split("\n").map(&Reindeer.method(:new))
-    @reindeer = reindeer.map(&:name).zip(reindeer).to_h # aka reindeer.index_by &:name in Rails...
+    @reindeer = reindeer_specs.split("\n").map(&Reindeer.method(:new)).index_by(&:name)
   end
 
   def [](name)

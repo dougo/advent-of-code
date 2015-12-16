@@ -54,6 +54,7 @@ What is the total change in happiness for the optimal seating arrangement that a
 =end
 
 require 'set'
+require 'util'
 
 class HolidayFeast
   def initialize(happiness_changes)
@@ -78,11 +79,11 @@ class HolidayFeast
 
   def total_happiness_change(seating_arrangement)
     len = seating_arrangement.length
-    (0...len).map do |i|
+    (0...len).sum do |i|
       attendee = seating_arrangement[i]
       neighbors = [(i-1) % len, (i+1) % len].uniq # if len == 2, each attendee only has one neighbor!
-      neighbors.map { |j| happiness_change(attendee, seating_arrangement[j]) }.reduce(:+)
-    end.reduce(:+)
+      neighbors.sum { |j| happiness_change(attendee, seating_arrangement[j]) }
+    end
   end
 
   def optimal_seating_arrangement

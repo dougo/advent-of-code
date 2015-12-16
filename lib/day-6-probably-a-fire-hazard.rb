@@ -49,6 +49,8 @@ For example:
 
 =end
 
+require 'util'
+
 class Lights
   def initialize
     @lit = Array.new(1000) { Array.new(1000) }
@@ -106,7 +108,7 @@ class CorrectedLights < Lights
   end
 
   def brightness
-    @lit.flatten.reduce(:+)
+    @lit.flatten.sum
   end
 
   private
