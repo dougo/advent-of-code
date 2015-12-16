@@ -54,7 +54,7 @@ What is the total change in happiness for the optimal seating arrangement that a
 =end
 
 require 'set'
-require 'util'
+require_relative 'util'
 
 class HolidayFeast
   def initialize(happiness_changes)

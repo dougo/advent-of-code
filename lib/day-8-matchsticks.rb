@@ -50,7 +50,7 @@ this puzzle) is 42 - 23 = 19.
 
 =end
 
-require 'util'
+require_relative 'util'
 
 class SantaList
   def initialize(input)

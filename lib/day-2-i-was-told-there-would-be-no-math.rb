@@ -39,7 +39,7 @@ How many total feet of ribbon should they order?
 
 =end
 
-require 'util'
+require_relative 'util'
 
 class Present
   def initialize(dimensions)
