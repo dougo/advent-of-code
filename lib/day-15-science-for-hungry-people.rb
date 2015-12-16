@@ -54,11 +54,11 @@ you can make with a calorie total of 500?
 =end
 
 require 'set'
+require 'util'
 
 class Kitchen
   def initialize(input)
-    ingredients = input.split("\n").map(&Ingredient.method(:new))
-    @ingredients = ingredients.map(&:name).zip(ingredients).to_h # aka ingredients.index_by &:name in Rails...
+    @ingredients = input.split("\n").map(&Ingredient.method(:new)).index_by &:name
     @property_names = Set.new
     @ingredients.values.each { |i| @property_names.merge(i.properties.keys) }
   end
@@ -96,7 +96,7 @@ class Kitchen
     end
 
     def property(prop)
-      @amounts.map { |name, amount| @kitchen.ingredient(name)[prop] * amount }.reduce(:+)
+      @amounts.sum { |name, amount| @kitchen.ingredient(name)[prop] * amount }
     end
 
     def calories
