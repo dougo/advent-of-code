@@ -59,8 +59,7 @@ require 'util'
 class Kitchen
   def initialize(input)
     @ingredients = input.split("\n").map(&Ingredient.method(:new)).index_by &:name
-    @property_names = Set.new
-    @ingredients.values.each { |i| @property_names.merge(i.properties.keys) }
+    @property_names = @ingredients.values.flat_map { |i| i.properties.keys }.to_set
   end
 
   attr_reader :property_names
