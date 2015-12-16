@@ -47,11 +47,9 @@ class Santa
 
   def position_of_basement_instruction(instructions)
     @floor = 0
-    i = 0
-    instructions.chars.each do |instr|
+    instructions.chars.each_with_index do |instr, i|
       read_instruction(instr)
-      i += 1
-      return i if @floor < 0
+      return i+1 if @floor < 0
     end
   end
 
