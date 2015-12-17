@@ -40,22 +40,23 @@ class EggnogContainers
     return [[]] if eggnog == 0
     return [] if sizes.empty?
     size, *rest = sizes
-    leftover = eggnog - size
     ways = ways_to_fit(eggnog, rest)
-    if leftover >= 0
-      ways_to_fit(leftover, rest).map { |sizes| [size, *sizes] } + ways
+    if eggnog >= size
+      ways_to_fit(eggnog - size, rest).map { |sizes| [size, *sizes] } + ways
     else
       ways
     end
   end
 
   def efficient_ways_to_fit(eggnog)
-    ways_to_fit(eggnog).sort_by(&:length).chunk(&:length).first[1]
+    ways = ways_to_fit(eggnog).group_by(&:length)
+    ways[ways.keys.min]
   end
 end
 
 if defined? DATA
-  containers = EggnogContainers.new(DATA.read)
+  input = DATA.read
+  containers = EggnogContainers.new(input)
   p containers.ways_to_fit(150).length
   p containers.efficient_ways_to_fit(150).length
 end
