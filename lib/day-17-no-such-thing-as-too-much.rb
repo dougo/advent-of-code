@@ -48,12 +48,16 @@ class EggnogContainers
       ways
     end
   end
+
+  def efficient_ways_to_fit(eggnog)
+    ways_to_fit(eggnog).sort_by(&:length).chunk(&:length).first[1]
+  end
 end
 
 if defined? DATA
-  ways = EggnogContainers.new(DATA.read).ways_to_fit(150)
-  p ways.length
-  p ways.sort_by(&:length).chunk(&:length).first[1].length
+  containers = EggnogContainers.new(DATA.read)
+  p containers.ways_to_fit(150).length
+  p containers.efficient_ways_to_fit(150).length
 end
 
 __END__
