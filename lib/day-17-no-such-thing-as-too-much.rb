@@ -36,7 +36,7 @@ class EggnogContainers
 
   attr_reader :sizes
 
-  def ways_to_fit(eggnog, sizes = @sizes)
+  def ways_to_fit(eggnog, sizes = @sizes.sort.reverse)
     return [[]] if eggnog == 0
     return [] if sizes.empty?
     size, *rest = sizes
@@ -59,6 +59,11 @@ if defined? DATA
   containers = EggnogContainers.new(input)
   p containers.ways_to_fit(150).length
   p containers.efficient_ways_to_fit(150).length
+
+  require 'benchmark'
+  doubled_containers = EggnogContainers.new(input + input)
+  t = Benchmark.realtime { p doubled_containers.efficient_ways_to_fit(150).length }
+  puts "#{doubled_containers.sizes.length} containers took #{'%.2f' % t}s"
 end
 
 __END__
