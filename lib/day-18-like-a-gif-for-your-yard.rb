@@ -161,6 +161,14 @@ class LightGrid
       @lights[row][col] == '#'
   end
 
+  def num_neighbors_on(row, col)
+    (row-1..row+1).sum do |r|
+      (col-1..col+1).count do |c|
+        [r,c] != [row,col] && on?(r, c)
+      end
+    end
+  end
+
   def animate(steps = 1)
     steps.times do
       @lights = size.times.map do |row|
@@ -173,19 +181,11 @@ class LightGrid
   end
 
   def new_light(row, col)
-    n = neighbors(row, col)
+    n = num_neighbors_on(row, col)
     if @lights[row][col] == '#'
       n == 2 || n == 3 ? '#' : '.'
     else
       n == 3 ? '#' : '.'
-    end
-  end
-
-  def neighbors(row, col)
-    (row-1..row+1).sum do |r|
-      (col-1..col+1).count do |c|
-        (r != row || c != col) && on?(r, c)
-      end
     end
   end
 

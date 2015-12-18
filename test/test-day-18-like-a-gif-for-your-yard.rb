@@ -32,6 +32,13 @@ END
     refute @subject.on?(2, 6)
   end
 
+  def test_num_neighbors_on
+    assert_equal 3, @subject.num_neighbors_on(2, 4) # light is off
+    assert_equal 2, @subject.num_neighbors_on(1, 3) # light is on
+    assert_equal 4, @subject.num_neighbors_on(0, 4) # edge light
+    assert_equal 1, @subject.num_neighbors_on(5, 5) # corner light
+  end
+
   def test_animate
     next_grids.each do |grid|
       assert_equal grid, @subject.animate.to_s
