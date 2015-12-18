@@ -144,33 +144,33 @@ require_relative 'util'
 
 class LightGrid
   def initialize(input)
-    @lines = input.split
+    @lights = input.split
   end
 
   def size
-    @lines.length
+    @lights.length
   end
 
   def to_s
-    @lines.join "\n"
+    @lights.join "\n"
   end
 
   def animate(steps = 1)
     steps.times do
-      new_lines = Array.new(size) { '.' * size }
+      new_lights = Array.new(size) { '.' * size }
       size.times.each do |row|
         size.times.each do |col|
-          new_lines[row][col] = new_light(row, col)
+          new_lights[row][col] = new_light(row, col)
         end
       end
-      @lines = new_lines
+      @lights = new_lights
     end
     self
   end
 
   def new_light(row, col)
     n = neighbors(row, col)
-    if @lines[row][col] == '#'
+    if @lights[row][col] == '#'
       n == 2 || n == 3 ? '#' : '.'
     else
       n == 3 ? '#' : '.'
@@ -183,23 +183,23 @@ class LightGrid
         (r != row || c != col) &&
           r >= 0 && r < size &&
           c >= 0 && c < size &&
-          @lines[r][c] == '#'
+          @lights[r][c] == '#'
       end
     end
   end
 
   def how_many_on?
-    size.times.sum { |r| size.times.count { |c| @lines[r][c] == '#' } }
+    size.times.sum { |r| size.times.count { |c| @lights[r][c] == '#' } }
   end
 end
 
 class BrokenCornersLightGrid < LightGrid
   def initialize(input)
     super
-    @lines[0][0] = '#'
-    @lines[0][size-1] = '#'
-    @lines[size-1][0] = '#'
-    @lines[size-1][size-1] = '#'
+    @lights[0][0] = '#'
+    @lights[0][size-1] = '#'
+    @lights[size-1][0] = '#'
+    @lights[size-1][size-1] = '#'
   end
 
   def new_light(row, col)
