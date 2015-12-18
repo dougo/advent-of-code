@@ -58,14 +58,13 @@ END
 
   def test_broken_corners
     @subject = BrokenCornersLightGrid.new(@input)
+
+    assert_equal [[0,0], [0,5], [5,0], [5,5]], @subject.corner_coords
+
     first_grid, *next_grids = broken_corners_grids
     assert_equal first_grid, @subject.to_s
 
-    assert @subject.next_on?(0, 0)
-    assert @subject.next_on?(0, 5)
-    assert @subject.next_on?(5, 0)
-    assert @subject.next_on?(5, 5)
-    assert @subject.next_on?(1, 3)
+    @subject.corner_coords.each { |r, c| assert @subject.next_on?(r, c) }
     refute @subject.next_on?(3, 5)
 
     next_grids.each do |grid|

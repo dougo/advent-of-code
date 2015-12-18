@@ -209,14 +209,15 @@ end
 class BrokenCornersLightGrid < LightGrid
   def initialize(input)
     super
-    @lights[0][0] = true
-    @lights[0][size-1] = true
-    @lights[size-1][0] = true
-    @lights[size-1][size-1] = true
+    corner_coords.each { |r,c| @lights[r][c] = true }
+  end
+
+  def corner_coords
+    [0, size-1].product([0, size-1])
   end
 
   def next_on?(row, col)
-    (row == 0 || row == size-1) && (col == 0 || col == size-1) || super
+    corner_coords.include?([row,col]) || super
   end
 end
 
