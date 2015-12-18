@@ -144,7 +144,11 @@ require_relative 'util'
 
 class LightGrid
   def initialize(input)
-    @lights = input.split
+    @lights = input.split.map do |line|
+      line.chars.map do |char|
+        char == '#'
+      end
+    end
   end
 
   def size
@@ -152,13 +156,17 @@ class LightGrid
   end
 
   def to_s
-    @lights.join "\n"
+    @lights.map do |line|
+      line.map do |light|
+        light ? '#' : '.'
+      end.join
+    end.join "\n"
   end
 
   def on?(row, col)
     (0...size).include?(row) &&
       (0...size).include?(col) &&
-      @lights[row][col] == '#'
+      @lights[row][col]
   end
 
   def num_neighbors_on(row, col)
@@ -182,8 +190,8 @@ class LightGrid
     steps.times do
       @lights = size.times.map do |row|
         size.times.map do |col|
-          next_on?(row, col) ? '#' : '.'
-        end.join
+          next_on?(row, col)
+        end
       end
     end
     self
@@ -201,10 +209,10 @@ end
 class BrokenCornersLightGrid < LightGrid
   def initialize(input)
     super
-    @lights[0][0] = '#'
-    @lights[0][size-1] = '#'
-    @lights[size-1][0] = '#'
-    @lights[size-1][size-1] = '#'
+    @lights[0][0] = true
+    @lights[0][size-1] = true
+    @lights[size-1][0] = true
+    @lights[size-1][size-1] = true
   end
 
   def next_on?(row, col)
