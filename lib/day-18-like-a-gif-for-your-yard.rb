@@ -157,13 +157,11 @@ class LightGrid
 
   def animate(steps = 1)
     steps.times do
-      new_lights = Array.new(size) { '.' * size }
-      size.times.each do |row|
-        size.times.each do |col|
-          new_lights[row][col] = new_light(row, col)
-        end
+      @lights = size.times.map do |row|
+        size.times.map do |col|
+          new_light(row, col)
+        end.join
       end
-      @lights = new_lights
     end
     self
   end
