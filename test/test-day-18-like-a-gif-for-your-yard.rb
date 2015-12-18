@@ -45,7 +45,7 @@ END
     end
 
     assert_equal @subject.to_s, LightGrid.new(@input).animate(4).to_s
-    assert_equal 4, @subject.how_many_on?
+    assert_equal 4, @subject.num_on
   end
 
   def test_broken_corners
@@ -56,7 +56,7 @@ END
     next_grids.each do |grid|
       assert_equal grid, @subject.animate.to_s
     end
-    assert_equal 17, @subject.how_many_on?
+    assert_equal 17, @subject.num_on
   end
 
   private

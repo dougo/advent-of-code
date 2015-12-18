@@ -182,15 +182,19 @@ class LightGrid
 
   def new_light(row, col)
     n = num_neighbors_on(row, col)
-    if @lights[row][col] == '#'
+    if on?(row, col)
       n == 2 || n == 3 ? '#' : '.'
     else
       n == 3 ? '#' : '.'
     end
   end
 
-  def how_many_on?
-    size.times.sum { |r| size.times.count { |c| @lights[r][c] == '#' } }
+  def num_on
+    size.times.sum do |r|
+      size.times.count do |c|
+        on?(r, c)
+      end
+    end
   end
 end
 
@@ -215,11 +219,11 @@ if defined? DATA
   input = DATA.read
   grid = LightGrid.new(input)
   puts grid.animate(100)
-  puts grid.how_many_on?
+  puts grid.num_on
 
   grid = BrokenCornersLightGrid.new(input)
   puts grid.animate(100)
-  puts grid.how_many_on?
+  puts grid.num_on
 end
 
 __END__
