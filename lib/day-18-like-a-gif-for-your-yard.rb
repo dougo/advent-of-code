@@ -169,24 +169,24 @@ class LightGrid
     end
   end
 
+  def next_on?(row, col)
+    n = num_neighbors_on(row, col)
+    if on?(row, col)
+      n == 2 || n == 3
+    else
+      n == 3
+    end
+  end
+
   def animate(steps = 1)
     steps.times do
       @lights = size.times.map do |row|
         size.times.map do |col|
-          new_light(row, col)
+          next_on?(row, col) ? '#' : '.'
         end.join
       end
     end
     self
-  end
-
-  def new_light(row, col)
-    n = num_neighbors_on(row, col)
-    if on?(row, col)
-      n == 2 || n == 3 ? '#' : '.'
-    else
-      n == 3 ? '#' : '.'
-    end
   end
 
   def num_on
@@ -207,11 +207,8 @@ class BrokenCornersLightGrid < LightGrid
     @lights[size-1][size-1] = '#'
   end
 
-  def new_light(row, col)
-    if (row == 0 || row == size-1) && (col == 0 || col == size-1)
-      return '#'
-    end
-    super
+  def next_on?(row, col)
+    (row == 0 || row == size-1) && (col == 0 || col == size-1) || super
   end
 end
 

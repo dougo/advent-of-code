@@ -39,6 +39,14 @@ END
     assert_equal 1, @subject.num_neighbors_on(5, 5) # corner light
   end
 
+  def test_next_on?
+    assert @subject.next_on?(1, 3) # on, 2 neighbors
+    assert @subject.next_on?(5, 2) # on, 3 neighbors
+    assert @subject.next_on?(2, 4) # off, 3 neighbors
+    refute @subject.next_on?(3, 5) # off, 2 neighbors
+    refute @subject.next_on?(1, 4) # on, 4 neighbors
+  end
+
   def test_animate
     next_grids.each do |grid|
       assert_equal grid, @subject.animate.to_s
@@ -52,6 +60,13 @@ END
     @subject = BrokenCornersLightGrid.new(@input)
     first_grid, *next_grids = broken_corners_grids
     assert_equal first_grid, @subject.to_s
+
+    assert @subject.next_on?(0, 0)
+    assert @subject.next_on?(0, 5)
+    assert @subject.next_on?(5, 0)
+    assert @subject.next_on?(5, 5)
+    assert @subject.next_on?(1, 3)
+    refute @subject.next_on?(3, 5)
 
     next_grids.each do |grid|
       assert_equal grid, @subject.animate.to_s
