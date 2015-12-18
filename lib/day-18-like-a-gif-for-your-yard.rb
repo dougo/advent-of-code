@@ -155,6 +155,12 @@ class LightGrid
     @lights.join "\n"
   end
 
+  def on?(row, col)
+    (0...size).include?(row) &&
+      (0...size).include?(col) &&
+      @lights[row][col] == '#'
+  end
+
   def animate(steps = 1)
     steps.times do
       @lights = size.times.map do |row|
@@ -178,10 +184,7 @@ class LightGrid
   def neighbors(row, col)
     (row-1..row+1).sum do |r|
       (col-1..col+1).count do |c|
-        (r != row || c != col) &&
-          r >= 0 && r < size &&
-          c >= 0 && c < size &&
-          @lights[r][c] == '#'
+        (r != row || c != col) && on?(r, c)
       end
     end
   end

@@ -22,6 +22,16 @@ END
     assert_equal @input.chomp, @subject.to_s
   end
 
+  def test_on?
+    assert @subject.on?(0, 3)
+    assert @subject.on?(4, 5)
+    refute @subject.on?(2, 2)
+    refute @subject.on?(-1, 2)
+    refute @subject.on?(2, -1)
+    refute @subject.on?(6, 2)
+    refute @subject.on?(2, 6)
+  end
+
   def test_animate
     next_grids.each do |grid|
       assert_equal grid, @subject.animate.to_s
