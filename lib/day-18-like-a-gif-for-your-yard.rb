@@ -164,8 +164,8 @@ class LightGrid
   end
 
   def on?(row, col)
-    (0...size).include?(row) &&
-      (0...size).include?(col) &&
+    row.in?(0...size) &&
+      col.in?(0...size) &&
       @lights[row][col]
   end
 
@@ -217,7 +217,7 @@ class BrokenCornersLightGrid < LightGrid
   end
 
   def next_on?(row, col)
-    corner_coords.include?([row,col]) || super
+    [row,col].in?(corner_coords) || super
   end
 end
 

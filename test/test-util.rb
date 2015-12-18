@@ -18,4 +18,10 @@ class TestUtil < Minitest::Test
     assert_equal 7, (1..2).sum { |x| x + 2 }
     assert_equal 11, %w(one two three).sum(&:length)
   end
+
+  def test_in?
+    assert 2.in?(1..3)
+    assert 'b'.in?(%w(a b c))
+    refute 'x'.in?(%w(a b c))
+  end
 end
