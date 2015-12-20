@@ -130,23 +130,16 @@ class MoleculeFabricator
     molecules
   end
 
-  def next_molecules_after(n, molecules)
-    return molecules if n == 0
-    next_molecules = molecules.flat_map do |molecule|
-      next_molecules(molecule).to_a
-    end.to_set
-    next_molecules_after(n-1, next_molecules)
-  end
-
-  def fewest_steps_to(molecule = @medicine)
+  def fewest_steps_to(molecule = parse_molecule(@medicine))
     i = 0
-    while true
+    molecules = [['e']].to_set
+    until molecules.include?(molecule)
       puts i
-      molecules = next_molecules_after(i, [['e']].to_set)
+      molecules = molecules.flat_map { |m| next_molecules(m).to_a }.to_set
       puts molecules.size
-      return i if molecules.include?(molecule)
       i += 1
     end
+    i
   end
 end
 

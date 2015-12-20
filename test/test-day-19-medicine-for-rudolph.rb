@@ -4,6 +4,8 @@ require 'day-19-medicine-for-rudolph'
 class TestDay19MedicineForRudolph < Minitest::Test
   def setup
     @input = <<END
+e => H
+e => O
 H => HO
 H => OH
 O => HH
@@ -31,6 +33,9 @@ END
   end
 
   def test_initialize
+    assert_equal 3, @subject.replacements.length
+    assert_equal %w(H), @subject.replacements['e'][0].atoms
+    assert_equal %w(O), @subject.replacements['e'][1].atoms
     assert_equal %w(H O), @subject.replacements['H'][0].atoms
     assert_equal %w(O H), @subject.replacements['H'][1].atoms
     assert_equal %w(H H), @subject.replacements['O'][0].atoms
@@ -52,5 +57,10 @@ END
     # Santa's favorite molecule, HOHOHO, can become 7 distinct molecules (over nine replacements: six from H, and
     # three from O).
     assert_equal 7, @subject.next_molecules(@subject.parse_molecule('HOHOHO')).size
+   end
+
+   def test_fewest_steps_to
+     assert_equal 3, @subject.fewest_steps_to
+     assert_equal 6, @subject.fewest_steps_to(@subject.parse_molecule('HOHOHO'))
   end
 end
