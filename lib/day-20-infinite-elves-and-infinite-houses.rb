@@ -55,7 +55,15 @@ class Integer
   def elves
     # The elves that visited a house correspond to the factors of the house number.
     # TODO: use Prime#prime_division ?
-    (1..Math.sqrt(self)).select { |elf| elf.delivers_presents_to?(self) }.flat_map { |n| [n, self / n] }.sort.uniq
+    low_elves = (1..Math.sqrt(self)).select { |elf| elf.delivers_presents_to?(self) }
+
+    # Every low elf has a high elf who also visited this house, except for elf sqrt(self)...
+    high_elves = low_elves.map { |elf| self / elf }.reverse
+    if low_elves.last == high_elves.first
+      low_elves + high_elves.drop(1)
+    else
+      low_elves + high_elves
+    end
   end
 
   def presents
