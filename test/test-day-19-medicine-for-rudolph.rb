@@ -57,10 +57,17 @@ END
     # Santa's favorite molecule, HOHOHO, can become 7 distinct molecules (over nine replacements: six from H, and
     # three from O).
     assert_equal 7, @subject.next_molecules(@subject.parse_molecule('HOHOHO')).size
-   end
+  end
 
-   def test_fewest_steps_to
-     assert_equal 3, @subject.fewest_steps_to
-     assert_equal 6, @subject.fewest_steps_to(@subject.parse_molecule('HOHOHO'))
+  def test_fewest_steps_to
+    # If you'd like to make HOH, you start with e, and then make the following replacements:
+    # - e => O to get O
+    # - O => HH to get HH
+    # - H => OH (on the second H) to get HOH
+    # So, you could make HOH after 3 steps.
+    assert_equal 3, @subject.fewest_steps_to
+
+    # Santa's favorite molecule, HOHOHO, can be made in 6 steps.
+    assert_equal 6, @subject.fewest_steps_to(@subject.parse_molecule('HOHOHO'))
   end
 end
