@@ -42,8 +42,7 @@ in your puzzle input?
 
 =end
 
-
-require 'set'
+require 'prime'
 require_relative 'util'
 
 class Integer
@@ -54,16 +53,13 @@ class Integer
 
   def elves
     # The elves that visited a house correspond to the factors of the house number.
-    # TODO: use Prime#prime_division ?
-    low_elves = (1..Math.sqrt(self)).select { |elf| elf.delivers_presents_to?(self) }
-
-    # Every low elf has a high elf who also visited this house, except for elf sqrt(self)...
-    high_elves = low_elves.map { |elf| self / elf }.reverse
-    if low_elves.last == high_elves.first
-      low_elves + high_elves.drop(1)
-    else
-      low_elves + high_elves
-    end
+    # Adapted from: http://stackoverflow.com/a/3398195/2418704
+    return [1] if self == 1
+    primes, powers = prime_division.transpose
+    exponents = powers.map { |i| (0..i).to_a }
+    exponents.shift.product(*exponents).map do |powers|
+      Integer.from_prime_division(primes.zip(powers))
+    end.sort
   end
 
   def presents
