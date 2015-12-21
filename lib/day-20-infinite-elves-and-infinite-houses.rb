@@ -48,9 +48,16 @@ require_relative 'util'
 class Integer
   def elves(max_houses_per_elf: Float::INFINITY)
     # Each elf N visits all houses M*N. Thus each house is visited by each elf whose number can evenly divide the
-    # house number. In other words, the elves that visit a house correspond to the factors of the house number.
+    # house number. In other words, the elves that visit a house H correspond to the factors of H.
 
-    # Compute all factors of the house number based on its prime factorization, using Integer#prime_division.
+    if max_houses_per_elf <= Math.sqrt(self)
+      # We only need to look at max_houses_per_elf potential elves, from H/1 down to H/max_houses_per_elf,
+      # because any elf whose number is smaller than that would have stopped before getting to H.
+      # (Thanks to Michael C. Martin for this insight!)
+      return (1..max_houses_per_elf).select { |d| self % d == 0 }.map { |d| self/d }.reverse
+    end
+
+    # Compute all factors of H based on its prime factorization, using Integer#prime_division.
     # The code below is adapted from: http://stackoverflow.com/a/3398195/2418704
     return [1] if self == 1
     primes, powers = prime_division.transpose
