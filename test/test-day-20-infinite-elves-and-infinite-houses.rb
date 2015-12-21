@@ -14,6 +14,26 @@ class TestDay20InfiniteElvesAndInfiniteHouses < Minitest::Test
     assert_equal [1, 7],       7.elves
     assert_equal [1, 2, 4, 8], 8.elves
     assert_equal [1, 3, 9],    9.elves
+
+    assert_equal [1, 2, 4, 8, 16],      16.elves
+    assert_equal [1, 2, 5, 10, 25, 50], 50.elves
+    assert_equal [1, 3, 17, 51],        51.elves
+  end
+
+  def test_lazy_elves
+    # If elves stop after 3 houses each, then:
+    #  - Elf 1 will visit houses 1, 2, 3.
+    #  - Elf 2 will visit houses 2, 4, 6.
+    #  - Elf 4 will visit houses 4, 8, 12.
+    #  - Elf 8 will visit houses 8, 16, 24.
+    #  - Elf 16 will visit houses 16, 32, 48.
+    assert_equal [1, 2], 2.elves(max_houses_per_elf: 3)
+    assert_equal [2, 4], 4.elves(max_houses_per_elf: 3) # Elf 1 stops before house 4.
+    assert_equal [4, 8], 8.elves(max_houses_per_elf: 3) # Elves 1 and 2 stop before house 8.
+    assert_equal [8, 16], 16.elves(max_houses_per_elf: 3) # Elves 1, 2, and 4 stop before house 16.
+
+    assert_equal [1, 2, 5, 10, 25, 50], 50.elves(max_houses_per_elf: 50)
+    assert_equal [3, 17, 51],           51.elves(max_houses_per_elf: 50) # Elf 1 stopped after house 50.
   end
 
   def test_presents
@@ -31,10 +51,18 @@ class TestDay20InfiniteElvesAndInfiniteHouses < Minitest::Test
     end
   end
 
+  def test_presents_from_lazy_elves
+    # If elves stop after 3 houses each but deliver 11 presents each, then
+    #  - House 16 gets 11 presents each from elves 8 and 16, i.e. 11 * (8+16) = 264.
+    assert_equal 264, 16.presents(max_houses_per_elf: 3, presents_per_elf: 11)
+  end
+
   def test_lowest_house_number_to_get_at_least
     assert_equal 1, lowest_house_number_to_get_at_least(10)
     assert_equal 4, lowest_house_number_to_get_at_least(50)
     assert_equal 6, lowest_house_number_to_get_at_least(100)
     assert_equal 8, lowest_house_number_to_get_at_least(150)
+
+    assert_equal 16, lowest_house_number_to_get_at_least(264, max_houses_per_elf: 3, presents_per_elf: 11)
   end
 end
