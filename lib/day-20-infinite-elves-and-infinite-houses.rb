@@ -46,11 +46,6 @@ require 'prime'
 require_relative 'util'
 
 class Integer
-  def delivers_presents_to?(house)
-    # Elf N visits every Nth house, so it visits a house iff N evenly divides the house number.
-    house % self == 0
-  end
-
   def elves
     # The elves that visited a house correspond to the factors of the house number.
     # Adapted from: http://stackoverflow.com/a/3398195/2418704
