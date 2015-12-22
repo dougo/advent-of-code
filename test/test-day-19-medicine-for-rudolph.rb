@@ -52,11 +52,14 @@ END
     # - HHHH (via O => HH).
     # So, in the example above, there are 4 distinct molecules (not five, because HOOH appears twice) after one
     # replacement from HOH.
-    assert_equal %w(HOOH HOHO OHOH HHHH).to_set, @subject.next_molecules.map(&:join).to_set
+    assert_equal %w(HOOH HOHO OHOH HHHH).to_set, @subject.next_molecules.to_set
 
     # Santa's favorite molecule, HOHOHO, can become 7 distinct molecules (over nine replacements: six from H, and
     # three from O).
-    assert_equal 7, @subject.next_molecules(@subject.parse_molecule('HOHOHO')).size
+    assert_equal 7, @subject.next_molecules('HOHOHO').size
+
+    fab = MoleculeFabricator.new("A => B\n\nC")
+    assert_empty fab.next_molecules
   end
 
   def test_fewest_steps_to
@@ -68,6 +71,6 @@ END
     assert_equal 3, @subject.fewest_steps_to
 
     # Santa's favorite molecule, HOHOHO, can be made in 6 steps.
-    assert_equal 6, @subject.fewest_steps_to(@subject.parse_molecule('HOHOHO'))
+    assert_equal 6, @subject.fewest_steps_to('HOHOHO')
   end
 end

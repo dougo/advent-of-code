@@ -114,29 +114,29 @@ class MoleculeFabricator
     @replacements.values.reduce(:concat).join("\n") + "\n\n" + medicine
   end
 
-  def next_molecules(atoms = parse_molecule(@medicine))
-    return @successors[atoms] if @successors.has_key?(atoms)
-    molecules = Set.new
-    atoms.each_with_index do |atom, i|
+  def next_molecules(molecule = @medicine)
+    atoms = parse_molecule(molecule)
+    atoms.each_with_index.flat_map do |atom, i|
       if @replacements.has_key?(atom)
         before = atoms.take(i)
         after = atoms.drop(i+1)
-        @replacements[atom].each do |rep|
-          molecules.add(before + rep.atoms + after)
+        @replacements[atom].map do |rep|
+          (before + rep.atoms + after).join
         end
+      else
+        []
       end
-    end
-    @successors[atoms] = molecules
-    molecules
+    end.uniq
   end
 
-  def fewest_steps_to(molecule = parse_molecule(@medicine))
+  def fewest_steps_to(molecule = @medicine)
     i = 0
-    molecules = [['e']].to_set
+    molecules = ['e']
     until molecules.include?(molecule)
       puts i
-      molecules = molecules.flat_map { |m| next_molecules(m).to_a }.to_set
+      molecules = molecules.flat_map { |m| next_molecules(m) }.uniq
       puts molecules.size
+      p molecules.first(10)
       i += 1
     end
     i
