@@ -200,7 +200,9 @@ class Player
   def self.spell_sequences(max_cost, prev_spells = [], &block)
     SPELL_COSTS.each do |spell, cost|
       next if cost > max_cost
-      
+
+      next if prev_spells.length > 9 # just a hunch that it doesn't need to be longer than this...
+
       if spell.in?(prev_spells)
         case spell
         when :shield, :poison
@@ -210,7 +212,10 @@ class Player
         else
           duration = nil
         end
-        next if duration && spell.in?(prev_spells.last(duration / 2)) # spell effects happen twice per round!
+        if duration
+          # Spell effects happen twice per round, and you can cast them on the round they finish.
+          next if spell.in?(prev_spells.last((duration-1)/2))
+        end
       end
 
       spells = [*prev_spells, spell]
@@ -226,6 +231,9 @@ class Player
 
     spell_sequences(max_cost) do |spells|
       i += 1
+      if i % 100_000 == 0
+        puts "Trying (cost = #{spell_sequence_cost(spells)}): #{spells.join(" ")}"
+      end
       player = new(boss: Boss.parse(boss_input), hard_mode: hard_mode)
       winning_sequences << spells if player.wins?(spells)
       last = spells
@@ -318,8 +326,8 @@ class Player
   def can_cast_spell?(spell)
     cl = spell_class(spell)
     if cl && @effects.find { |effect| effect.is_a? cl }
-      report("** Can't cast #{spell}, a #{cl} effect already exists.")
-      return false
+      # This should have been weeded out by spell_sequences...
+      raise "Can't cast #{spell}, a #{cl} effect already exists."
     end
     unless @mana >= SPELL_COSTS[spell]
       report("** Player does not have enough mana to cast #{spell}.")
@@ -448,8 +456,10 @@ if defined? DATA
   puts
   puts "** Cheapest winning spell sequence:"
 
-  max_cost = 900
-  hard_mode = false
+  # This is an upper bound, but not the correct answer for part 2:
+  # 1242: magic_missile shield recharge poison shield recharge poison magic_missile magic_missile magic_missile
+  max_cost = 1241
+  hard_mode = true
 
   spells = Player.cheapest_winning_spell_sequence(max_cost, input, hard_mode)
   if spells
