@@ -161,9 +161,7 @@ end
 if defined? DATA
   boss = Character.new(hp: 103, damage: 9, armor: 2)
   p Character.cheapest_player_that_defeats(boss).cost
-  pl = Character.most_expensive_player_defeated_by(boss)
-  p pl
-  p pl.defeats?(boss)
+  p Character.most_expensive_player_defeated_by(boss).cost
 end
 
 __END__

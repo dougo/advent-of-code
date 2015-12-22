@@ -102,6 +102,7 @@ class TestDay21RPGSimulator20XX < Minitest::Test
   end
 
   def test_most_expensive_player_defeated_by
+    # TODO
   end
 end
 
@@ -109,17 +110,17 @@ end
 
 Can this be solved with math??
 
-102 hp, 9 damage, 2 armor
+103 hp, 9 damage, 2 armor
 
-rounds to kill boss   = 102 / (player.damage - 2)
-damage sustained = ((102 / (D-2)) - 1) * (9 - A)
-defeat: ((102 / (D-2)) - 1) * (9 - A) < 100
-(102 / (D-2)) - 1 < 100 / (9-A)
-(102 / (D-2)) - (D-2)/(D-2) < 100 / (9-A)
-(102 - D-2) / (D-2) < 100 / (9-A)
-(9-A)(100-D) < 100(D-2)
-900 - 100A - 9D + AD < 100D - 2
-902 - 100A + 91D + AD < 0
-902 < 100A - 91D - AD
+rounds to kill boss   = 103 / (player.damage - 2)
+damage sustained = ((103 / (D-2)) - 1) * (9 - A)
+defeat: ((103 / (D-2)) - 1) * (9 - A) < 100
+(103 / (D-2)) - 1 < 100 / (9-A)
+(103 / (D-2)) - (D-2)/(D-2) < 100 / (9-A)
+(103 - D-2) / (D-2) < 100 / (9-A)
+(9-A)(101-D) < 100(D-2)
+909 - 101A - 9D + AD < 100D - 200
+1109 - 101A - 109D + AD < 0
+109D + 101A - AD > 1109
 
 =end
