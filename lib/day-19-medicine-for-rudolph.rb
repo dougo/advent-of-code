@@ -71,81 +71,50 @@ require 'set'
 require_relative 'util'
 
 class MoleculeFabricator
-  def parse_molecule(molecule)
-    case molecule
-    when ''
-      []
-    when 'e'
-      ['e']
-    when /^([A-Z][a-z]?)/
-      [$1] + parse_molecule($')
-    else
-      raise "Cannot parse molecule: #{molecule}"
-    end
+  def self.parse(input)
+    rep_lines, medicine = input.split("\n\n")
+    replacements = rep_lines.split("\n").map { |rep| rep.split(' => ') }
+    new(replacements, medicine)
   end
 
-  def parse_replacement(rule)
-    Replacement.new(self, rule)
+  def initialize(*args)
+    @replacements, @medicine = args
   end
+    
+  attr_reader :replacements, :medicine, :reverse_replacements
 
-  class Replacement
-    def initialize(fab, spec)
-      @fab = fab
-      @atom, molecule = spec.split(' => ')
-      @atoms = fab.parse_molecule(molecule)
-    end
-
-    attr_reader :atom, :atoms
-
-    def to_s
-      "#{atom} => #{atoms.join}"
-    end
-  end
-
-  def initialize(input)
-    machine, @medicine = input.split("\n\n")
-    @replacements = machine.split("\n").map(&method(:parse_replacement)).group_by &:atom
-    @successors = {}
-  end
-
-  attr_reader :replacements, :medicine
-
-  def to_s
-    @replacements.values.reduce(:concat).join("\n") + "\n\n" + medicine
-  end
-
-  def next_molecules(molecule = @medicine)
-    atoms = parse_molecule(molecule)
-    atoms.each_with_index.flat_map do |atom, i|
-      if @replacements.has_key?(atom)
-        before = atoms.take(i)
-        after = atoms.drop(i+1)
-        @replacements[atom].map do |rep|
-          (before + rep.atoms + after).join
+  def next_molecules(molecule = medicine)
+    replacements.flat_map do |left, right|
+      (0...molecule.length).map do |i|
+        if molecule[i..-1].start_with? left
+          molecule[0...i] + right + molecule[i+left.length..-1]
         end
-      else
-        []
-      end
+      end.compact
     end.uniq
   end
 
-  def fewest_steps_to(molecule = @medicine)
-    i = 0
-    molecules = ['e']
-    until molecules.include?(molecule)
-      puts i
-      molecules = molecules.flat_map { |m| next_molecules(m) }.uniq
-      puts molecules.size
-      p molecules.first(10)
-      i += 1
+  def reverse_replacements
+    replacements.map { |left, right| [right, left] }
+  end
+
+  def previous_molecules(molecule = medicine)
+    self.class.new(reverse_replacements, molecule).next_molecules
+  end
+
+  def fewest_steps_to(molecule = medicine)
+    return 0 if molecule == 'e'
+    previous_molecules(molecule).each do |prev|
+      prev_steps = fewest_steps_to(prev)
+      return prev_steps + 1 if prev_steps # This only works if the first path found is the shortest...
     end
-    i
+    nil
   end
 end
 
 if defined? DATA
   input = DATA.read.chomp
-  fab = MoleculeFabricator.new(input)
+
+  fab = MoleculeFabricator.parse(input)
   puts fab.next_molecules.length
   puts fab.fewest_steps_to
 end

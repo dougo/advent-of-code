@@ -12,35 +12,12 @@ O => HH
 
 HOH
 END
-    @subject = MoleculeFabricator.new(@input.chomp)
+    @subject = MoleculeFabricator.parse(@input.chomp)
   end
 
-  def test_parse_molecule
-    assert_equal %w(), @subject.parse_molecule('')
-    assert_equal %w(e), @subject.parse_molecule('e')
-    assert_equal %w(H), @subject.parse_molecule('H')
-    assert_equal %w(H O), @subject.parse_molecule('HO')
-    assert_equal %w(He H), @subject.parse_molecule('HeH') 
-    assert_equal %w(H Ar), @subject.parse_molecule('HAr')
-    assert_equal %w(He Li C O Pt Er S), @subject.parse_molecule('HeLiCOPtErS')
-  end
-
-  def test_parse_replacement
-    rep = @subject.parse_replacement('He => LiCO')
-    assert_equal 'He', rep.atom
-    assert_equal %w(Li C O), rep.atoms
-    assert_equal 'He => LiCO', rep.to_s
-  end
-
-  def test_initialize
-    assert_equal 3, @subject.replacements.length
-    assert_equal %w(H), @subject.replacements['e'][0].atoms
-    assert_equal %w(O), @subject.replacements['e'][1].atoms
-    assert_equal %w(H O), @subject.replacements['H'][0].atoms
-    assert_equal %w(O H), @subject.replacements['H'][1].atoms
-    assert_equal %w(H H), @subject.replacements['O'][0].atoms
+  def test_parse
+    assert_equal [%w(e H), %w(e O), %w(H HO), %w(H OH), %w(O HH)], @subject.replacements
     assert_equal 'HOH', @subject.medicine
-    assert_equal @input.chomp, @subject.to_s
   end
 
   def test_next_molecules
@@ -58,8 +35,16 @@ END
     # three from O).
     assert_equal 7, @subject.next_molecules('HOHOHO').size
 
-    fab = MoleculeFabricator.new("A => B\n\nC")
+    fab = MoleculeFabricator.parse("A => B\n\nC")
     assert_empty fab.next_molecules
+  end
+
+  def test_reverse_replacements
+    assert_equal [%w(H e), %w(O e), %w(HO H), %w(OH H), %w(HH O)], @subject.reverse_replacements
+  end
+
+  def test_prev_molecules
+    assert_equal %w(eOH HeH HOe HH).to_set, @subject.previous_molecules.to_set
   end
 
   def test_fewest_steps_to
@@ -72,5 +57,9 @@ END
 
     # Santa's favorite molecule, HOHOHO, can be made in 6 steps.
     assert_equal 6, @subject.fewest_steps_to('HOHOHO')
+
+    assert_equal 0, @subject.fewest_steps_to('e')
+    assert_nil @subject.fewest_steps_to('XX')
+    assert_nil @subject.fewest_steps_to('HX')
   end
 end
