@@ -47,6 +47,8 @@ does the winning reindeer have?
 
 =end
 
+require_relative 'util'
+
 class ReindeerOlympics
   def initialize(reindeer_specs)
     @reindeer = reindeer_specs.split("\n").map(&Reindeer.method(:new)).index_by(&:name)
