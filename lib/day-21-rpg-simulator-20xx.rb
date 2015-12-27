@@ -61,7 +61,6 @@ spend and still win the fight?
 
 =end
 
-require 'mathn' # Use rationals for integer division!
 require_relative 'util'
 
 class Equipment
@@ -131,7 +130,7 @@ class Character
   end
 
   def rounds_to_kill(defender)
-    (defender.hp / damage_dealt_to(defender)).ceil
+    defender.hp.fdiv(damage_dealt_to(defender)).ceil
   end
 
   def defeats?(defender)
