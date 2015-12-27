@@ -76,38 +76,48 @@ Now, what is the quantum entanglement of the first group of packages in the idea
 
 require_relative 'util'
 
-def smallest_group(total, weights)
-  (1..weights.length / 2).each do |i|
-    weights.combination(i).find do |w| # This only works if the first smallest group has the lowest entanglement...
-      return w if w.sum == total
+class PackageList
+  def self.parse(input)
+    new(input.split.map(&:to_i))
+  end
+
+  def initialize(weights)
+    @weights = weights
+  end
+
+  def smallest_group(total, weights)
+    (1..weights.length / 2).each do |i|
+      weights.combination(i).find do |w| # This only works if the first smallest group has the lowest entanglement...
+        return w if w.sum == total
+      end
     end
+  end
+
+  def trisections
+    weights = @weights.reverse
+    total = weights.sum / 3
+    center = smallest_group(total, weights)
+    left = smallest_group(total, weights - center)
+    right = weights - center - left
+    [center, center.reduce(:*), left, right]
+  end
+
+  # Sometimes copy-paste is quicker than refactor!
+  def quadrisections
+    weights = @weights.reverse
+    total = weights.sum / 4
+    center = smallest_group(total, weights)
+    left = smallest_group(total, weights - center)
+    right = smallest_group(total, weights - center - left)
+    trunk = weights - center - left - right
+    [center, center.reduce(:*), left, right, trunk]
   end
 end
 
-def trisections(weights)
-  weights = weights.reverse
-  total = weights.sum / 3
-  center = smallest_group(total, weights)
-  left = smallest_group(total, weights - center)
-  right = weights - center - left
-  [center, center.reduce(:*), left, right]
-end
-
-# Sometimes copy-paste is quicker than refactor!
-def quadrisections(weights)
-  weights = weights.reverse
-  total = weights.sum / 4
-  center = smallest_group(total, weights)
-  left = smallest_group(total, weights - center)
-  right = smallest_group(total, weights - center - left)
-  trunk = weights - center - left - right
-  [center, center.reduce(:*), left, right, trunk]
-end
-
 if defined? DATA
-  weights = DATA.read.split.map(&:to_i)
-  p trisections(weights)
-  p quadrisections(weights)
+  packages = PackageList.parse(DATA.read)
+  p packages.trisections
+  p packages.quadrisections
 end
 
 __END__

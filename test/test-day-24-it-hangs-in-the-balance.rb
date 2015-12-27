@@ -15,14 +15,14 @@ class TestDay24ItHangsInTheBalance < Minitest::Test
 10
 11
 END
-    @weights = @input.split.map(&:to_i)
+    @subject = PackageList.parse(@input)
   end
 
   def test_trisections
-    assert_equal [[11, 9], 99, [10, 8, 2], [7, 5, 4, 3, 1]], trisections(@weights)
+    assert_equal [[11, 9], 99, [10, 8, 2], [7, 5, 4, 3, 1]], @subject.trisections
   end
 
   def test_quadrisections
-    assert_equal [[11, 4], 44, [10, 5], [8, 7], [9, 3, 2, 1]], quadrisections(@weights)
+    assert_equal [[11, 4], 44, [10, 5], [8, 7], [9, 3, 2, 1]], @subject.quadrisections
   end
 end
