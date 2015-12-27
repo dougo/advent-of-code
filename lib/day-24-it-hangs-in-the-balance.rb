@@ -93,13 +93,13 @@ class PackageList
     end
   end
 
-  def trisections
+  def ideal_configuration(num_groups = 3)
+    return quadrisections if num_groups == 4
     weights = @weights.reverse
-    total = weights.sum / 3
+    total = weights.sum / num_groups
     center = smallest_group(total, weights)
     left = smallest_group(total, weights - center)
-    right = weights - center - left
-    [center, center.reduce(:*), left, right]
+    SleighConfiguration.new(center, left, weights - center - left)
   end
 
   # Sometimes copy-paste is quicker than refactor!
@@ -109,15 +109,26 @@ class PackageList
     center = smallest_group(total, weights)
     left = smallest_group(total, weights - center)
     right = smallest_group(total, weights - center - left)
-    trunk = weights - center - left - right
-    [center, center.reduce(:*), left, right, trunk]
+    SleighConfiguration.new(center, left, right, weights - center - left - right)
+  end
+end
+
+class SleighConfiguration
+  def initialize(*groups)
+    @groups = groups
+  end
+
+  attr_reader :groups
+
+  def quantum_entanglement
+    @groups.first.reduce(:*)
   end
 end
 
 if defined? DATA
   packages = PackageList.parse(DATA.read)
-  p packages.trisections
-  p packages.quadrisections
+  p packages.ideal_configuration.quantum_entanglement
+  p packages.ideal_configuration(4).quantum_entanglement
 end
 
 __END__

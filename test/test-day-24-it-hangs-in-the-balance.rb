@@ -18,11 +18,13 @@ END
     @subject = PackageList.parse(@input)
   end
 
-  def test_trisections
-    assert_equal [[11, 9], 99, [10, 8, 2], [7, 5, 4, 3, 1]], @subject.trisections
-  end
+  def test_ideal_configuration
+    conf = @subject.ideal_configuration
+    assert_equal 99, conf.quantum_entanglement
+    assert_equal [[11, 9], [10, 8, 2], [7, 5, 4, 3, 1]], conf.groups
 
-  def test_quadrisections
-    assert_equal [[11, 4], 44, [10, 5], [8, 7], [9, 3, 2, 1]], @subject.quadrisections
+    conf_with_trunk = @subject.ideal_configuration(4)
+    assert_equal 44, conf_with_trunk.quantum_entanglement
+    assert_equal [[11, 4], [10, 5], [8, 7], [9, 3, 2, 1]], conf_with_trunk.groups
   end
 end
