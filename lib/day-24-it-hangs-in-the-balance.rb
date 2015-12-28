@@ -85,31 +85,24 @@ class PackageList
     @weights = weights
   end
 
-  def smallest_group(total, weights)
-    (1..weights.length / 2).each do |i|
-      weights.combination(i).find do |w| # This only works if the first smallest group has the lowest entanglement...
-        return w if w.sum == total
+  def smallest_group(group_weight, weights)
+    (1..weights.length).each do |i|
+      # TODO: This only works if the first smallest group has the lowest entanglement...
+      weights.combination(i).each do |group|
+        return group if group.sum == group_weight
       end
     end
   end
 
   def ideal_configuration(num_groups = 3)
-    return quadrisections if num_groups == 4
     weights = @weights.reverse
-    total = weights.sum / num_groups
-    center = smallest_group(total, weights)
-    left = smallest_group(total, weights - center)
-    SleighConfiguration.new(center, left, weights - center - left)
-  end
-
-  # Sometimes copy-paste is quicker than refactor!
-  def quadrisections
-    weights = @weights.reverse
-    total = weights.sum / 4
-    center = smallest_group(total, weights)
-    left = smallest_group(total, weights - center)
-    right = smallest_group(total, weights - center - left)
-    SleighConfiguration.new(center, left, right, weights - center - left - right)
+    group_weight = weights.sum / num_groups
+    groups = (1...num_groups).map do
+      group = smallest_group(group_weight, weights)
+      weights -= group
+      group
+    end
+    SleighConfiguration.new(*groups, weights)
   end
 end
 
