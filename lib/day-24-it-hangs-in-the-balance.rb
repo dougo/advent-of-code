@@ -76,10 +76,8 @@ Now, what is the quantum entanglement of the first group of packages in the idea
 
 require_relative 'util'
 
-class PackageList
-  def self.parse(input)
-    input.split.map(&:to_i)
-  end
+def parse_package_weights(input)
+  input.split.map(&:to_i)
 end
 
 module Enumerable
@@ -92,7 +90,7 @@ module Enumerable
     end
   end
 
-  def ideal_configuration(num_groups = 3)
+  def ideal_sleigh_configuration(num_groups = 3)
     weights = reverse
     group_weight = weights.sum / num_groups
     (1...num_groups).map do
@@ -108,9 +106,9 @@ module Enumerable
 end
 
 if defined? DATA
-  packages = PackageList.parse(DATA.read)
-  p packages.ideal_configuration.quantum_entanglement
-  p packages.ideal_configuration(4).quantum_entanglement
+  packages = parse_package_weights(DATA.read)
+  p packages.ideal_sleigh_configuration.quantum_entanglement
+  p packages.ideal_sleigh_configuration(4).quantum_entanglement
 end
 
 __END__

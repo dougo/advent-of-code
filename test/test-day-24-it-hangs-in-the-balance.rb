@@ -15,7 +15,7 @@ class TestDay24ItHangsInTheBalance < Minitest::Test
 10
 11
 END
-    @subject = PackageList.parse(@input)
+    @subject = parse_package_weights(@input)
   end
 
   def test_smallest_group_that_weighs
@@ -23,11 +23,11 @@ END
   end
 
   def test_ideal_configuration
-    conf = @subject.ideal_configuration
+    conf = @subject.ideal_sleigh_configuration
     assert_equal 99, conf.quantum_entanglement
     assert_equal [[11, 9], [10, 8, 2], [7, 5, 4, 3, 1]], conf
 
-    conf_with_trunk = @subject.ideal_configuration(4)
+    conf_with_trunk = @subject.ideal_sleigh_configuration(4)
     assert_equal 44, conf_with_trunk.quantum_entanglement
     assert_equal [[11, 4], [10, 5], [8, 7], [9, 3, 2, 1]], conf_with_trunk
   end
