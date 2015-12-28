@@ -97,24 +97,17 @@ class PackageList
   def ideal_configuration(num_groups = 3)
     weights = @weights.reverse
     group_weight = weights.sum / num_groups
-    groups = (1...num_groups).map do
+    (1...num_groups).map do
       group = smallest_group(group_weight, weights)
       weights -= group
       group
-    end
-    SleighConfiguration.new(*groups, weights)
+    end + [weights]
   end
 end
 
-class SleighConfiguration
-  def initialize(*groups)
-    @groups = groups
-  end
-
-  attr_reader :groups
-
+module Enumerable
   def quantum_entanglement
-    @groups.first.reduce(:*)
+    first.reduce(:*)
   end
 end
 
