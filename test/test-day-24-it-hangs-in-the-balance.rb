@@ -18,6 +18,10 @@ END
     @subject = PackageList.parse(@input)
   end
 
+  def test_smallest_group_that_weighs
+    assert_equal [11], @subject.smallest_group_that_weighs(11)
+  end
+
   def test_ideal_configuration
     conf = @subject.ideal_configuration
     assert_equal 99, conf.quantum_entanglement

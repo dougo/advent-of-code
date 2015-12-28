@@ -78,34 +78,30 @@ require_relative 'util'
 
 class PackageList
   def self.parse(input)
-    new(input.split.map(&:to_i))
+    input.split.map(&:to_i)
   end
+end
 
-  def initialize(weights)
-    @weights = weights
-  end
-
-  def smallest_group(group_weight, weights)
-    (1..weights.length).each do |i|
+module Enumerable
+  def smallest_group_that_weighs(group_weight)
+    (1..length).each do |i|
       # TODO: This only works if the first smallest group has the lowest entanglement...
-      weights.combination(i).each do |group|
+      combination(i).each do |group|
         return group if group.sum == group_weight
       end
     end
   end
 
   def ideal_configuration(num_groups = 3)
-    weights = @weights.reverse
+    weights = reverse
     group_weight = weights.sum / num_groups
     (1...num_groups).map do
-      group = smallest_group(group_weight, weights)
+      group = weights.smallest_group_that_weighs(group_weight)
       weights -= group
       group
     end + [weights]
   end
-end
 
-module Enumerable
   def quantum_entanglement
     first.reduce(:*)
   end
