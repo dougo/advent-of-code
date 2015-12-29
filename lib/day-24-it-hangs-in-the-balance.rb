@@ -83,16 +83,15 @@ class String
 end
 
 class Array
+  def each_group_by_size
+    (1..size).lazy.flat_map { |i| combination(i).lazy }
+  end
+
   def smallest_group_that_weighs(group_weight)
     # First sort the weights from lowest to highest, so that the first smallest group will have the smallest product
     # (because it contains the smallest single weight of the smallest groups).
     # TODO: prove this?
-    weights = sort
-    (1..weights.size).each do |i|
-      weights.combination(i).each do |group|
-        return group if group.sum == group_weight
-      end
-    end
+    sort.each_group_by_size.find { |group| group.sum == group_weight }
   end
 
   def ideal_sleigh_configuration(num_groups = 3)
