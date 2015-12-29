@@ -25,6 +25,8 @@ END
 
   def test_ideal_sleigh_configuration
     @subject = [*1..5, *7..11]
+    assert_equal [@subject.reverse], @subject.ideal_sleigh_configuration(1)
+
     conf = @subject.ideal_sleigh_configuration
     assert_equal 99, conf.quantum_entanglement
     assert_equal [[11, 9], [10, 8, 2], [7, 5, 4, 3, 1]], conf

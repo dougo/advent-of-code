@@ -91,17 +91,14 @@ class Array
     # First sort the weights from lowest to highest, so that the first smallest group will have the smallest product
     # (because it contains the smallest single weight of the smallest groups).
     # TODO: prove this?
+    # TODO: prove this never returns nil?
     sort.each_group_by_size.find { |group| group.sum == group_weight }
   end
 
   def ideal_sleigh_configuration(num_groups = 3)
-    weights = self
-    group_weight = weights.sum / num_groups
-    (1...num_groups).map do
-      group = weights.smallest_group_that_weighs(group_weight).reverse!
-      weights -= group
-      group
-    end + [weights.sort.reverse!]
+    return [reverse] if num_groups == 1
+    group = smallest_group_that_weighs(sum / num_groups)
+    [group.reverse!] + (self - group).ideal_sleigh_configuration(num_groups - 1)
   end
 
   def quantum_entanglement
