@@ -13,10 +13,10 @@ END
 
   def test_smallest_group_that_weighs
     assert_equal [3], [1,2,3].smallest_group_that_weighs(3)
-    assert_equal [3, 1], [1,2,3].smallest_group_that_weighs(4)
-    assert_equal [4, 1], [1,2,3,4].smallest_group_that_weighs(5)
-    assert_equal [4, 1], [3,4,1,2].smallest_group_that_weighs(5)
-    assert_equal [8,6,1], [1,2,3,6,8,10].smallest_group_that_weighs(15)
+    assert_equal [1,3], [1,2,3].smallest_group_that_weighs(4)
+    assert_equal [1,4], [1,2,3,4].smallest_group_that_weighs(5)
+    assert_equal [1,4], [3,4,1,2].smallest_group_that_weighs(5)
+    assert_equal [1,6,8], [1,2,3,6,8,10].smallest_group_that_weighs(15)
   end
 
   def test_ideal_sleigh_configuration

@@ -90,7 +90,7 @@ class Array
     weights = sort
     (1..weights.size).each do |i|
       weights.combination(i).each do |group|
-        return group.reverse! if group.sum == group_weight
+        return group if group.sum == group_weight
       end
     end
   end
@@ -99,7 +99,7 @@ class Array
     weights = self
     group_weight = weights.sum / num_groups
     (1...num_groups).map do
-      group = weights.smallest_group_that_weighs(group_weight)
+      group = weights.smallest_group_that_weighs(group_weight).reverse!
       weights -= group
       group
     end + [weights.sort.reverse!]
