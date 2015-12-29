@@ -15,6 +15,11 @@ END
     assert_equal [[1], [2], [3], [1,2], [1,3], [2,3], [1,2,3]], [1,2,3].each_group_by_size.to_a
   end
 
+  def test_each_group_that_weighs
+    assert_equal [[3], [1,2]], [1,2,3].each_group_that_weighs(3).to_a
+    assert_equal [[1,4], [2,3]], [1,2,3,4].each_group_that_weighs(5).to_a
+  end
+
   def test_smallest_group_that_weighs
     assert_equal [3], [1,2,3].smallest_group_that_weighs(3)
     assert_equal [1,3], [1,2,3].smallest_group_that_weighs(4)
