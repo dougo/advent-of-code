@@ -15,6 +15,7 @@ END
     assert_equal [3], [1,2,3].smallest_group_that_weighs(3)
     assert_equal [3, 1], [1,2,3].smallest_group_that_weighs(4)
     assert_equal [4, 1], [1,2,3,4].smallest_group_that_weighs(5)
+    assert_equal [4, 1], [3,4,1,2].smallest_group_that_weighs(5)
   end
 
   def test_ideal_sleigh_configuration

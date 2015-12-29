@@ -84,10 +84,11 @@ end
 
 class Array
   def smallest_group_that_weighs(group_weight)
-    (1..size).each do |i|
+    weights = sort.reverse!
+    (1..weights.size).each do |i|
       # TODO: This only works if the first smallest group has the lowest entanglement...
-      combination(i).each do |group|
-        return group.sort.reverse! if group.sum == group_weight
+      weights.combination(i).each do |group|
+        return group if group.sum == group_weight
       end
     end
   end
