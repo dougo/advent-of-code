@@ -84,23 +84,25 @@ end
 
 class Array
   def smallest_group_that_weighs(group_weight)
-    weights = sort.reverse!
+    # First sort the weights from lowest to highest, so that the first smallest group will have the smallest product
+    # (because it contains the smallest single weight of the smallest groups).
+    # TODO: prove this?
+    weights = sort
     (1..weights.size).each do |i|
-      # TODO: This only works if the first smallest group has the lowest entanglement...
       weights.combination(i).each do |group|
-        return group if group.sum == group_weight
+        return group.reverse! if group.sum == group_weight
       end
     end
   end
 
   def ideal_sleigh_configuration(num_groups = 3)
-    weights = reverse
+    weights = self
     group_weight = weights.sum / num_groups
     (1...num_groups).map do
       group = weights.smallest_group_that_weighs(group_weight)
       weights -= group
       group
-    end + [weights]
+    end + [weights.sort.reverse!]
   end
 
   def quantum_entanglement
