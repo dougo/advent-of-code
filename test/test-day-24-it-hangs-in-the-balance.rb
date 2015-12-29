@@ -2,27 +2,23 @@ require 'test-helper'
 require 'day-24-it-hangs-in-the-balance'
 
 class TestDay24ItHangsInTheBalance < Minitest::Test
-  def setup
-    @input = <<END
+  def test_parse_package_weights
+    input = <<END
 1
 2
 3
-4
-5
-7
-8
-9
-10
-11
 END
-    @subject = parse_package_weights(@input)
+    assert_equal (1..3).to_a, input.parse_package_weights
   end
 
   def test_smallest_group_that_weighs
-    assert_equal [11], @subject.smallest_group_that_weighs(11)
+    assert_equal [3], [1,2,3].smallest_group_that_weighs(3)
+    assert_equal [3, 1], [1,2,3].smallest_group_that_weighs(4)
+    assert_equal [4, 1], [1,2,3,4].smallest_group_that_weighs(5)
   end
 
-  def test_ideal_configuration
+  def test_ideal_sleigh_configuration
+    @subject = [*1..5, *7..11]
     conf = @subject.ideal_sleigh_configuration
     assert_equal 99, conf.quantum_entanglement
     assert_equal [[11, 9], [10, 8, 2], [7, 5, 4, 3, 1]], conf

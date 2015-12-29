@@ -76,16 +76,18 @@ Now, what is the quantum entanglement of the first group of packages in the idea
 
 require_relative 'util'
 
-def parse_package_weights(input)
-  input.split.map(&:to_i)
+class String
+  def parse_package_weights
+    split.map(&:to_i)
+  end
 end
 
-module Enumerable
+class Array
   def smallest_group_that_weighs(group_weight)
-    (1..length).each do |i|
+    (1..size).each do |i|
       # TODO: This only works if the first smallest group has the lowest entanglement...
       combination(i).each do |group|
-        return group if group.sum == group_weight
+        return group.sort.reverse! if group.sum == group_weight
       end
     end
   end
@@ -106,7 +108,7 @@ module Enumerable
 end
 
 if defined? DATA
-  packages = parse_package_weights(DATA.read)
+  packages = DATA.read.parse_package_weights
   p packages.ideal_sleigh_configuration.quantum_entanglement
   p packages.ideal_sleigh_configuration(4).quantum_entanglement
 end
