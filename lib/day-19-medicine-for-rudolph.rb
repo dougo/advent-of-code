@@ -105,7 +105,9 @@ class MoleculeFabricator
     return 0 if molecule == 'e'
     previous_molecules(molecule).each do |prev|
       prev_steps = fewest_steps_to(prev)
-      return prev_steps + 1 if prev_steps # This only works if the first path found is the shortest...
+      # TODO: This only works if the first path found is the shortest...
+      # Is there an efficient way to verify that it's the shortest?
+      return prev_steps + 1 if prev_steps
     end
     nil
   end

@@ -36,6 +36,7 @@ class EggnogContainers
 
   attr_reader :sizes
 
+  # TODO: search @sizes.combination(i) for each i
   def ways_to_fit(eggnog, sizes = @sizes.sort.reverse)
     return [[]] if eggnog == 0
     return [] if sizes.empty?

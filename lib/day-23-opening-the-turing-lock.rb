@@ -1,3 +1,5 @@
+# TODO: tests!!
+
 require_relative 'util'
 
 def run(input, a = 0)

@@ -140,6 +140,8 @@ fight?
 
 =end
 
+# TODO: tests!!
+
 require_relative 'util'
 
 class Boss
@@ -250,6 +252,9 @@ class Player
 
     winning_sequences.min_by(&method(:spell_sequence_cost))
   end
+
+  # TODO: do combat non-mutationally: given a combat state and a spell, return the next combat state.
+  # Then we can do DFS with pruning for losing states.
 
   def wins?(spells)
     spells.each do |spell|

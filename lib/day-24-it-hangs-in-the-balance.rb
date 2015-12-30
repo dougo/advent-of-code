@@ -88,7 +88,7 @@ class Array
   end
 
   def each_group_that_weighs(group_weight)
-    # TODO: prove this is never empty?
+    # TODO: prove this is never empty? or find counterexample.
     each_group_by_size.select { |group| group.sum == group_weight }
   end
 
