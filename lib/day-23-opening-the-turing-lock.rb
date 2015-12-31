@@ -44,16 +44,16 @@ require 'logger'
 require_relative 'util'
 
 class Computer
-  def initialize(debug = false)
+  def initialize(a: 0, b: 0, debug: false)
     @log = Logger.new(STDOUT)
     @log.level = Logger::INFO unless debug
+    @reg = { 'a' => a, 'b' => b }
   end
 
-  def run_program(input, a = 0)
+  def run_program(input)
     instrs = input.split("\n")
-    t = 0
     pc = 0
-    reg = { 'a' => a, 'b' => 0 }
+    reg = @reg
     while pc.in?(0...instrs.length)
       @log.debug "reg = #{reg}"
       instr = instrs[pc]
@@ -76,17 +76,15 @@ class Computer
         raise "Illegal instruction: #{instr}"
       end
       pc += offset
-      t += 1
     end
     reg
   end
 end
 
 if defined? DATA
-  computer = Computer.new
   input = DATA.read
-  puts computer.run_program(input)['b']
-  puts computer.run_program(input, 1)['b']
+  puts Computer.new.run_program(input)['b']
+  puts Computer.new(a: 1).run_program(input)['b']
 end
 
 __END__
