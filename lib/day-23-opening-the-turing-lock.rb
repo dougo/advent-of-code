@@ -40,19 +40,24 @@ as 1 instead?
 
 =end
 
+require 'logger'
 require_relative 'util'
 
 class Computer
+  def initialize(debug = false)
+    @log = Logger.new(STDOUT)
+    @log.level = Logger::INFO unless debug
+  end
+
   def run_program(input, a = 0)
     instrs = input.split("\n")
     t = 0
     pc = 0
     reg = { 'a' => a, 'b' => 0 }
     while pc.in?(0...instrs.length)
-      # TODO: log.debug
-      puts "reg = #{reg}"
+      @log.debug "reg = #{reg}"
       instr = instrs[pc]
-      puts "pc = #{pc}, instr = #{instr.inspect}"
+      @log.debug "pc = #{pc}, instr = #{instr.inspect}"
       offset = 1
       case instr
       when /hlf (.)/
