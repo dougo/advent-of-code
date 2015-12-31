@@ -44,40 +44,49 @@ require 'logger'
 require_relative 'util'
 
 class Computer
-  def initialize(a: 0, b: 0, debug: false)
+  def initialize(*instrs, a: 0, b: 0, pc: 0, debug: false)
     @log = Logger.new(STDOUT)
     @log.level = Logger::INFO unless debug
+    @instrs = instrs
     @reg = { 'a' => a, 'b' => b }
+    @pc = pc
+  end
+
+  attr_reader :pc
+
+  def [](reg)
+    @reg[reg]
   end
 
   def run_program(input)
-    instrs = input.split("\n")
-    pc = 0
-    reg = @reg
-    while pc.in?(0...instrs.length)
-      @log.debug "reg = #{reg}"
-      instr = instrs[pc]
-      @log.debug "pc = #{pc}, instr = #{instr.inspect}"
-      offset = 1
-      case instr
-      when /hlf (.)/
-        reg[$1] /= 2
-      when /tpl (.)/
-        reg[$1] *= 3
-      when /inc (.)/
-        reg[$1] += 1
-      when /jmp ([+-]\d+)/
-        offset = $1.to_i
-      when /jie (.), ([+-]\d+)/
-        offset = $2.to_i if reg[$1] % 2 == 0
-      when /jio (.), ([+-]\d+)/
-        offset = $2.to_i if reg[$1] == 1
-      else
-        raise "Illegal instruction: #{instr}"
-      end
-      pc += offset
+    @instrs = input.split("\n")
+    step while @pc.in?(0...@instrs.length)
+    self
+  end
+
+  def step
+    @log.debug "reg = #{@reg}"
+    instr = @instrs[@pc]
+    @log.debug "pc = #{@pc}, instr = #{instr.inspect}"
+    offset = 1
+    case instr
+    when /hlf (.)/
+      @reg[$1] /= 2
+    when /tpl (.)/
+      @reg[$1] *= 3
+    when /inc (.)/
+      @reg[$1] += 1
+    when /jmp ([+-]\d+)/
+      offset = $1.to_i
+    when /jie (.), ([+-]\d+)/
+      offset = $2.to_i if @reg[$1] % 2 == 0
+    when /jio (.), ([+-]\d+)/
+      offset = $2.to_i if @reg[$1] == 1
+    else
+      raise "Illegal instruction: #{instr}"
     end
-    reg
+    @pc += offset
+    self
   end
 end
 
