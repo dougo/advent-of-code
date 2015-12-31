@@ -10,8 +10,8 @@ jio a, +2
 tpl a
 inc a
 END
-    assert_equal 2, Computer.new.run_program(input)['a']
-    assert_equal 7, Computer.new(a: 1).run_program(input)['a']
+    assert_equal 2, run_program(input)['a']
+    assert_equal 7, run_program(input, a: 1)['a']
   end
 
   def test_hlf
@@ -57,7 +57,7 @@ END
     assert_equal 1, Computer.new("jie b, +3", b: 3).step.pc
     assert_equal 0, Computer.new("jie a, +2", "jie a, -1", pc: 1).step.pc
 
-    assert_equal 3, Computer.new(a: 1).run_program("inc a\njie a, -1")['a']
+    assert_equal 3, Computer.new("inc a", "jie a, -1", a: 1).run['a']
   end
 
   def test_jio
@@ -68,6 +68,6 @@ END
     assert_equal 1, Computer.new("jio b, +3", b: 3).step.pc
     assert_equal 0, Computer.new("jio b, +3", "jio b, -1", b: 1, pc: 1).step.pc
 
-    assert_equal 2, Computer.new.run_program("inc a\njio a, -1")['a']
+    assert_equal 2, Computer.new("inc a", "jio a, -1").run['a']
   end
 end

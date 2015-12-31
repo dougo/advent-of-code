@@ -43,6 +43,10 @@ as 1 instead?
 require 'logger'
 require_relative 'util'
 
+def run_program(input, **opts)
+  Computer.new(*input.split("\n"), **opts).run
+end
+
 class Computer
   def initialize(*instrs, a: 0, b: 0, pc: 0, debug: false)
     @log = Logger.new(STDOUT)
@@ -58,8 +62,7 @@ class Computer
     @reg[reg]
   end
 
-  def run_program(input)
-    @instrs = input.split("\n")
+  def run
     step while @pc.in?(0...@instrs.length)
     self
   end
@@ -92,8 +95,8 @@ end
 
 if defined? DATA
   input = DATA.read
-  puts Computer.new.run_program(input)['b']
-  puts Computer.new(a: 1).run_program(input)['b']
+  puts run_program(input)['b']
+  puts run_program(input, a: 1)['b']
 end
 
 __END__
