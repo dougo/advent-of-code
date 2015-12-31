@@ -23,7 +23,9 @@ END
 
   def test_tpl
     # - tpl r sets register r to triple its current value, then continues with the next instruction.
-    # TODO
+    assert_equal 0, Computer.new.run_program("tpl a")['a']
+    assert_equal 3, Computer.new(a: 1).run_program("tpl a")['a']
+    assert_equal 9, Computer.new(b: 1).run_program("tpl b\ntpl b")['b']
   end
 
   def test_inc
@@ -35,16 +37,27 @@ END
 
   def test_jmp
     # - jmp offset is a jump; it continues with the instruction offset away relative to itself.
-    # TODO
+    # For example, jmp +1 would simply continue with the next instruction
+    assert_equal 1, Computer.new.run_program("jmp +1\ninc a")['a']
+    assert_equal 1, Computer.new.run_program("jmp +2\ninc a\ninc a")['a']
+    assert_equal 0, Computer.new.run_program("jmp +2\ninc a")['a']
+    assert_equal 0, Computer.new.run_program("jmp -1\ninc a")['a']
   end
 
   def test_jie
     # - jie r, offset is like jmp, but only jumps if register r is even ("jump if even").
-    # TODO
+    assert_equal 0, Computer.new.run_program("jie a, +2\ninc a")['a']
+    assert_equal 2, Computer.new(a: 1).run_program("jie a, +2\ninc a")['a']
+    assert_equal 4, Computer.new(b: 3).run_program("jie b, +2\ninc b")['b']
+    assert_equal 3, Computer.new(a: 1).run_program("inc a\njie a, -1")['a']
   end
 
   def test_jio
     # - jio r, offset is like jmp, but only jumps if register r is 1 ("jump if one", not odd).
-    # TODO
+    assert_equal 1, Computer.new.run_program("jio a, +2\ninc a")['a']
+    assert_equal 1, Computer.new(a: 1).run_program("jio a, +2\ninc a")['a']
+    assert_equal 1, Computer.new(b: 1).run_program("jio b, +2\ninc b")['b']
+    assert_equal 4, Computer.new(b: 3).run_program("jio b, +2\ninc b")['b']
+    assert_equal 2, Computer.new.run_program("inc a\njio a, -1")['a']
   end
 end
