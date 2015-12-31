@@ -140,8 +140,6 @@ fight?
 
 =end
 
-# TODO: tests!!
-
 require_relative 'util'
 
 class Boss
