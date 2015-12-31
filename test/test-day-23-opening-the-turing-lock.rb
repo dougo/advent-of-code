@@ -70,4 +70,9 @@ END
 
     assert_equal 2, Computer.new("inc a", "jio a, -1").run['a']
   end
+
+  def test_illegal_instruction
+    ex = assert_raises { Computer.new("hcf").step }
+    assert_equal 'Illegal instruction: hcf', ex.message
+  end
 end
