@@ -421,6 +421,11 @@ class WizardSimulator
     end
   end
 
+  def player_wins?(boss_input, spells, hard_mode: false, verbose: false)
+    state = CombatState.new(Player.new(hard_mode: hard_mode, verbose: verbose), Boss.parse(boss_input))
+    state.player_wins?(spells)
+  end
+
   def cheapest_winning_spell_sequence(max_cost, boss_input, hard_mode = false)
     winning_sequences = []
     i = 0
@@ -431,8 +436,7 @@ class WizardSimulator
       if i % 100_000 == 0
         puts "Trying (cost = #{spell_sequence_cost(spells)}): #{spells.join(" ")}"
       end
-      state = CombatState.new(Player.new(hard_mode: hard_mode), Boss.parse(boss_input))
-      winning_sequences << spells if state.player_wins?(spells)
+      winning_sequences << spells if player_wins?(boss_input, spells, hard_mode: hard_mode)
       last = spells
     end
 
@@ -440,8 +444,7 @@ class WizardSimulator
 
     if winning_sequences.empty?
       puts "*** Last sequence: #{last.join(" ")}"
-      state = CombatState.new(Player.new(hard_mode: hard_mode, verbose: true), Boss.parse(boss_input))
-      state.player_wins?(last)
+      player_wins?(boss_input, last, hard_mode: hard_mode, verbose: true)
       return nil
     end
 
@@ -464,8 +467,7 @@ if defined? DATA
   spells = sim.cheapest_winning_spell_sequence(max_cost, input, hard_mode)
   if spells
     puts "#{sim.spell_sequence_cost(spells)}: #{spells.join(" ")}"
-    state = CombatState.new(Player.new(verbose: true, hard_mode: hard_mode), Boss.parse(input))
-    state.player_wins?(spells)
+    sim.player_wins?(input, spells, verbose: true, hard_mode: hard_mode)
   else
     puts "Can't win with only #{max_cost} mana."
   end
