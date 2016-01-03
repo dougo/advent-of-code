@@ -176,23 +176,21 @@ class Boss < Combatant
 end
 
 class Player < Combatant
-  def initialize(hp: 50, mana: 500, verbose: false, hard_mode: false)
+  def initialize(hp: 50, mana: 500)
     @hp = hp
     @mana = mana
     @armor = 0
-    @verbose = verbose
-    @hard_mode = hard_mode
     @effects = []
   end
 
-  attr_accessor :armor, :mana, :state, :hard_mode
+  attr_accessor :armor, :mana, :state
 
   def to_s
     "Player has #{@hp} hit point#{@hp == 1 ? "" : "s"}, #{@armor} armor, #{@mana} mana"
   end
 
   def report(str)
-    puts str if @verbose
+    @state.report(str)
   end
 
   def die
@@ -342,8 +340,8 @@ class Recharge < Effect
 end
 
 class CombatState
-  def initialize(player, boss, hard_mode: false)
-    @player, @boss, @hard_mode = player, boss, hard_mode
+  def initialize(player, boss, verbose: false, hard_mode: false)
+    @player, @boss, @verbose, @hard_mode = player, boss, verbose, hard_mode
     @player.state = self
   end
 
@@ -388,7 +386,7 @@ class CombatState
   end
 
   def report(str)
-    @player.report(str)
+    puts str if @verbose
   end
 end
 
@@ -425,7 +423,7 @@ class WizardSimulator
   end
 
   def player_wins?(spells, hard_mode: false, verbose: false)
-    state = CombatState.new(Player.new(verbose: verbose), Boss.parse(@boss_input), hard_mode: hard_mode)
+    state = CombatState.new(Player.new, Boss.parse(@boss_input), hard_mode: hard_mode, verbose: verbose)
     state.player_wins?(spells)
   end
 
