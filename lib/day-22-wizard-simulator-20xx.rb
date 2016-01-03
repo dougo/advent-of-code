@@ -164,7 +164,7 @@ class Boss < Combatant
     @damage = damage
   end
 
-  attr_reader :hp, :damage
+  attr_reader :damage
 
   def to_s
     "Boss has #{@hp} hit points"
@@ -207,6 +207,10 @@ class Player < Combatant
     poison: 173,
     recharge: 229
   }
+
+  def self.spell_sequence_cost(spells)
+    spells.sum { |spell| SPELL_COSTS[spell] }
+  end
 
   def tick
     report("- #{self}")
@@ -390,8 +394,8 @@ class CombatState
 end
 
 class WizardSimulator
-  def spell_sequence_cost(spells)
-    spells.sum { |spell| Player::SPELL_COSTS[spell] }
+  def initialize(boss_input)
+    @boss_input = boss_input
   end
 
   def spell_sequences(max_cost, prev_spells = [], &block)
@@ -421,12 +425,12 @@ class WizardSimulator
     end
   end
 
-  def player_wins?(boss_input, spells, hard_mode: false, verbose: false)
-    state = CombatState.new(Player.new(hard_mode: hard_mode, verbose: verbose), Boss.parse(boss_input))
+  def player_wins?(spells, hard_mode: false, verbose: false)
+    state = CombatState.new(Player.new(hard_mode: hard_mode, verbose: verbose), Boss.parse(@boss_input))
     state.player_wins?(spells)
   end
 
-  def cheapest_winning_spell_sequence(max_cost, boss_input, hard_mode = false)
+  def cheapest_winning_spell_sequence(max_cost: 500, hard_mode: false)
     winning_sequences = []
     i = 0
     last = nil
@@ -434,9 +438,9 @@ class WizardSimulator
     spell_sequences(max_cost) do |spells|
       i += 1
       if i % 100_000 == 0
-        puts "Trying (cost = #{spell_sequence_cost(spells)}): #{spells.join(" ")}"
+        puts "Trying (cost = #{Player.spell_sequence_cost(spells)}): #{spells.join(" ")}"
       end
-      winning_sequences << spells if player_wins?(boss_input, spells, hard_mode: hard_mode)
+      winning_sequences << spells if player_wins?(spells, hard_mode: hard_mode)
       last = spells
     end
 
@@ -444,33 +448,31 @@ class WizardSimulator
 
     if winning_sequences.empty?
       puts "*** Last sequence: #{last.join(" ")}"
-      player_wins?(boss_input, last, hard_mode: hard_mode, verbose: true)
+      player_wins?(last, hard_mode: hard_mode, verbose: true)
       return nil
     end
 
-    winning_sequences.min_by(&method(:spell_sequence_cost))
+    winning_sequences.min_by(&Player.method(:spell_sequence_cost))
+  end
+
+  def report_cheapest_winning_spell_sequence(max_cost:, hard_mode: false)
+    spells = cheapest_winning_spell_sequence(max_cost: max_cost, hard_mode: hard_mode)
+    if spells
+      puts "#{Player.spell_sequence_cost(spells)}: #{spells.join(" ")}"
+      player_wins?(spells, verbose: true)
+    else
+      puts "Can't win with only #{max_cost} mana."
+    end
   end
 end
 
 if defined? DATA
-  input = DATA.read
-
-  puts
-  puts "** Cheapest winning spell sequence:"
+  sim = WizardSimulator.new(DATA.read)
+  sim.report_cheapest_winning_spell_sequence(max_cost: 900)
 
   # This is an upper bound, but not the correct answer for part 2:
   # 1242: magic_missile shield recharge poison shield recharge poison magic_missile magic_missile magic_missile
-  max_cost = 1241
-  hard_mode = true
-
-  sim = WizardSimulator.new
-  spells = sim.cheapest_winning_spell_sequence(max_cost, input, hard_mode)
-  if spells
-    puts "#{sim.spell_sequence_cost(spells)}: #{spells.join(" ")}"
-    sim.player_wins?(input, spells, verbose: true, hard_mode: hard_mode)
-  else
-    puts "Can't win with only #{max_cost} mana."
-  end
+  sim.report_cheapest_winning_spell_sequence(max_cost: 1241, hard_mode: true)
 end
 
 __END__
