@@ -176,17 +176,16 @@ class Boss < Combatant
 end
 
 class Player < Combatant
-  def initialize(hp: 50, mana: 500, boss: nil, verbose: false, hard_mode: false)
+  def initialize(hp: 50, mana: 500, verbose: false, hard_mode: false)
     @hp = hp
     @mana = mana
     @armor = 0
-    @boss = boss
     @verbose = verbose
     @hard_mode = hard_mode
     @effects = []
   end
 
-  attr_accessor :armor, :mana, :boss, :hard_mode
+  attr_accessor :armor, :mana, :state, :hard_mode
 
   def to_s
     "Player has #{@hp} hit point#{@hp == 1 ? "" : "s"}, #{@armor} armor, #{@mana} mana"
@@ -247,25 +246,25 @@ class Player < Combatant
 
   def magic_missile
     report("dealing 4 damage.")
-    @boss.take_damage!(4)
+    @state.boss.take_damage!(4)
   end
 
   def drain
     report("dealing 2 damage, and healing 2 hit points.")
-    @boss.take_damage!(2)
+    @state.boss.take_damage!(2)
     @hp += 2
   end
 
   def shield
-    @effects << Shield.new(self)
+    @effects << Shield.new(@state)
   end
 
   def poison
-    @effects << Poison.new(self)
+    @effects << Poison.new(@state)
   end
 
   def recharge
-    @effects << Recharge.new(self)
+    @effects << Recharge.new(@state)
   end
 
   def remove_effect!(effect)
@@ -274,8 +273,8 @@ class Player < Combatant
 end
 
 class Effect
-  def initialize(player)
-    @player = player
+  def initialize(state)
+    @state = state
     @timer = duration
     start
   end
@@ -293,11 +292,11 @@ class Effect
   def tick
     magic
     @timer -= 1
-    @player.report("#{name}'s timer is now #{@timer}.")
+    @state.report("#{name}'s timer is now #{@timer}.")
     if @timer == 0
       expire
-      @player.report("#{name} wears off.")
-      @player.remove_effect!(self)
+      @state.report("#{name} wears off.")
+      @state.player.remove_effect!(self)
     end
   end
 
@@ -311,12 +310,12 @@ class Shield < Effect
   end
 
   def start
-    @player.report("armor is increased by 7.")
-    @player.armor += 7
+    @state.report("armor is increased by 7.")
+    @state.player.armor += 7
   end
 
   def expire
-    @player.armor -= 7
+    @state.player.armor -= 7
   end
 end
 
@@ -326,8 +325,8 @@ class Poison < Effect
   end
 
   def magic
-    @player.report("Poison deals 3 damage.")
-    @player.boss.take_damage!(3)
+    @state.report("Poison deals 3 damage.")
+    @state.boss.take_damage!(3)
   end
 end
 
@@ -337,15 +336,15 @@ class Recharge < Effect
   end
 
   def magic
-    @player.report("Recharge provides 101 mana.")
-    @player.mana += 101
+    @state.report("Recharge provides 101 mana.")
+    @state.player.mana += 101
   end
 end
 
 class CombatState
-  def initialize(player, boss)
-    @player, @boss = player, boss
-    @player.boss = boss
+  def initialize(player, boss, hard_mode: false)
+    @player, @boss, @hard_mode = player, boss, hard_mode
+    @player.state = self
   end
 
   attr_accessor :player, :boss
@@ -357,7 +356,7 @@ class CombatState
     spells.each do |spell|
       report('-- Player turn --')
 
-      if @player.hard_mode
+      if @hard_mode
         report("HARD MODE: Player loses 1 hit point!")
         @player.take_damage!(1)
       end
@@ -426,7 +425,7 @@ class WizardSimulator
   end
 
   def player_wins?(spells, hard_mode: false, verbose: false)
-    state = CombatState.new(Player.new(hard_mode: hard_mode, verbose: verbose), Boss.parse(@boss_input))
+    state = CombatState.new(Player.new(verbose: verbose), Boss.parse(@boss_input), hard_mode: hard_mode)
     state.player_wins?(spells)
   end
 

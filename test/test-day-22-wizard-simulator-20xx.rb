@@ -15,6 +15,7 @@ class TestDay22WizardSimulator20xx < Minitest::Test
     assert_equal 173+53, Player.spell_sequence_cost(spells)
     state = CombatState.new(Player.new(hp: 10, mana: 250), Boss.new(hp: 13, damage: 8))
     assert state.player_wins?(spells)
+    # TODO: test verbose output
   end
 
   def test_example2
@@ -25,6 +26,7 @@ class TestDay22WizardSimulator20xx < Minitest::Test
     assert_equal 229+113+73+173+53, Player.spell_sequence_cost(spells)
     state = CombatState.new(Player.new(hp: 10, mana: 250), Boss.new(hp: 14, damage: 8))
     assert state.player_wins?(spells)
+    # TODO: test verbose output
   end
 
   def test_cheapest_winning_spell_sequence
