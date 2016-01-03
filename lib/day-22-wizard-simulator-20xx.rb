@@ -142,7 +142,17 @@ fight?
 
 require_relative 'util'
 
-class Boss
+class BossDead < Exception; end
+class PlayerDead < Exception; end
+
+class Combatant
+  def take_damage!(damage)
+    @hp -= damage
+    die if @hp <= 0
+  end
+end
+
+class Boss < Combatant
   def self.parse(input)
     input =~ /^Hit Points: (\d+)\nDamage: (\d+)$/
     new(hp: $1.to_i, damage: $2.to_i)
@@ -155,16 +165,16 @@ class Boss
 
   attr_reader :hp, :damage
 
-  def take_damage!(damage)
-    @hp -= damage
-  end
-
   def to_s
     "Boss has #{@hp} hit points"
   end
+
+  def die
+    raise BossDead
+  end
 end
 
-class Player
+class Player < Combatant
   def initialize(hp: 50, mana: 500, boss: nil, verbose: false, hard_mode: false)
     @hp = hp
     @mana = mana
@@ -183,6 +193,10 @@ class Player
 
   def report(str)
     puts str if @verbose
+  end
+
+  def die
+    raise PlayerDead
   end
 
   SPELL_COSTS = {
@@ -260,53 +274,33 @@ class Player
 
       if @hard_mode
         report("HARD MODE: Player loses 1 hit point!")
-        @hp -= 1
-        if @hp <= 0
-          report("** Player has died. :(")
-          return false
-        end
+        take_damage!(1)
       end
 
       tick
-
-      # TODO: put this in Boss and raise exception or something?
-      if @boss.hp <= 0
-        report("This kills the boss, and the player wins.")
-        return true
-      end
 
       unless can_cast_spell?(spell)
         return false
       end
       cast_spell(spell)
 
-      # TODO: put this in Boss and raise exception or something?
-      if @boss.hp <= 0
-        report("This kills the boss, and the player wins.")
-        return true
-      end
-
       report("\n-- Boss turn --")
       tick
 
-      # TODO: put this in Boss and raise exception or something?
-      if @boss.hp <= 0
-        report("This kills the boss, and the player wins.")
-        return true
-      end
-
       damage = [1, @boss.damage - @armor].max
       report("Boss attacks for #{@boss.damage} - #{@armor} = #{damage} damage!")
-      @hp -= damage
-      if @hp <= 0
-        report("** Player has died. :(")
-        return false 
-      end
+      take_damage!(damage)
       report("")
     end
 
     report("** No more spells to cast!")
-    return false
+    false
+  rescue BossDead
+    report("This kills the boss, and the player wins.")
+    true
+  rescue PlayerDead
+    report("** Player has died. :(")
+    false
   end
 
   def tick
