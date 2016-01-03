@@ -165,7 +165,7 @@ class Boss
 end
 
 class Player
-  def initialize(hp: 50, mana: 500, boss:, verbose: false, hard_mode: false)
+  def initialize(hp: 50, mana: 500, boss: nil, verbose: false, hard_mode: false)
     @hp = hp
     @mana = mana
     @armor = 0
@@ -442,19 +442,21 @@ class Recharge < Effect
   end
 end
 
+class CombatState
+  def initialize(player, boss)
+    @player, @boss = player, boss
+    @player.boss = boss
+  end
+
+  attr_accessor :player, :boss
+
+  def player_wins?(spells)
+    player.wins?(spells)
+  end
+end
+
 if defined? DATA
   input = DATA.read
-
-=begin
-  puts "** First example:"
-  p1 = Player.new(hp: 10, mana: 250, boss: Boss.new(hp: 13, damage: 8), verbose: true)
-  p1.wins?(%i(poison magic_missile))
-
-  puts
-  puts "** Second example:"
-  p2 = Player.new(hp: 10, mana: 250, boss: Boss.new(hp: 14, damage: 8), verbose: true)
-  p2.wins?(%i(recharge shield drain poison magic_missile))
-=end
 
   puts
   puts "** Cheapest winning spell sequence:"
@@ -467,8 +469,8 @@ if defined? DATA
   spells = Player.cheapest_winning_spell_sequence(max_cost, input, hard_mode)
   if spells
     puts "#{Player.spell_sequence_cost(spells)}: #{spells.join(" ")}"
-    player = Player.new(boss: Boss.parse(input), verbose: true, hard_mode: hard_mode)
-    player.wins?(spells)
+    state = CombatState.new(Player.new(verbose: true, hard_mode: hard_mode), Boss.parse(input))
+    state.player_wins?(spells)
   else
     puts "Can't win with only #{max_cost} mana."
   end
