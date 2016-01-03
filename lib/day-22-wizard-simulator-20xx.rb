@@ -186,7 +186,7 @@ class Player < Combatant
     @effects = []
   end
 
-  attr_accessor :armor, :mana, :boss
+  attr_accessor :armor, :mana, :boss, :hard_mode
 
   def to_s
     "Player has #{@hp} hit point#{@hp == 1 ? "" : "s"}, #{@armor} armor, #{@mana} mana"
@@ -207,44 +207,6 @@ class Player < Combatant
     poison: 173,
     recharge: 229
   }
-
-  # TODO: do combat non-mutationally: given a combat state and a spell, return the next combat state.
-  # Then we can do DFS with pruning for losing states.
-
-  def wins?(spells)
-    spells.each do |spell|
-      report('-- Player turn --')
-
-      if @hard_mode
-        report("HARD MODE: Player loses 1 hit point!")
-        take_damage!(1)
-      end
-
-      tick
-
-      cast_spell(spell)
-
-      report("\n-- Boss turn --")
-      tick
-
-      damage = [1, @boss.damage - @armor].max
-      report("Boss attacks for #{@boss.damage} - #{@armor} = #{damage} damage!")
-      take_damage!(damage)
-      report("")
-    end
-
-    report("** No more spells to cast!")
-    false
-  rescue BossDead
-    report("This kills the boss, and the player wins.")
-    true
-  rescue PlayerDead
-    report("** Player has died. :(")
-    false
-  rescue PlayerLost => e
-    report(e.message)
-    false
-  end
 
   def tick
     report("- #{self}")
@@ -384,8 +346,46 @@ class CombatState
 
   attr_accessor :player, :boss
 
+  # TODO: do combat non-mutationally: given a combat state and a spell, return the next combat state.
+  # Then we can do DFS with pruning for losing states.
+
   def player_wins?(spells)
-    player.wins?(spells)
+    spells.each do |spell|
+      report('-- Player turn --')
+
+      if @player.hard_mode
+        report("HARD MODE: Player loses 1 hit point!")
+        @player.take_damage!(1)
+      end
+
+      @player.tick
+
+      @player.cast_spell(spell)
+
+      report("\n-- Boss turn --")
+      @player.tick
+
+      damage = [1, @boss.damage - @player.armor].max
+      report("Boss attacks for #{@boss.damage} - #{@player.armor} = #{damage} damage!")
+      @player.take_damage!(damage)
+      report("")
+    end
+
+    report("** No more spells to cast!")
+    false
+  rescue BossDead
+    report("This kills the boss, and the player wins.")
+    true
+  rescue PlayerDead
+    report("** Player has died. :(")
+    false
+  rescue PlayerLost => e
+    report(e.message)
+    false
+  end
+
+  def report(str)
+    @player.report(str)
   end
 end
 
