@@ -207,64 +207,6 @@ class Player < Combatant
     recharge: 229
   }
 
-  def self.spell_sequence_cost(spells)
-    spells.sum { |spell| SPELL_COSTS[spell] }
-  end
-
-  def self.spell_sequences(max_cost, prev_spells = [], &block)
-    SPELL_COSTS.each do |spell, cost|
-      next if cost > max_cost
-
-      next if prev_spells.length > 9 # just a hunch that it doesn't need to be longer than this...
-
-      if spell.in?(prev_spells)
-        case spell
-        when :shield, :poison
-          duration = 6
-        when :recharge
-          duration = 5
-        else
-          duration = nil
-        end
-        if duration
-          # Spell effects happen twice per round, and you can cast them on the round they finish.
-          next if spell.in?(prev_spells.last((duration-1)/2))
-        end
-      end
-
-      spells = [*prev_spells, spell]
-      yield spells
-      spell_sequences(max_cost - cost, spells, &block)
-    end
-  end
-
-  def self.cheapest_winning_spell_sequence(max_cost, boss_input, hard_mode = false)
-    winning_sequences = []
-    i = 0
-    last = nil
-
-    spell_sequences(max_cost) do |spells|
-      i += 1
-      if i % 100_000 == 0
-        puts "Trying (cost = #{spell_sequence_cost(spells)}): #{spells.join(" ")}"
-      end
-      player = new(boss: Boss.parse(boss_input), hard_mode: hard_mode)
-      winning_sequences << spells if player.wins?(spells)
-      last = spells
-    end
-
-    puts "** Generated #{i} sequences."
-
-    if winning_sequences.empty?
-      puts "*** Last sequence: #{last.join(" ")}"
-      player = new(boss: Boss.parse(boss_input), hard_mode: hard_mode, verbose: true)
-      player.wins?(last)
-      return nil
-    end
-
-    winning_sequences.min_by(&method(:spell_sequence_cost))
-  end
-
   # TODO: do combat non-mutationally: given a combat state and a spell, return the next combat state.
   # Then we can do DFS with pruning for losing states.
 
@@ -449,6 +391,66 @@ class CombatState
   end
 end
 
+class WizardSimulator
+  def spell_sequence_cost(spells)
+    spells.sum { |spell| Player::SPELL_COSTS[spell] }
+  end
+
+  def spell_sequences(max_cost, prev_spells = [], &block)
+    Player::SPELL_COSTS.each do |spell, cost|
+      next if cost > max_cost
+
+      next if prev_spells.length > 9 # just a hunch that it doesn't need to be longer than this...
+
+      if spell.in?(prev_spells)
+        case spell
+        when :shield, :poison
+          duration = 6
+        when :recharge
+          duration = 5
+        else
+          duration = nil
+        end
+        if duration
+          # Spell effects happen twice per round, and you can cast them on the round they finish.
+          next if spell.in?(prev_spells.last((duration-1)/2))
+        end
+      end
+
+      spells = [*prev_spells, spell]
+      yield spells
+      spell_sequences(max_cost - cost, spells, &block)
+    end
+  end
+
+  def cheapest_winning_spell_sequence(max_cost, boss_input, hard_mode = false)
+    winning_sequences = []
+    i = 0
+    last = nil
+
+    spell_sequences(max_cost) do |spells|
+      i += 1
+      if i % 100_000 == 0
+        puts "Trying (cost = #{spell_sequence_cost(spells)}): #{spells.join(" ")}"
+      end
+      state = CombatState.new(Player.new(hard_mode: hard_mode), Boss.parse(boss_input))
+      winning_sequences << spells if state.player_wins?(spells)
+      last = spells
+    end
+
+    puts "** Generated #{i} sequences."
+
+    if winning_sequences.empty?
+      puts "*** Last sequence: #{last.join(" ")}"
+      state = CombatState.new(Player.new(hard_mode: hard_mode, verbose: true), Boss.parse(boss_input))
+      state.player_wins?(last)
+      return nil
+    end
+
+    winning_sequences.min_by(&method(:spell_sequence_cost))
+  end
+end
+
 if defined? DATA
   input = DATA.read
 
@@ -460,9 +462,10 @@ if defined? DATA
   max_cost = 1241
   hard_mode = true
 
-  spells = Player.cheapest_winning_spell_sequence(max_cost, input, hard_mode)
+  sim = WizardSimulator.new
+  spells = sim.cheapest_winning_spell_sequence(max_cost, input, hard_mode)
   if spells
-    puts "#{Player.spell_sequence_cost(spells)}: #{spells.join(" ")}"
+    puts "#{sim.spell_sequence_cost(spells)}: #{spells.join(" ")}"
     state = CombatState.new(Player.new(verbose: true, hard_mode: hard_mode), Boss.parse(input))
     state.player_wins?(spells)
   else
