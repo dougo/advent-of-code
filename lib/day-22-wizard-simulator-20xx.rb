@@ -144,6 +144,7 @@ require_relative 'util'
 
 class BossDead < Exception; end
 class PlayerDead < Exception; end
+class PlayerLost < Exception; end
 
 class Combatant
   def take_damage!(damage)
@@ -221,9 +222,6 @@ class Player < Combatant
 
       tick
 
-      unless can_cast_spell?(spell)
-        return false
-      end
       cast_spell(spell)
 
       report("\n-- Boss turn --")
@@ -242,6 +240,9 @@ class Player < Combatant
     true
   rescue PlayerDead
     report("** Player has died. :(")
+    false
+  rescue PlayerLost => e
+    report(e.message)
     false
   end
 
@@ -262,23 +263,20 @@ class Player < Combatant
     end
   end
 
-  def can_cast_spell?(spell)
+  def cast_spell(spell)
     cl = spell_class(spell)
     if cl && @effects.find { |effect| effect.is_a? cl }
       # This should have been weeded out by spell_sequences...
       raise "Can't cast #{spell}, a #{cl} effect already exists."
     end
-    unless @mana >= SPELL_COSTS[spell]
-      report("** Player does not have enough mana to cast #{spell}.")
-      return false
-    end
-    true
-  end
 
-  def cast_spell(spell)
-    @mana -= SPELL_COSTS[spell]
-    report("Player casts #{spell}.")
-    send(spell)
+    if @mana >= SPELL_COSTS[spell]
+      @mana -= SPELL_COSTS[spell]
+      report("Player casts #{spell}.")
+      send(spell)
+    else
+      raise PlayerLost, "** Player does not have enough mana to cast #{spell}."
+    end
   end
 
   def magic_missile
