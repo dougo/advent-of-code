@@ -225,7 +225,6 @@ class Player < Combatant
   def cast_spell(spell)
     cl = spell_class(spell)
     if cl && @state.effects.find { |effect| effect.is_a? cl }
-      # This should have been weeded out by spell_sequences...
       raise CannotCast, "Can't cast #{spell}, a #{cl} effect already exists."
     end
 
@@ -443,7 +442,7 @@ end
 if defined? DATA
   boss = Boss.parse(DATA.read)
   sim = WizardSimulator.new(boss)
-  sim.report_cheapest_winning_spell_sequence(max_cost: 900)
+  sim.report_cheapest_winning_spell_sequence(max_cost: 1000)
 
   # This is an upper bound, but not the correct answer for part 2:
   # 1242: magic_missile shield recharge poison shield recharge poison magic_missile magic_missile magic_missile
