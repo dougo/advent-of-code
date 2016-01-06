@@ -365,20 +365,10 @@ class CombatState
     self
   end
 
-  def player_wins?(spells)
+  def simulate!(spells)
     spells.each &method(:next!)
 
     report("** No more spells to cast!")
-    false
-  rescue BossDead
-    report("This kills the boss, and the player wins.")
-    true
-  rescue PlayerDead
-    report("** Player has died. :(")
-    false
-  rescue PlayerLost => e
-    report(e.message)
-    false
   end
 
   def report(str)
@@ -420,9 +410,10 @@ class WizardSimulator
     end
   end
 
-  def player_wins?(spells, hard_mode: false, verbose: false)
-    state = CombatState.new(Player.new, @boss.clone, hard_mode: hard_mode, verbose: verbose)
-    state.player_wins?(spells)
+  def simulate(spells, hard_mode: false)
+    CombatState.new(Player.new, @boss.clone, hard_mode: hard_mode, verbose: true).simulate!(spells)
+  rescue BossDead
+    puts "This kills the boss, and the player wins."
   end
 
   def cheapest_winning_spell_sequence(max_cost: 500, hard_mode: false)
@@ -441,7 +432,7 @@ class WizardSimulator
   def report_cheapest_winning_spell_sequence(max_cost:, hard_mode: false)
     spells = cheapest_winning_spell_sequence(max_cost: max_cost, hard_mode: hard_mode)
     if spells
-      player_wins?(spells, verbose: true)
+      simulate(spells)
       puts "\n*** #{Player.spell_sequence_cost(spells)}: #{spells.join(" ")}"
     else
       puts "Can't win with only #{max_cost} mana."
