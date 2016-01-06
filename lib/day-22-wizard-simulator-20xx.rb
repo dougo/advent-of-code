@@ -145,6 +145,7 @@ require_relative 'util'
 class BossDead < Exception; end
 class PlayerDead < Exception; end
 class PlayerLost < Exception; end
+class CannotCast < Exception; end
 
 class Combatant
   attr_reader :hp
@@ -225,7 +226,7 @@ class Player < Combatant
     cl = spell_class(spell)
     if cl && @state.effects.find { |effect| effect.is_a? cl }
       # This should have been weeded out by spell_sequences...
-      raise "Can't cast #{spell}, a #{cl} effect already exists."
+      raise CannotCast, "Can't cast #{spell}, a #{cl} effect already exists."
     end
 
     if @mana >= SPELL_COSTS[spell]
@@ -404,30 +405,18 @@ class WizardSimulator
     @boss = boss
   end
 
-  def spell_sequences(max_cost, prev_spells = [], &block)
+  def winning_spell_sequences_under(max_cost, state, prev_spells = [], &block)
     Player::SPELL_COSTS.each do |spell, cost|
       next if cost > max_cost
 
-      next if prev_spells.length > 9 # just a hunch that it doesn't need to be longer than this...
-
-      if spell.in?(prev_spells)
-        case spell
-        when :shield, :poison
-          duration = 6
-        when :recharge
-          duration = 5
-        else
-          duration = nil
-        end
-        if duration
-          # Spell effects happen twice per round, and you can cast them on the round they finish.
-          next if spell.in?(prev_spells.last((duration-1)/2))
-        end
-      end
-
       spells = [*prev_spells, spell]
-      yield spells
-      spell_sequences(max_cost - cost, spells, &block)
+      begin
+        winning_spell_sequences_under(max_cost - cost, state.next(spell), spells, &block)
+      rescue BossDead
+        yield spells
+      rescue PlayerDead, PlayerLost, CannotCast
+        next
+      end
     end
   end
 
@@ -438,27 +427,13 @@ class WizardSimulator
 
   def cheapest_winning_spell_sequence(max_cost: 500, hard_mode: false)
     winning_sequences = []
-    i = 0
-    last = nil
 
-    spell_sequences(max_cost) do |spells|
-      i += 1
-      if i % 100_000 == 0
-        puts "Trying (cost = #{Player.spell_sequence_cost(spells)}): #{spells.join(" ")}"
-      end
-      winning_sequences << spells if player_wins?(spells, hard_mode: hard_mode)
-      last = spells
+    state = CombatState.new(Player.new, @boss.clone, hard_mode: hard_mode)
+    winning_spell_sequences_under(max_cost, state) do |spells|
+      winning_sequences << spells
     end
 
-    # puts "** Generated #{i} sequences."
-
-    if winning_sequences.empty?
-      if last
-        puts "*** Last sequence: #{last.join(" ")}"
-        player_wins?(last, hard_mode: hard_mode, verbose: true)
-      end
-      return nil
-    end
+    return nil if winning_sequences.empty?
 
     winning_sequences.min_by(&Player.method(:spell_sequence_cost))
   end
@@ -466,8 +441,8 @@ class WizardSimulator
   def report_cheapest_winning_spell_sequence(max_cost:, hard_mode: false)
     spells = cheapest_winning_spell_sequence(max_cost: max_cost, hard_mode: hard_mode)
     if spells
-      puts "#{Player.spell_sequence_cost(spells)}: #{spells.join(" ")}"
       player_wins?(spells, verbose: true)
+      puts "\n*** #{Player.spell_sequence_cost(spells)}: #{spells.join(" ")}"
     else
       puts "Can't win with only #{max_cost} mana."
     end
