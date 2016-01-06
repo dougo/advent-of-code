@@ -180,7 +180,6 @@ class Player < Combatant
     @hp = hp
     @mana = mana
     @armor = 0
-    @effects = []
   end
 
   attr_accessor :armor, :mana, :state
@@ -209,12 +208,6 @@ class Player < Combatant
     spells.sum { |spell| SPELL_COSTS[spell] }
   end
 
-  def tick
-    report("- #{self}")
-    report("- #{@boss}")
-    @effects.dup.each &:tick
-  end
-
   def spell_class(spell)
     case spell
     when :shield
@@ -228,7 +221,7 @@ class Player < Combatant
 
   def cast_spell(spell)
     cl = spell_class(spell)
-    if cl && @effects.find { |effect| effect.is_a? cl }
+    if cl && @state.effects.find { |effect| effect.is_a? cl }
       # This should have been weeded out by spell_sequences...
       raise "Can't cast #{spell}, a #{cl} effect already exists."
     end
@@ -254,19 +247,15 @@ class Player < Combatant
   end
 
   def shield
-    @effects << Shield.new(@state)
+    @state.add_effect!(Shield)
   end
 
   def poison
-    @effects << Poison.new(@state)
+    @state.add_effect!(Poison)
   end
 
   def recharge
-    @effects << Recharge.new(@state)
-  end
-
-  def remove_effect!(effect)
-    @effects.delete(effect)
+    @state.add_effect!(Recharge)
   end
 end
 
@@ -294,7 +283,7 @@ class Effect
     if @timer == 0
       expire
       @state.report("#{name} wears off.")
-      @state.player.remove_effect!(self)
+      @state.remove_effect!(self)
     end
   end
 
@@ -343,9 +332,10 @@ class CombatState
   def initialize(player, boss, verbose: false, hard_mode: false)
     @player, @boss, @verbose, @hard_mode = player, boss, verbose, hard_mode
     @player.state = self
+    @effects = []
   end
 
-  attr_accessor :player, :boss
+  attr_accessor :player, :boss, :effects
 
   # TODO: do combat non-mutationally: given a combat state and a spell, return the next combat state.
   # Then we can do DFS with pruning for losing states.
@@ -359,12 +349,12 @@ class CombatState
         @player.take_damage!(1)
       end
 
-      @player.tick
+      tick
 
       @player.cast_spell(spell)
 
       report("\n-- Boss turn --")
-      @player.tick
+      tick
 
       damage = [1, @boss.damage - @player.armor].max
       report("Boss attacks for #{@boss.damage} - #{@player.armor} = #{damage} damage!")
@@ -387,6 +377,20 @@ class CombatState
 
   def report(str)
     puts str if @verbose
+  end
+
+  def tick
+    report("- #{@player}")
+    report("- #{@boss}")
+    @effects.dup.each &:tick
+  end
+
+  def add_effect!(effect_class)
+    @effects << effect_class.new(self)
+  end
+
+  def remove_effect!(effect)
+    @effects.delete(effect)
   end
 end
 
