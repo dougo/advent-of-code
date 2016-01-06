@@ -4,6 +4,27 @@ require 'day-22-wizard-simulator-20xx'
 class TestDay22WizardSimulator20xx < Minitest::Test
   # TODO: Boss.parse
 
+  def test_shield
+    state = CombatState.new(Player.new(mana: 500), Boss.new(hp: 100))
+
+    # Turns 1 and 2:
+    state = state.next(:shield)
+    assert_equal 387, state.player.mana
+    assert_equal 7, state.player.armor
+
+    # Turns 3 and 4:
+    state = state.next(:magic_missile)
+    assert_equal 7, state.player.armor
+    
+    # Turns 5 and 6:
+    state = state.next(:magic_missile)
+    assert_equal 7, state.player.armor
+
+    # Turns 7 and 8, shield has expired:
+    state = state.next(:magic_missile)
+    assert_equal 0, state.player.armor
+  end
+
   def test_lose
     state = CombatState.new(Player.new(mana: 10), Boss.new(hp: 13, damage: 8))
     refute state.player_wins?(%i())

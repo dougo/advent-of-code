@@ -247,6 +247,8 @@ class Player < Combatant
   end
 
   def shield
+    @state.report("armor is increased by 7.")
+    @state.player.armor += 7
     @state.add_effect!(Shield)
   end
 
@@ -260,34 +262,29 @@ class Player < Combatant
 end
 
 class Effect
-  def initialize(state)
-    @state = state
+  def initialize
     @timer = duration
-    start
   end
 
   def name
     self.class.name
   end
 
-  def start
+  def magic(state)
   end
 
-  def magic
-  end
-
-  def tick
-    magic
+  def tick(state)
+    magic(state)
     @timer -= 1
-    @state.report("#{name}'s timer is now #{@timer}.")
+    state.report("#{name}'s timer is now #{@timer}.")
     if @timer == 0
-      expire
-      @state.report("#{name} wears off.")
-      @state.remove_effect!(self)
+      expire(state)
+      state.report("#{name} wears off.")
+      state.remove_effect!(self)
     end
   end
 
-  def expire
+  def expire(state)
   end
 end
 
@@ -296,13 +293,8 @@ class Shield < Effect
     6
   end
 
-  def start
-    @state.report("armor is increased by 7.")
-    @state.player.armor += 7
-  end
-
-  def expire
-    @state.player.armor -= 7
+  def expire(state)
+    state.player.armor -= 7
   end
 end
 
@@ -311,9 +303,9 @@ class Poison < Effect
     6
   end
 
-  def magic
-    @state.report("Poison deals 3 damage.")
-    @state.boss.take_damage!(3)
+  def magic(state)
+    state.report("Poison deals 3 damage.")
+    state.boss.take_damage!(3)
   end
 end
 
@@ -322,9 +314,9 @@ class Recharge < Effect
     5
   end
 
-  def magic
-    @state.report("Recharge provides 101 mana.")
-    @state.player.mana += 101
+  def magic(state)
+    state.report("Recharge provides 101 mana.")
+    state.player.mana += 101
   end
 end
 
@@ -337,12 +329,9 @@ class CombatState
 
   attr_accessor :player, :boss, :effects
 
-  # TODO: do combat non-mutationally: given a combat state and a spell, return the next combat state.
-  # Then we can do DFS with pruning for losing states.
-
   def clone
     state = self.class.new(@player.clone, @boss.clone, verbose: @verbose, hard_mode: @hard_mode)
-    state.effects = effects.map &:clone # TODO: these will still point to the old state...
+    state.effects = effects.map &:clone
     state
   end
 
@@ -396,11 +385,11 @@ class CombatState
   def tick
     report("- #{@player}")
     report("- #{@boss}")
-    @effects.dup.each &:tick
+    @effects.dup.each { |e| e.tick(self) }
   end
 
   def add_effect!(effect_class)
-    @effects << effect_class.new(self)
+    @effects << effect_class.new
   end
 
   def remove_effect!(effect)
