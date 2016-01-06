@@ -6,7 +6,11 @@ class TestDay22WizardSimulator20xx < Minitest::Test
     @subject = CombatState.new(Player.new, Boss.new(hp: 100))
   end
 
-  # TODO: Boss.parse
+  def test_boss_parse
+    boss = Boss.parse("Hit Points: 13\nDamage: 8")
+    assert_equal 13, boss.hp
+    assert_equal 8, boss.damage
+  end
 
   # Magic Missile costs 53 mana. It instantly does 4 damage.
   def test_magic_missile
@@ -112,7 +116,15 @@ class TestDay22WizardSimulator20xx < Minitest::Test
   end
 
   def test_cheapest_winning_spell_sequence
-    # TODO
+    sim = WizardSimulator.new(Boss.new(hp: 1, damage: 0))
+    assert_nil sim.cheapest_winning_spell_sequence(max_cost: 52)
+    assert_equal %i(magic_missile), sim.cheapest_winning_spell_sequence
+
+    sim = WizardSimulator.new(Boss.new(hp: 5, damage: 0))
+    assert_equal %i(magic_missile magic_missile), sim.cheapest_winning_spell_sequence
+
+    sim = WizardSimulator.new(Boss.new(hp: 5, damage: 50))
+    assert_equal %i(drain magic_missile), sim.cheapest_winning_spell_sequence
   end
 
   # TODO: hard_mode

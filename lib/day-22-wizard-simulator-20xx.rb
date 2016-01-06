@@ -249,8 +249,8 @@ class Player < Combatant
   end
 
   def shield
-    @state.report("armor is increased by 7.")
-    @state.player.armor += 7
+    report("armor is increased by 7.")
+    @armor += 7
     @state.add_effect!(Shield)
   end
 
@@ -400,8 +400,8 @@ class CombatState
 end
 
 class WizardSimulator
-  def initialize(boss_input)
-    @boss_input = boss_input
+  def initialize(boss)
+    @boss = boss
   end
 
   def spell_sequences(max_cost, prev_spells = [], &block)
@@ -432,7 +432,7 @@ class WizardSimulator
   end
 
   def player_wins?(spells, hard_mode: false, verbose: false)
-    state = CombatState.new(Player.new, Boss.parse(@boss_input), hard_mode: hard_mode, verbose: verbose)
+    state = CombatState.new(Player.new, @boss.clone, hard_mode: hard_mode, verbose: verbose)
     state.player_wins?(spells)
   end
 
@@ -450,11 +450,13 @@ class WizardSimulator
       last = spells
     end
 
-    puts "** Generated #{i} sequences."
+    # puts "** Generated #{i} sequences."
 
     if winning_sequences.empty?
-      puts "*** Last sequence: #{last.join(" ")}"
-      player_wins?(last, hard_mode: hard_mode, verbose: true)
+      if last
+        puts "*** Last sequence: #{last.join(" ")}"
+        player_wins?(last, hard_mode: hard_mode, verbose: true)
+      end
       return nil
     end
 
@@ -473,7 +475,8 @@ class WizardSimulator
 end
 
 if defined? DATA
-  sim = WizardSimulator.new(DATA.read)
+  boss = Boss.parse(DATA.read)
+  sim = WizardSimulator.new(boss)
   sim.report_cheapest_winning_spell_sequence(max_cost: 900)
 
   # This is an upper bound, but not the correct answer for part 2:
