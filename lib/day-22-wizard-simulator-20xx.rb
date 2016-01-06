@@ -147,6 +147,8 @@ class PlayerDead < Exception; end
 class PlayerLost < Exception; end
 
 class Combatant
+  attr_reader :hp
+
   def take_damage!(damage)
     @hp -= damage
     die if @hp <= 0
