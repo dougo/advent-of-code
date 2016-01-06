@@ -340,27 +340,41 @@ class CombatState
   # TODO: do combat non-mutationally: given a combat state and a spell, return the next combat state.
   # Then we can do DFS with pruning for losing states.
 
-  def player_wins?(spells)
-    spells.each do |spell|
-      report('-- Player turn --')
+  def clone
+    state = self.class.new(@player.clone, @boss.clone, verbose: @verbose, hard_mode: @hard_mode)
+    state.effects = effects.map &:clone # TODO: these will still point to the old state...
+    state
+  end
 
-      if @hard_mode
-        report("HARD MODE: Player loses 1 hit point!")
-        @player.take_damage!(1)
-      end
+  def next(spell)
+    clone.next!(spell)
+  end
 
-      tick
+  def next!(spell)
+    report('-- Player turn --')
 
-      @player.cast_spell(spell)
-
-      report("\n-- Boss turn --")
-      tick
-
-      damage = [1, @boss.damage - @player.armor].max
-      report("Boss attacks for #{@boss.damage} - #{@player.armor} = #{damage} damage!")
-      @player.take_damage!(damage)
-      report("")
+    if @hard_mode
+      report("HARD MODE: Player loses 1 hit point!")
+      @player.take_damage!(1)
     end
+
+    tick
+
+    @player.cast_spell(spell)
+
+    report("\n-- Boss turn --")
+    tick
+
+    damage = [1, @boss.damage - @player.armor].max
+    report("Boss attacks for #{@boss.damage} - #{@player.armor} = #{damage} damage!")
+    @player.take_damage!(damage)
+    report("")
+
+    self
+  end
+
+  def player_wins?(spells)
+    spells.each &method(:next!)
 
     report("** No more spells to cast!")
     false
