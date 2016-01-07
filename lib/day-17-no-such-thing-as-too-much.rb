@@ -29,6 +29,8 @@ and so the answer there would be 3.
 
 =end
 
+require_relative 'util'
+
 class EggnogContainers
   def initialize(input)
     @sizes = input.split.map &:to_i
@@ -36,22 +38,20 @@ class EggnogContainers
 
   attr_reader :sizes
 
-  # TODO: search @sizes.combination(i) for each i
-  def ways_to_fit(eggnog, sizes = @sizes.sort.reverse)
-    return [[]] if eggnog == 0
-    return [] if sizes.empty?
-    size, *rest = sizes
-    ways = ways_to_fit(eggnog, rest)
-    if eggnog >= size
-      ways_to_fit(eggnog - size, rest).map { |sizes| [size, *sizes] } + ways
-    else
-      ways
-    end
+  def ways_to_fit(eggnog)
+    ways_to_fit_by_length(eggnog).reduce(:concat)
   end
 
   def efficient_ways_to_fit(eggnog)
-    ways = ways_to_fit(eggnog).group_by(&:length)
-    ways[ways.keys.min]
+    ways_to_fit_by_length(eggnog).find { |ways| ways.any? }
+  end
+
+  private
+
+  def ways_to_fit_by_length(eggnog)
+    (1..sizes.length).lazy.map do |i|
+      sizes.combination(i).select { |c| c.sum == eggnog }
+    end
   end
 end
 
