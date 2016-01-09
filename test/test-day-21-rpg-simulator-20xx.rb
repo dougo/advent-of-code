@@ -72,15 +72,16 @@ class TestDay21RPGSimulator20XX < Minitest::Test
     assert_equal 6, weapons[2].damage # I had a typo in the table here :(
   end
 
-  # TODO: test_all_equipment_combos
-
   def test_all_players
     chars = Character.all_players
+
+    # 5 weapons, 5 types of armor (plus the no-armor option), zero to two out of 6 rings
+    assert_equal 5*(5+1)*(1+6+(6*5)/2), chars.size
+
     costs = chars.map &:cost
     assert_equal costs.sort, costs, 'should be sorted from cheapest to most expensive'
-    # TODO: test legality of equipment combos?
 
-    cheapest = chars.first
+    cheapest = chars.first # Dagger
     assert_equal 8, cheapest.cost
     assert_equal 4, cheapest.damage
     assert_equal 0, cheapest.armor
@@ -89,6 +90,12 @@ class TestDay21RPGSimulator20XX < Minitest::Test
     assert_equal 356, most_expensive.cost
     assert_equal 11, most_expensive.damage
     assert_equal 8, most_expensive.armor
+
+    chars.each do |char|
+      assert_equal    1,       char.equipment.count { |x| x.in? Equipment::WEAPONS }
+      assert_includes [0,1],   char.equipment.count { |x| x.in? Equipment::ARMOR }
+      assert_includes [0,1,2], char.equipment.count { |x| x.in? Equipment::RINGS }
+    end
   end
 
   def test_cheapest_player_that_defeats
@@ -102,7 +109,13 @@ class TestDay21RPGSimulator20XX < Minitest::Test
   end
 
   def test_most_expensive_player_defeated_by
-    # TODO
+    easy = Character.new(hp: 101, damage: 4)
+    p1 = Character.most_expensive_player_defeated_by(easy)
+    assert_equal 8, p1.cost
+
+    hard = Character.new(hp: 101, damage: 12, armor: 8)
+    p2 = Character.most_expensive_player_defeated_by(hard)
+    assert_equal 356, p2.cost
   end
 end
 
