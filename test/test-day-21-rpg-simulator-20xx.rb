@@ -8,6 +8,18 @@ class TestDay21RPGSimulator20XX < Minitest::Test
     @boss2 = Character.new(hp: 13, damage: 7, armor: 2)
   end
 
+  def test_parse
+    input = <<END
+Hit Points: 12
+Damage: 7
+Armor: 2
+END
+    char = Character.parse(input)
+    assert_equal 12, char.hp
+    assert_equal 7, char.damage
+    assert_equal 2, char.armor
+  end
+
   def test_damage_dealt_to
     # If the attacker has a damage score of 8, and the defender has an armor score of 3, the defender loses 5 hit
     # points.

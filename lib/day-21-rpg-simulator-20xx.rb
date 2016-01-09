@@ -99,6 +99,11 @@ class Equipment
 end
 
 class Character
+  def self.parse(input)
+    input =~ /Hit Points: (\d+)\nDamage: (\d+)\nArmor: (\d+)/
+    new(hp: $1.to_i, damage: $2.to_i, armor: $3.to_i)
+  end
+
   def initialize(hp: 0, damage: 0, armor: 0, equipment: [])
     @hp, @damage, @armor, @equipment = hp, damage, armor, equipment
   end
@@ -158,7 +163,7 @@ class Character
 end
 
 if defined? DATA
-  boss = Character.new(hp: 103, damage: 9, armor: 2)
+  boss = Character.parse(DATA.read)
   p Character.cheapest_player_that_defeats(boss).cost
   p Character.most_expensive_player_defeated_by(boss).cost
 end
