@@ -191,8 +191,8 @@ class Player < Combatant
     "Player has #{@hp} hit point#{@hp == 1 ? "" : "s"}, #{@armor} armor, #{@mana} mana"
   end
 
-  def report(str)
-    @state.report(str)
+  def puts(str)
+    @state.puts(str)
   end
 
   def die
@@ -235,27 +235,27 @@ class Player < Combatant
 
     if @mana >= SPELL_COSTS[spell]
       @mana -= SPELL_COSTS[spell]
-      @state.report_hanging("Player casts #{name}")
+      @state.print("Player casts #{name}")
       send(spell)
-      report(".")
+      puts "."
     else
       raise PlayerLost, "** Player does not have enough mana to cast #{spell}."
     end
   end
 
   def magic_missile
-    @state.report_hanging(", dealing 4 damage")
+    @state.print(", dealing 4 damage")
     @state.boss.take_damage!(4)
   end
 
   def drain
-    @state.report_hanging(", dealing 2 damage, and healing 2 hit points")
+    @state.print(", dealing 2 damage, and healing 2 hit points")
     @state.boss.take_damage!(2)
     @hp += 2
   end
 
   def shield
-    @state.report_hanging(", increasing armor by 7")
+    @state.print(", increasing armor by 7")
     @armor += 7
     @state.add_effect!(Shield)
   end
@@ -284,17 +284,17 @@ class Effect
   def tick(state)
     magic(state)
     @timer -= 1
-    report_timer(state)
+    puts_timer(state)
     if @timer == 0
-      state.report_hanging("#{name} wears off")
+      state.print("#{name} wears off")
       expire(state)
       state.remove_effect!(self)
-      state.report(".")
+      state.puts "."
     end
   end
 
-  def report_timer(state)
-    state.report("; its timer is now #{@timer}.")
+  def puts_timer(state)
+    state.puts "; its timer is now #{@timer}."
   end
 
   def expire(state)
@@ -310,13 +310,13 @@ class Shield < Effect
     1
   end
 
-  def report_timer(state)
-    state.report("Shield's timer is now #{@timer}.")
+  def puts_timer(state)
+    state.puts "Shield's timer is now #{@timer}."
   end
 
   def expire(state)
     state.player.armor -= 7
-    state.report_hanging(", decreasing armor by 7")
+    state.print(", decreasing armor by 7")
   end
 end
 
@@ -330,7 +330,7 @@ class Poison < Effect
   end
 
   def magic(state)
-    state.report_hanging("Poison deals 3 damage")
+    state.print("Poison deals 3 damage")
     state.boss.take_damage!(3)
   end
 end
@@ -345,7 +345,7 @@ class Recharge < Effect
   end
 
   def magic(state)
-    state.report_hanging("Recharge provides 101 mana")
+    state.print("Recharge provides 101 mana")
     state.player.mana += 101
   end
 end
@@ -371,10 +371,10 @@ class CombatState
   end
 
   def next!(spell)
-    report('-- Player turn --')
+    puts '-- Player turn --'
 
     if @hard_mode
-      report("HARD MODE: Player loses 1 hit point!")
+      puts "HARD MODE: Player loses 1 hit point!"
       @player.take_damage!(1)
     end
 
@@ -382,17 +382,17 @@ class CombatState
 
     @player.cast_spell(spell)
 
-    report("\n-- Boss turn --")
+    puts "\n-- Boss turn --"
     tick
 
     damage = [1, @boss.damage - @player.armor].max
     if @player.armor > 0
-      report("Boss attacks for #{@boss.damage} - #{@player.armor} = #{damage} damage!")
+      puts "Boss attacks for #{@boss.damage} - #{@player.armor} = #{damage} damage!"
     else
-      report("Boss attacks for #{@boss.damage} damage!")
+      puts "Boss attacks for #{@boss.damage} damage!"
     end
     @player.take_damage!(damage)
-    report("")
+    puts
 
     self
   end
@@ -400,24 +400,26 @@ class CombatState
   def simulate!(spells)
     spells.each &method(:next!)
 
-    report("** No more spells to cast!")
+    puts("** No more spells to cast!")
   rescue BossDead
-    report ". This kills the boss, and the player wins."
+    puts ". This kills the boss, and the player wins."
     raise
   end
 
-  def report(str)
-    report_hanging(str)
-    report_hanging("\n")
+  def puts(str = nil)
+    print(str) if str
+    print("\n")
   end
 
-  def report_hanging(str)
+  def print(str)
     @output << str
   end
 
   def tick
-    report("- #{@player}")
-    report("- #{@boss}")
+    puts "- #{@player}"
+    puts "- #{@boss}"
+
+    # TODO: maybe just have 3 timers rather than an array of effects with priorities.
     @effects.sort_by(&:priority).each { |e| e.tick(self) }
   end
 
