@@ -222,34 +222,40 @@ class Player < Combatant
     end
   end
 
+  def spell_name(spell)
+    spell == :magic_missile ? 'Magic Missile' : spell.capitalize
+  end
+
   def cast_spell(spell)
     cl = spell_class(spell)
+    name = spell_name(spell)
     if cl && @state.effects.find { |effect| effect.is_a? cl }
-      raise CannotCast, "Can't cast #{spell}, a #{cl} effect already exists."
+      raise CannotCast, "Can't cast #{name}, a #{cl} effect already exists."
     end
 
     if @mana >= SPELL_COSTS[spell]
       @mana -= SPELL_COSTS[spell]
-      report("Player casts #{spell}.")
+      @state.report_hanging("Player casts #{name}")
       send(spell)
+      report(".")
     else
       raise PlayerLost, "** Player does not have enough mana to cast #{spell}."
     end
   end
 
   def magic_missile
-    report("dealing 4 damage.")
+    @state.report_hanging(", dealing 4 damage")
     @state.boss.take_damage!(4)
   end
 
   def drain
-    report("dealing 2 damage, and healing 2 hit points.")
+    @state.report_hanging(", dealing 2 damage, and healing 2 hit points")
     @state.boss.take_damage!(2)
     @hp += 2
   end
 
   def shield
-    report("armor is increased by 7.")
+    @state.report_hanging(", increasing armor by 7")
     @armor += 7
     @state.add_effect!(Shield)
   end
@@ -278,7 +284,7 @@ class Effect
   def tick(state)
     magic(state)
     @timer -= 1
-    state.report("#{name}'s timer is now #{@timer}.")
+    state.report("; its timer is now #{@timer}.")
     if @timer == 0
       expire(state)
       state.report("#{name} wears off.")
@@ -306,7 +312,7 @@ class Poison < Effect
   end
 
   def magic(state)
-    state.report("Poison deals 3 damage.")
+    state.report_hanging("Poison deals 3 damage")
     state.boss.take_damage!(3)
   end
 end
@@ -323,16 +329,17 @@ class Recharge < Effect
 end
 
 class CombatState
-  def initialize(player, boss, verbose: false, hard_mode: false)
-    @player, @boss, @verbose, @hard_mode = player, boss, verbose, hard_mode
+  def initialize(player, boss, hard_mode: false)
+    @player, @boss, @hard_mode = player, boss, hard_mode
     @player.state = self
     @effects = []
+    @output = ''
   end
 
-  attr_accessor :player, :boss, :effects
+  attr_accessor :player, :boss, :effects, :output
 
   def clone
-    state = self.class.new(@player.clone, @boss.clone, verbose: @verbose, hard_mode: @hard_mode)
+    state = self.class.new(@player.clone, @boss.clone, hard_mode: @hard_mode)
     state.effects = effects.map &:clone
     state
   end
@@ -357,7 +364,11 @@ class CombatState
     tick
 
     damage = [1, @boss.damage - @player.armor].max
-    report("Boss attacks for #{@boss.damage} - #{@player.armor} = #{damage} damage!")
+    if @player.armor > 0
+      report("Boss attacks for #{@boss.damage} - #{@player.armor} = #{damage} damage!")
+    else
+      report("Boss attacks for #{@boss.damage} damage!")
+    end
     @player.take_damage!(damage)
     report("")
 
@@ -368,10 +379,18 @@ class CombatState
     spells.each &method(:next!)
 
     report("** No more spells to cast!")
+  rescue BossDead
+    report ". This kills the boss, and the player wins."
+    raise
   end
 
   def report(str)
-    puts str if @verbose
+    report_hanging(str)
+    report_hanging("\n")
+  end
+
+  def report_hanging(str)
+    @output << str
   end
 
   def tick
@@ -410,9 +429,10 @@ class WizardSimulator
   end
 
   def simulate(spells, hard_mode: false)
-    CombatState.new(Player.new, @boss.clone, hard_mode: hard_mode, verbose: true).simulate!(spells)
+    state = CombatState.new(Player.new, @boss.clone, hard_mode: hard_mode)
+    state.simulate!(spells)
   rescue BossDead
-    puts "This kills the boss, and the player wins."
+    puts state.output
   end
 
   def cheapest_winning_spell_sequence(max_cost: 500, hard_mode: false)
@@ -446,6 +466,7 @@ if defined? DATA
 
   # This is an upper bound, but not the correct answer for part 2:
   # 1242: magic_missile shield recharge poison shield recharge poison magic_missile magic_missile magic_missile
+  # TODO: shouldn't need an upper bound!
   sim.report_cheapest_winning_spell_sequence(max_cost: 1241, hard_mode: true)
 end
 
