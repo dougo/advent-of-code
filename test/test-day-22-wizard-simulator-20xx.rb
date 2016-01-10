@@ -112,7 +112,7 @@ class TestDay22WizardSimulator20xx < Minitest::Test
     assert_equal 229+113+73+173+53, Player.spell_sequence_cost(spells)
     state = CombatState.new(Player.new(hp: 10, mana: 250), Boss.new(hp: 14, damage: 8))
     assert_raises(BossDead) { state.simulate!(spells) }
-    # TODO: test verbose output
+    assert_equal expected_output_example2, state.output
   end
 
   def test_cheapest_winning_spell_sequence
@@ -132,6 +132,7 @@ class TestDay22WizardSimulator20xx < Minitest::Test
   private
 
   def expected_output_example1
+    # NOTE: for the boss attack, changed the period to an exclamation point to be consistent with example 2...
     return <<END
 -- Player turn --
 - Player has 10 hit points, 0 armor, 250 mana

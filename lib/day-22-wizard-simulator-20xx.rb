@@ -284,12 +284,17 @@ class Effect
   def tick(state)
     magic(state)
     @timer -= 1
-    state.report("; its timer is now #{@timer}.")
+    report_timer(state)
     if @timer == 0
+      state.report_hanging("#{name} wears off")
       expire(state)
-      state.report("#{name} wears off.")
       state.remove_effect!(self)
+      state.report(".")
     end
+  end
+
+  def report_timer(state)
+    state.report("; its timer is now #{@timer}.")
   end
 
   def expire(state)
@@ -301,14 +306,27 @@ class Shield < Effect
     6
   end
 
+  def priority
+    1
+  end
+
+  def report_timer(state)
+    state.report("Shield's timer is now #{@timer}.")
+  end
+
   def expire(state)
     state.player.armor -= 7
+    state.report_hanging(", decreasing armor by 7")
   end
 end
 
 class Poison < Effect
   def duration
     6
+  end
+
+  def priority
+    2
   end
 
   def magic(state)
@@ -322,8 +340,12 @@ class Recharge < Effect
     5
   end
 
+  def priority
+    3
+  end
+
   def magic(state)
-    state.report("Recharge provides 101 mana.")
+    state.report_hanging("Recharge provides 101 mana")
     state.player.mana += 101
   end
 end
@@ -396,7 +418,7 @@ class CombatState
   def tick
     report("- #{@player}")
     report("- #{@boss}")
-    @effects.dup.each { |e| e.tick(self) }
+    @effects.sort_by(&:priority).each { |e| e.tick(self) }
   end
 
   def add_effect!(effect_class)
