@@ -163,8 +163,7 @@ class Boss < Combatant
   end
 
   def initialize(hp: 0, damage: 0)
-    @hp = hp
-    @damage = damage
+    @hp, @damage = hp, damage
   end
 
   attr_reader :damage
@@ -180,12 +179,11 @@ end
 
 class Player < Combatant
   def initialize(hp: 50, mana: 500)
-    @hp = hp
-    @mana = mana
+    @hp, @mana = hp, mana
     @armor = 0
   end
 
-  attr_accessor :armor, :hp, :mana, :state
+  attr_accessor :hp, :mana, :armor
 
   def to_s
     "Player has #{@hp} hit point#{@hp == 1 ? "" : "s"}, #{@armor} armor, #{@mana} mana"
@@ -197,7 +195,7 @@ class Player < Combatant
 end
 
 class Effect
-  def initialize
+  def initialize(duration)
     @timer = duration
   end
 
@@ -229,14 +227,6 @@ class Effect
 end
 
 class Shield < Effect
-  def duration
-    6
-  end
-
-  def priority
-    1
-  end
-
   def puts_timer(state)
     state.puts "Shield's timer is now #{@timer}."
   end
@@ -248,14 +238,6 @@ class Shield < Effect
 end
 
 class Poison < Effect
-  def duration
-    6
-  end
-
-  def priority
-    2
-  end
-
   def magic(state)
     state.print("Poison deals 3 damage")
     state.boss.take_damage!(3)
@@ -263,14 +245,6 @@ class Poison < Effect
 end
 
 class Recharge < Effect
-  def duration
-    5
-  end
-
-  def priority
-    3
-  end
-
   def magic(state)
     state.print("Recharge provides 101 mana")
     state.player.mana += 101
@@ -278,19 +252,16 @@ class Recharge < Effect
 end
 
 class CombatState
-  def initialize(player, boss, hard_mode: false)
-    @player, @boss, @hard_mode = player, boss, hard_mode
-    @player.state = self
-    @effects = []
+  def initialize(player, boss, effects: {}, hard_mode: false)
+    @player, @boss, @effects, @hard_mode = player, boss, effects, hard_mode
     @output = ''
   end
 
-  attr_accessor :player, :boss, :effects, :output
+  attr_accessor :player, :boss, :output
 
   def clone
-    state = self.class.new(@player.clone, @boss.clone, hard_mode: @hard_mode)
-    state.effects = effects.map &:clone
-    state
+    effects = @effects.map { |k,v| [k, v.clone] }.to_h
+    self.class.new(@player.clone, @boss.clone, effects: effects, hard_mode: @hard_mode)
   end
 
   def next(spell)
@@ -346,8 +317,7 @@ class CombatState
     puts "- #{@player}"
     puts "- #{@boss}"
 
-    # TODO: maybe just have 3 timers rather than an array of effects with priorities.
-    @effects.sort_by(&:priority).each { |e| e.tick(self) }
+    effects.each { |e| e.tick(self) }
   end
 
   SPELL_COSTS = {
@@ -362,26 +332,14 @@ class CombatState
     spells.sum { |spell| SPELL_COSTS[spell] }
   end
 
-  def spell_class(spell)
-    case spell
-    when :shield
-      Shield
-    when :poison
-      Poison
-    when :recharge
-      Recharge
-    end
-  end
-
   def spell_name(spell)
     spell == :magic_missile ? 'Magic Missile' : spell.capitalize
   end
 
   def cast_spell(spell)
-    cl = spell_class(spell)
     name = spell_name(spell)
-    if cl && @effects.find { |effect| effect.is_a? cl }
-      raise CannotCast, "Can't cast #{name}, a #{cl} effect already exists."
+    if @effects[spell]
+      raise CannotCast, "Can't cast #{name}, an effect already exists."
     end
 
     if @player.mana >= SPELL_COSTS[spell]
@@ -408,23 +366,23 @@ class CombatState
   def shield
     print(", increasing armor by 7")
     @player.armor += 7
-    add_effect!(Shield)
+    @effects[:shield] = Shield.new(6)
   end
 
   def poison
-    add_effect!(Poison)
+    @effects[:poison] = Poison.new(6)
   end
 
   def recharge
-    add_effect!(Recharge)
+    @effects[:recharge] = Recharge.new(5)
   end
 
-  def add_effect!(effect_class)
-    @effects << effect_class.new
+  def effects
+    @effects.values_at(:shield, :poison, :recharge).compact
   end
 
   def remove_effect!(effect)
-    @effects.delete(effect)
+    @effects.delete(@effects.key(effect))
   end
 end
 
