@@ -185,87 +185,14 @@ class Player < Combatant
     @armor = 0
   end
 
-  attr_accessor :armor, :mana, :state
+  attr_accessor :armor, :hp, :mana, :state
 
   def to_s
     "Player has #{@hp} hit point#{@hp == 1 ? "" : "s"}, #{@armor} armor, #{@mana} mana"
   end
 
-  def puts(str)
-    @state.puts(str)
-  end
-
   def die
     raise PlayerDead
-  end
-
-  SPELL_COSTS = {
-    magic_missile: 53,
-    drain: 73,
-    shield: 113,
-    poison: 173,
-    recharge: 229
-  }
-
-  def self.spell_sequence_cost(spells)
-    spells.sum { |spell| SPELL_COSTS[spell] }
-  end
-
-  def spell_class(spell)
-    case spell
-    when :shield
-      Shield
-    when :poison
-      Poison
-    when :recharge
-      Recharge
-    end
-  end
-
-  def spell_name(spell)
-    spell == :magic_missile ? 'Magic Missile' : spell.capitalize
-  end
-
-  def cast_spell(spell)
-    cl = spell_class(spell)
-    name = spell_name(spell)
-    if cl && @state.effects.find { |effect| effect.is_a? cl }
-      raise CannotCast, "Can't cast #{name}, a #{cl} effect already exists."
-    end
-
-    if @mana >= SPELL_COSTS[spell]
-      @mana -= SPELL_COSTS[spell]
-      @state.print("Player casts #{name}")
-      send(spell)
-      puts "."
-    else
-      raise PlayerLost, "** Player does not have enough mana to cast #{spell}."
-    end
-  end
-
-  def magic_missile
-    @state.print(", dealing 4 damage")
-    @state.boss.take_damage!(4)
-  end
-
-  def drain
-    @state.print(", dealing 2 damage, and healing 2 hit points")
-    @state.boss.take_damage!(2)
-    @hp += 2
-  end
-
-  def shield
-    @state.print(", increasing armor by 7")
-    @armor += 7
-    @state.add_effect!(Shield)
-  end
-
-  def poison
-    @state.add_effect!(Poison)
-  end
-
-  def recharge
-    @state.add_effect!(Recharge)
   end
 end
 
@@ -380,7 +307,7 @@ class CombatState
 
     tick
 
-    @player.cast_spell(spell)
+    cast_spell(spell)
 
     puts "\n-- Boss turn --"
     tick
@@ -423,6 +350,75 @@ class CombatState
     @effects.sort_by(&:priority).each { |e| e.tick(self) }
   end
 
+  SPELL_COSTS = {
+    magic_missile: 53,
+    drain: 73,
+    shield: 113,
+    poison: 173,
+    recharge: 229
+  }
+
+  def self.spell_sequence_cost(spells)
+    spells.sum { |spell| SPELL_COSTS[spell] }
+  end
+
+  def spell_class(spell)
+    case spell
+    when :shield
+      Shield
+    when :poison
+      Poison
+    when :recharge
+      Recharge
+    end
+  end
+
+  def spell_name(spell)
+    spell == :magic_missile ? 'Magic Missile' : spell.capitalize
+  end
+
+  def cast_spell(spell)
+    cl = spell_class(spell)
+    name = spell_name(spell)
+    if cl && @effects.find { |effect| effect.is_a? cl }
+      raise CannotCast, "Can't cast #{name}, a #{cl} effect already exists."
+    end
+
+    if @player.mana >= SPELL_COSTS[spell]
+      @player.mana -= SPELL_COSTS[spell]
+      print("Player casts #{name}")
+      send(spell)
+      puts "."
+    else
+      raise PlayerLost, "** Player does not have enough mana to cast #{spell}."
+    end
+  end
+
+  def magic_missile
+    print(", dealing 4 damage")
+    @boss.take_damage!(4)
+  end
+
+  def drain
+    print(", dealing 2 damage, and healing 2 hit points")
+    @boss.take_damage!(2)
+    @player.hp += 2
+  end
+
+  def shield
+    print(", increasing armor by 7")
+    @player.armor += 7
+    add_effect!(Shield)
+  end
+
+  def poison
+    add_effect!(Poison)
+  end
+
+  def recharge
+    add_effect!(Recharge)
+  end
+
   def add_effect!(effect_class)
     @effects << effect_class.new
   end
@@ -438,7 +434,7 @@ class WizardSimulator
   end
 
   def winning_spell_sequences_under(max_cost, state, prev_spells = [], &block)
-    Player::SPELL_COSTS.each do |spell, cost|
+    CombatState::SPELL_COSTS.each do |spell, cost|
       next if cost > max_cost
 
       spells = [*prev_spells, spell]
@@ -469,7 +465,7 @@ class WizardSimulator
 
     return nil if winning_sequences.empty?
 
-    winning_sequences.min_by(&Player.method(:spell_sequence_cost))
+    winning_sequences.min_by(&CombatState.method(:spell_sequence_cost))
   end
 
   def report_cheapest_winning_spell_sequence(max_cost:, hard_mode: false)
