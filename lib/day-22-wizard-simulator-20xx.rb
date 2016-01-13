@@ -259,14 +259,33 @@ class CombatState
 
   attr_accessor :player, :boss, :output
 
-  def clone
-    effects = @effects.map { |k,v| [k, v.clone] }.to_h
-    self.class.new(@player.clone, @boss.clone, effects: effects, hard_mode: @hard_mode)
-  end
-
   def next(spell)
     clone.next!(spell)
   end
+
+  def simulate!(spells)
+    spells.each &method(:next!)
+
+    puts("** No more spells to cast!")
+  rescue BossDead
+    puts ". This kills the boss, and the player wins."
+    raise
+  end
+
+  def puts(str = nil)
+    print(str) if str
+    print("\n")
+  end
+
+  def print(str)
+    @output << str
+  end
+
+  def remove_effect!(effect)
+    @effects.delete(@effects.key(effect))
+  end
+
+  protected
 
   def next!(spell)
     puts '-- Player turn --'
@@ -295,22 +314,11 @@ class CombatState
     self
   end
 
-  def simulate!(spells)
-    spells.each &method(:next!)
+  private
 
-    puts("** No more spells to cast!")
-  rescue BossDead
-    puts ". This kills the boss, and the player wins."
-    raise
-  end
-
-  def puts(str = nil)
-    print(str) if str
-    print("\n")
-  end
-
-  def print(str)
-    @output << str
+  def clone
+    effects = @effects.map { |k,v| [k, v.clone] }.to_h
+    self.class.new(@player.clone, @boss.clone, effects: effects, hard_mode: @hard_mode)
   end
 
   def tick
@@ -381,33 +389,11 @@ class CombatState
     @effects.values_at(:shield, :poison, :recharge).compact
   end
 
-  def remove_effect!(effect)
-    @effects.delete(@effects.key(effect))
-  end
 end
 
 class WizardSimulator
   def initialize(player: Player.new, boss:, hard_mode: false)
     @player, @boss, @hard_mode = player, boss, hard_mode
-  end
-
-  def start_state(hard_mode: false)
-    CombatState.new(@player.clone, @boss.clone, hard_mode: @hard_mode)
-  end
-
-  def winning_spell_sequences_under(max_cost, state, prev_spells = [], &block)
-    CombatState::SPELL_COSTS.each do |spell, cost|
-      next if cost > max_cost
-
-      spells = [*prev_spells, spell]
-      begin
-        winning_spell_sequences_under(max_cost - cost, state.next(spell), spells, &block)
-      rescue BossDead
-        yield spells
-      rescue PlayerDead, PlayerLost, CannotCast
-        next
-      end
-    end
   end
 
   def simulate(spells)
@@ -437,6 +423,27 @@ class WizardSimulator
       puts "\n*** #{CombatState.spell_sequence_cost(spells)}: #{spells.join(" ")}"
     else
       puts "Can't win with only #{max_cost} mana."
+    end
+  end
+
+  private
+
+  def start_state
+    CombatState.new(@player.clone, @boss.clone, hard_mode: @hard_mode)
+  end
+
+  def winning_spell_sequences_under(max_cost, state, prev_spells = [], &block)
+    CombatState::SPELL_COSTS.each do |spell, cost|
+      next if cost > max_cost
+
+      spells = [*prev_spells, spell]
+      begin
+        winning_spell_sequences_under(max_cost - cost, state.next(spell), spells, &block)
+      rescue BossDead
+        yield spells
+      rescue PlayerDead, PlayerLost, CannotCast
+        next
+      end
     end
   end
 end

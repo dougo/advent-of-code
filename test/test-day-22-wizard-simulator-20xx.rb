@@ -92,27 +92,23 @@ class TestDay22WizardSimulator20xx < Minitest::Test
 
   def test_lose
     state = CombatState.new(Player.new(mana: 10), Boss.new(hp: 13, damage: 8))
-    assert_raises(PlayerLost) { state.simulate!(%i(poison magic_missile)) }
+    assert_raises(PlayerLost) { state.next(:poison) }
   end
 
   def test_example1
     spells = %i(poison magic_missile)
     assert_equal 173+53, CombatState.spell_sequence_cost(spells)
-    state = CombatState.new(Player.new(hp: 10, mana: 250), Boss.new(hp: 13, damage: 8))
-    assert_raises(BossDead) { state.simulate!(spells) }
-    assert_equal 0, state.boss.hp
-    assert_equal expected_output_example1, state.output
+    sim = WizardSimulator.new(player: Player.new(hp: 10, mana: 250), boss: Boss.new(hp: 13, damage: 8))
+    assert_output(expected_output_example1) { sim.simulate(spells) }
   end
 
   def test_example2
-    state = CombatState.new(Player.new(hp: 10, mana: 250), Boss.new(hp: 14, damage: 8))
-    assert_raises(PlayerDead) { state.simulate!(%i(poison magic_missile)) }
+    sim = WizardSimulator.new(player: Player.new(hp: 10, mana: 250), boss: Boss.new(hp: 14, damage: 8))
+    assert_raises(PlayerDead) { sim.simulate(%i(poison magic_missile)) }
 
     spells = %i(recharge shield drain poison magic_missile)
     assert_equal 229+113+73+173+53, CombatState.spell_sequence_cost(spells)
-    state = CombatState.new(Player.new(hp: 10, mana: 250), Boss.new(hp: 14, damage: 8))
-    assert_raises(BossDead) { state.simulate!(spells) }
-    assert_equal expected_output_example2, state.output
+    assert_output(expected_output_example2) { sim.simulate(spells) }
   end
 
   def test_cheapest_winning_spell_sequence
