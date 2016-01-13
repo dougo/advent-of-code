@@ -429,12 +429,12 @@ class CombatState
 end
 
 class WizardSimulator
-  def initialize(player: Player.new, boss:)
-    @player, @boss = player, boss
+  def initialize(player: Player.new, boss:, hard_mode: false)
+    @player, @boss, @hard_mode = player, boss, hard_mode
   end
 
   def start_state(hard_mode: false)
-    CombatState.new(@player.clone, @boss.clone, hard_mode: hard_mode)
+    CombatState.new(@player.clone, @boss.clone, hard_mode: @hard_mode)
   end
 
   def winning_spell_sequences_under(max_cost, state, prev_spells = [], &block)
@@ -452,17 +452,17 @@ class WizardSimulator
     end
   end
 
-  def simulate(spells, hard_mode: false)
-    state = start_state(hard_mode: hard_mode)
+  def simulate(spells)
+    state = start_state
     state.simulate!(spells)
   rescue BossDead
     puts state.output
   end
 
-  def cheapest_winning_spell_sequence(max_cost: 500, hard_mode: false)
+  def cheapest_winning_spell_sequence(max_cost: 500)
     winning_sequences = []
 
-    state = start_state(hard_mode: hard_mode)
+    state = start_state
     winning_spell_sequences_under(max_cost, state) do |spells|
       winning_sequences << spells
     end
@@ -472,8 +472,8 @@ class WizardSimulator
     winning_sequences.min_by(&CombatState.method(:spell_sequence_cost))
   end
 
-  def report_cheapest_winning_spell_sequence(max_cost:, hard_mode: false)
-    spells = cheapest_winning_spell_sequence(max_cost: max_cost, hard_mode: hard_mode)
+  def report_cheapest_winning_spell_sequence(max_cost:)
+    spells = cheapest_winning_spell_sequence(max_cost: max_cost)
     if spells
       simulate(spells)
       puts "\n*** #{CombatState.spell_sequence_cost(spells)}: #{spells.join(" ")}"
@@ -485,13 +485,12 @@ end
 
 if defined? DATA
   boss = Boss.parse(DATA.read)
-  sim = WizardSimulator.new(boss: boss)
-  sim.report_cheapest_winning_spell_sequence(max_cost: 1000)
+  WizardSimulator.new(boss: boss).report_cheapest_winning_spell_sequence(max_cost: 1000)
 
   # This is an upper bound, but not the correct answer for part 2:
   # 1242: magic_missile shield recharge poison shield recharge poison magic_missile magic_missile magic_missile
   # TODO: shouldn't need an upper bound!
-  sim.report_cheapest_winning_spell_sequence(max_cost: 1241, hard_mode: true)
+  WizardSimulator.new(boss: boss, hard_mode: true).report_cheapest_winning_spell_sequence(max_cost: 1241)
 end
 
 __END__
