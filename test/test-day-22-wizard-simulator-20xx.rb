@@ -116,18 +116,27 @@ class TestDay22WizardSimulator20xx < Minitest::Test
   end
 
   def test_cheapest_winning_spell_sequence
-    sim = WizardSimulator.new(Boss.new(hp: 1, damage: 0))
+    sim = WizardSimulator.new(boss: Boss.new(hp: 1, damage: 0))
     assert_nil sim.cheapest_winning_spell_sequence(max_cost: 52)
     assert_equal %i(magic_missile), sim.cheapest_winning_spell_sequence
 
-    sim = WizardSimulator.new(Boss.new(hp: 5, damage: 0))
+    sim = WizardSimulator.new(boss: Boss.new(hp: 5, damage: 0))
     assert_equal %i(magic_missile magic_missile), sim.cheapest_winning_spell_sequence
 
-    sim = WizardSimulator.new(Boss.new(hp: 5, damage: 50))
+    sim = WizardSimulator.new(boss: Boss.new(hp: 5, damage: 50))
     assert_equal %i(drain magic_missile), sim.cheapest_winning_spell_sequence
   end
 
   # TODO: hard_mode
+
+  def test_report_cheapest_winning_spell_sequence
+    sim = WizardSimulator.new(player: Player.new(hp: 10, mana: 250), boss: Boss.new(hp: 13, damage: 8))
+
+    expected = expected_output_example1 + "\n*** 226: poison magic_missile\n"
+    assert_output(expected) { sim.report_cheapest_winning_spell_sequence(max_cost: 226) }
+
+    assert_output("Can't win with only 52 mana.\n") { sim.report_cheapest_winning_spell_sequence(max_cost: 52) }
+  end
 
   private
 

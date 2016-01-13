@@ -429,8 +429,12 @@ class CombatState
 end
 
 class WizardSimulator
-  def initialize(boss)
-    @boss = boss
+  def initialize(player: Player.new, boss:)
+    @player, @boss = player, boss
+  end
+
+  def start_state(hard_mode: false)
+    CombatState.new(@player.clone, @boss.clone, hard_mode: hard_mode)
   end
 
   def winning_spell_sequences_under(max_cost, state, prev_spells = [], &block)
@@ -449,7 +453,7 @@ class WizardSimulator
   end
 
   def simulate(spells, hard_mode: false)
-    state = CombatState.new(Player.new, @boss.clone, hard_mode: hard_mode)
+    state = start_state(hard_mode: hard_mode)
     state.simulate!(spells)
   rescue BossDead
     puts state.output
@@ -458,7 +462,7 @@ class WizardSimulator
   def cheapest_winning_spell_sequence(max_cost: 500, hard_mode: false)
     winning_sequences = []
 
-    state = CombatState.new(Player.new, @boss.clone, hard_mode: hard_mode)
+    state = start_state(hard_mode: hard_mode)
     winning_spell_sequences_under(max_cost, state) do |spells|
       winning_sequences << spells
     end
@@ -472,7 +476,7 @@ class WizardSimulator
     spells = cheapest_winning_spell_sequence(max_cost: max_cost, hard_mode: hard_mode)
     if spells
       simulate(spells)
-      puts "\n*** #{Player.spell_sequence_cost(spells)}: #{spells.join(" ")}"
+      puts "\n*** #{CombatState.spell_sequence_cost(spells)}: #{spells.join(" ")}"
     else
       puts "Can't win with only #{max_cost} mana."
     end
@@ -481,7 +485,7 @@ end
 
 if defined? DATA
   boss = Boss.parse(DATA.read)
-  sim = WizardSimulator.new(boss)
+  sim = WizardSimulator.new(boss: boss)
   sim.report_cheapest_winning_spell_sequence(max_cost: 1000)
 
   # This is an upper bound, but not the correct answer for part 2:
