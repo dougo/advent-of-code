@@ -13,9 +13,9 @@ END
   def test_ingredients
     butterscotch = @subject.ingredient('Butterscotch')
     assert_equal 6, butterscotch['flavor']
-    assert_equal -1, butterscotch['capacity']
+    assert_equal (-1), butterscotch['capacity']
     cinnamon = @subject.ingredient('Cinnamon')
-    assert_equal -1, cinnamon['texture']
+    assert_equal (-1), cinnamon['texture']
     assert_equal 3, cinnamon['calories']
   end
 

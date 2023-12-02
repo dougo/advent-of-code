@@ -54,7 +54,7 @@ class Santa
   end
 
   def num_nice(strings)
-    strings.split.count &method(:nice?)
+    strings.split.count(&method(:nice?))
   end
 
   def new_nice?(string)
@@ -62,7 +62,7 @@ class Santa
   end
 
   def num_new_nice(strings)
-    strings.split.count &method(:new_nice?)
+    strings.split.count(&method(:new_nice?))
   end
 
   private

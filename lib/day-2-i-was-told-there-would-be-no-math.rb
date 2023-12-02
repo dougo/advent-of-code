@@ -66,7 +66,7 @@ class Present
   private
 
   def self.presents(list_of_dimensions)
-    list_of_dimensions.split.map &Present.method(:new)
+    list_of_dimensions.split.map(&Present.method(:new))
   end
 
   def faces

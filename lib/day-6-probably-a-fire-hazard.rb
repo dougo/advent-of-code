@@ -61,7 +61,7 @@ class Lights
   end
 
   def do_instruction(instr)
-    return unless instr.match /^(.+) (\d+),(\d+) through (\d+),(\d+)$/
+    return unless instr.match(/^(.+) (\d+),(\d+) through (\d+),(\d+)$/)
     for row in $3.to_i .. $5.to_i do
       for col in $2.to_i .. $4.to_i do
         do_light($1, row, col)
@@ -71,7 +71,7 @@ class Lights
   end
 
   def do_instructions(instrs)
-    instrs.split("\n").each &method(:do_instruction)
+    instrs.split("\n").each(&method(:do_instruction))
     self
   end
 

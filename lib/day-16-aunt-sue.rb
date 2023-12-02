@@ -58,7 +58,7 @@ What is the number of the real Aunt Sue?
 
 class AuntSue
   def self.parse_list(specs)
-    List.new(specs.split("\n").map &method(:new))
+    List.new(specs.split("\n").map(&method(:new)))
   end
 
   def initialize(spec)

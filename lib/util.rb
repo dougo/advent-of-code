@@ -5,14 +5,6 @@ module Enumerable
   def index_by
     map { |x| [yield(x), x] }.to_h
   end
-
-  def sum(&block)
-    if block_given?
-      map(&block).sum
-    else
-      reduce(:+) || 0
-    end
-  end
 end
 
 class Object

@@ -264,7 +264,7 @@ class CombatState
   end
 
   def simulate!(spells)
-    spells.each &method(:next!)
+    spells.each(&method(:next!))
 
     puts("** No more spells to cast!")
   rescue BossDead

@@ -81,7 +81,7 @@ class MoleculeFabricator
     @replacements, @medicine = args
   end
     
-  attr_reader :replacements, :medicine, :reverse_replacements
+  attr_reader :replacements, :medicine # , :reverse_replacements
 
   def next_molecules(molecule = medicine)
     replacements.flat_map do |left, right|

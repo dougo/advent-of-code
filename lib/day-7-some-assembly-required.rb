@@ -59,7 +59,7 @@ a). What new signal is ultimately provided to wire a?
 class Circuit
   def initialize(circuit)
     @wires = {}
-    circuit.split("\n").each &method(:connect)
+    circuit.split("\n").each(&method(:connect))
   end
 
   def wire_signals

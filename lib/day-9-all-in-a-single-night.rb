@@ -46,7 +46,7 @@ class SantaMap
   def initialize(distances)
     @locations = Set.new
     @distances = {}
-    distances.split("\n").each &method(:add_distance)
+    distances.split("\n").each(&method(:add_distance))
   end
 
   def routes

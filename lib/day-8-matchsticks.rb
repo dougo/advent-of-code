@@ -54,7 +54,7 @@ require_relative 'util'
 
 class SantaList
   def initialize(input)
-    @strings = input.split("\n").map &SantaString.method(:new)
+    @strings = input.split("\n").map(&SantaString.method(:new))
   end
 
   def [](i)

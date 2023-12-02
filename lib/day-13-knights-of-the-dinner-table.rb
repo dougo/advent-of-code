@@ -87,7 +87,7 @@ class HolidayFeast
   end
 
   def optimal_seating_arrangement
-    @attendees.to_a.permutation.max_by &method(:total_happiness_change)
+    @attendees.to_a.permutation.max_by(&method(:total_happiness_change))
   end
 end
 

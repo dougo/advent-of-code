@@ -41,7 +41,7 @@ on.
 class Santa
   def what_floor(instructions)
     @floor = 0
-    instructions.chars.each &method(:read_instruction)
+    instructions.chars.each(&method(:read_instruction))
     @floor
   end
 

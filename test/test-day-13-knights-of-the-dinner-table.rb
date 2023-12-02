@@ -23,7 +23,7 @@ END
   def test_optimal_seating_arrangement
     # Then, if you seat Alice next to David, Alice would lose 2 happiness units (because David talks so much), but
     # David would gain 46 happiness units (because Alice is such a good listener), for a total change of 44.
-    assert_equal -2, @subject.happiness_change('Alice', 'David')
+    assert_equal (-2), @subject.happiness_change('Alice', 'David')
     assert_equal 46, @subject.happiness_change('David', 'Alice')
     assert_equal 44, @subject.total_happiness_change(%w(Alice David))
 

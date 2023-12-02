@@ -19,12 +19,12 @@ class TestDay1NotQuiteLisp < Minitest::Test
     assert_equal 3, @subject.what_floor('))(((((')
 
     # ()) and ))( both result in floor -1 (the first basement level).
-    assert_equal -1, @subject.what_floor('())')
-    assert_equal -1, @subject.what_floor('))(')
+    assert_equal (-1), @subject.what_floor('())')
+    assert_equal (-1), @subject.what_floor('))(')
 
     # ))) and )())()) both result in floor -3.
-    assert_equal -3, @subject.what_floor(')))')
-    assert_equal -3, @subject.what_floor(')())())')
+    assert_equal (-3), @subject.what_floor(')))')
+    assert_equal (-3), @subject.what_floor(')())())')
   end
 
   def test_position_of_basement_instruction

@@ -45,7 +45,7 @@ END
     assert_equal 1, Computer.new("jmp +1").step.pc
     assert_equal 0, Computer.new("jmp +0").step.pc
     assert_equal 2, Computer.new("jmp +2").step.pc
-    assert_equal -1, Computer.new("jmp -1").step.pc
+    assert_equal (-1), Computer.new("jmp -1").step.pc
     assert_equal 0, Computer.new("jmp +2", "jmp -1", pc: 1).step.pc
   end
 
