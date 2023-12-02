@@ -78,8 +78,7 @@ class CalibrationDocument
     end
 
     def value
-      d = digits
-      (d.first + d.last).to_i
+      (first_digit + last_digit).to_i
     end
 
     private
@@ -88,8 +87,16 @@ class CalibrationDocument
 
     DIGIT_PATTERN = Regexp.union(/\d/, *DIGIT_WORDS.map { Regexp.new(_1) })
 
-    def digits
-      text.scan(DIGIT_PATTERN).map { to_digit(_1) }
+    REVERSED_DIGIT_PATTERN = Regexp.union(/\d/, *DIGIT_WORDS.map { Regexp.new(_1.reverse) })
+
+    def first_digit
+      match = DIGIT_PATTERN.match(text)
+      to_digit(match[0])
+    end
+
+    def last_digit
+      match = REVERSED_DIGIT_PATTERN.match(text.reverse)
+      to_digit(match[0].reverse)
     end
 
     def to_digit(text)

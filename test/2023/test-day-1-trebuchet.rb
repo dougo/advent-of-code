@@ -34,4 +34,10 @@ END
     # Adding these together produces 281.
     assert_equal 281, @subject.sum
   end
+
+  def test_edge_case
+    @subject = CalibrationDocument.new('1eightwo')
+    # If you were to, say, tokenize all the digits from left to right, you'd see the 8 but miss the 2.
+    assert_equal 12, @subject.sum
+  end
 end
