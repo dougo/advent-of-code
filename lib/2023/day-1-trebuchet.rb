@@ -36,44 +36,75 @@ In this example, the calibration values of these four lines are 12, 38, 15, and 
 
 Consider your entire calibration document. What is the sum of all of the calibration values?
 
+--- Part Two ---
+
+Your calculation isn't quite right. It looks like some of the digits are actually spelled out with letters: one,
+two, three, four, five, six, seven, eight, and nine also count as valid "digits".
+
+Equipped with this new information, you now need to find the real first and last digit on each line. For example:
+
+two1nine
+eightwothree
+abcone2threexyz
+xtwone3four
+4nineeightseven2
+zoneight234
+7pqrstsixteen
+
+In this example, the calibration values are 29, 83, 13, 24, 42, 14, and 76. Adding these together produces 281.
+
+What is the sum of all of the calibration values?
+
 =end
-
-class CalibrationLine
-  attr :text
-
-  def initialize(text)
-    @text = text
-  end
-
-  def value
-    (first_digit + last_digit).to_i
-  end
-
-  private
-
-  def first_digit
-    text[text.index(/\d/)]
-  end
-
-  def last_digit
-    text[text.rindex(/\d/)]
-  end
-end
 
 class CalibrationDocument
   def initialize(text)
-    @lines = text.lines(chomp: true).map(&CalibrationLine.method(:new))
+    @lines = text.lines.map { Line.new(_1) }
+  end
+
+  def values
+    @lines.map &:value
   end
 
   def sum
-    @lines.sum &:value
+    values.sum
+  end
+
+  class Line
+    attr :text
+
+    def initialize(text)
+      @text = text
+    end
+
+    def value
+      d = digits
+      (d.first + d.last).to_i
+    end
+
+    private
+
+    DIGIT_WORDS = %w(one two three four five six seven eight nine)
+
+    DIGIT_PATTERN = Regexp.union(/\d/, *DIGIT_WORDS.map { Regexp.new(_1) })
+
+    def digits
+      text.scan(DIGIT_PATTERN).map { to_digit(_1) }
+    end
+
+    def to_digit(text)
+      i = DIGIT_WORDS.index(text)
+      if i
+        (i+1).to_s
+      else
+        text
+      end
+    end
   end
 end
 
 if defined? DATA
-  input = DATA.read
-  doc = CalibrationDocument.new(input)
-
+  doc = CalibrationDocument.new(DATA.read)
   puts doc.sum
 end
 
