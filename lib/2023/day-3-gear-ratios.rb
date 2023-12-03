@@ -76,7 +76,7 @@ class EngineSchematic
     @grid.flat_map.with_index do |row_string, r|
       row_string.chars.filter_map.with_index do |char, c|
         if char =~ /[0-9]/
-          if c == 0 || row_string[c-1] == '.'
+          if c == 0 || row_string[c-1] =~ /[^0-9]/
             number_at(r, c)
           end
         end

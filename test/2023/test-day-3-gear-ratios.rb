@@ -50,4 +50,10 @@ END
     # is 4361.
     assert_equal 4361, @subject.sum_of_part_numbers
   end
+
+  def test_symbol_to_left_of_number
+    @subject = EngineSchematic.new('*574').numbers.first
+    assert_equal 574, @subject.value
+    assert @subject.part?
+  end
 end
