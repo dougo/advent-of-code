@@ -18,11 +18,14 @@ END
     # (83, 86, 6, 31, 17, 9, 48, and 53).
     assert_equal [41, 48, 83, 86, 17], @subject.cards.first.winning_numbers
     assert_equal [83, 86, 6, 31, 17, 9, 48, 53], @subject.cards.first.your_numbers
+
+    # Of the numbers you have, four of them (48, 83, 17, and 86) are winning numbers!
+    assert_equal [48, 83, 86, 17], @subject.cards.first.matching_numbers
   end
 
   def test_points
-    # Of the numbers you have, four of them (48, 83, 17, and 86) are winning numbers! That means card 1 is worth 8
-    # points (1 for the first match, then doubled three times for each of the three matches after the first).
+    # That means card 1 is worth 8 points (1 for the first match, then doubled three times for each of the three
+    # matches after the first).
     # Card 2 has two winning numbers (32 and 61), so it is worth 2 points.
     # Card 3 has two winning numbers (1 and 21), so it is worth 2 points.
     # Card 4 has one winning number (84), so it is worth 1 point.
@@ -34,5 +37,16 @@ END
   def test_total_points
     # So, in this example, the Elf's pile of scratchcards is worth 13 points.
     assert_equal 13, @subject.total_points
+  end
+
+  def test_instance_counts
+    # Once all of the originals and copies have been processed, you end up with 1 instance of card 1, 2 instances
+    # of card 2, 4 instances of card 3, 8 instances of card 4, 14 instances of card 5, and 1 instance of card 6.
+    assert_equal [1, 2, 4, 8, 14, 1], @subject.instance_counts
+  end
+
+  def test_total_cards
+    # In total, this example pile of scratchcards causes you to ultimately have 30 scratchcards!
+    assert_equal 30, @subject.total_cards
   end
 end
