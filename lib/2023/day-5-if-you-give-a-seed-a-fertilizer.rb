@@ -108,7 +108,51 @@ So, the lowest location number in this example is 35.
 
 What is the lowest location number that corresponds to any of the initial seed numbers?
 
+--- Part Two ---
+
+Everyone will starve if you only plant such a small number of seeds. Re-reading the almanac, it looks like the
+seeds: line actually describes ranges of seed numbers.
+
+The values on the initial seeds: line come in pairs. Within each pair, the first value is the start of the range
+and the second value is the length of the range. So, in the first line of the example above:
+
+seeds: 79 14 55 13
+
+This line describes two ranges of seed numbers to be planted in the garden. The first range starts with seed number
+79 and contains 14 values: 79, 80, ..., 91, 92. The second range starts with seed number 55 and contains 13 values:
+55, 56, ..., 66, 67.
+
+Now, rather than considering four seed numbers, you need to consider a total of 27 seed numbers.
+
+In the above example, the lowest location number can be obtained from seed number 82, which corresponds to soil 84,
+fertilizer 84, water 84, light 77, temperature 45, humidity 46, and location 46. So, the lowest location number is
+46.
+
+Consider all of the initial seed numbers listed in the ranges on the first line of the almanac. What is the lowest
+location number that corresponds to any of the initial seed numbers?
+
 =end
+
+class Range
+  def &(range)
+    [self.begin, range.begin].max .. [self.end_int, range.end_int].min
+  end
+
+  def increment(delta)
+    (self.begin + delta) .. (self.end_int + delta)
+  end
+
+  def end_int
+    if !self.end
+      Float::INFINITY
+    elsif exclude_end?
+      self.end - 1
+    else
+      self.end
+    end
+  end
+
+end
 
 class Almanac
   def initialize(text)
@@ -117,7 +161,13 @@ class Almanac
     @maps = map_texts.map { Map.new(_1) }
   end
 
+  def seed_ranges
+    @seeds.each_slice(2).map { |start, length| start ... start + length }
+  end
+
   attr :maps
+
+  Conversion = Struct.new(:range, :delta)
 
   class Map
     def initialize(text)
@@ -125,13 +175,29 @@ class Almanac
       @source_category, _, @destination_category = map_line.split(' ')[0].split('-')
       @conversions = map_desc.map do |ranges|
         dest, source, length = ranges.split(' ').map(&:to_i)
-        [(source ... source + length), dest - source]
+        Conversion.new(source ... source + length, dest - source)
       end
+
+      # Find gaps in the source ranges and fill them with delta-0 conversions.
+      ranges = @conversions.map(&:range).sort_by(&:begin)
+      gaps = []
+      gaps << (0 ... ranges.first.begin) unless ranges.first.begin == 0
+      ranges.each_cons(2) do
+        gaps << (_1.end ... _2.begin) unless _1.end == _2.begin
+      end
+      gaps << (ranges.last.end ..)
+      @conversions += gaps.map { Conversion.new(_1, 0) }
     end
 
     def convert(number)
-      _, delta = @conversions.find { |range, _| range.include? number }
-      number + (delta || 0)
+      number + @conversions.find { _1.range.include? number }.delta
+    end
+
+    def convert_range(range)
+      @conversions.filter_map do |conversion|
+        subrange = (range & conversion.range)
+        subrange.increment(conversion.delta) if subrange.size > 0
+      end
     end
   end
 
@@ -152,10 +218,18 @@ class Almanac
   def lowest_seed_location
     seed_locations.min
   end
+
+  def lowest_seed_location_in_ranges
+    @maps.reduce(seed_ranges) do |ranges, map|
+      ranges.flat_map { map.convert_range(_1) }
+    end.map(&:begin).min
+  end
 end
 
 if defined? DATA
-  puts Almanac.new(DATA.read).lowest_seed_location
+  almanac = Almanac.new(DATA.read)
+  puts almanac.lowest_seed_location
+  puts almanac.lowest_seed_location_in_ranges
 end
 
 
