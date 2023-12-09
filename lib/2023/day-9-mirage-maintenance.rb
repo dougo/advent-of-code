@@ -116,16 +116,10 @@ class OasisReport
   end
 
   def extrapolate(history, backwards: false)
-    if history.all?(&:zero?)
-      0
-    else
-      diffs = history.each_cons(2).map { _2 - _1 }
-      if backwards
-        history.first - extrapolate(diffs, backwards: true)
-      else
-        history.last + extrapolate(diffs)
-      end
-    end
+    return 0 if history.all?(&:zero?)
+    diffs = history.each_cons(2).map { _2 - _1 }
+    extrapolated = extrapolate(diffs, backwards: backwards)
+    backwards ? history.first - extrapolated : history.last + extrapolated
   end
 
   def extrapolated_values(...)
