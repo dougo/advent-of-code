@@ -1,5 +1,5 @@
 require 'test-helper'
-require 'day-7-some-assembly-required'
+require '2015/day-7-some-assembly-required'
 
 class TestDay7SomeAssemblyRequired < Minitest::Test
   def test_wire_signals

@@ -1,5 +1,5 @@
 require 'test-helper'
-require 'day-24-it-hangs-in-the-balance'
+require '2015/day-24-it-hangs-in-the-balance'
 
 class TestDay24ItHangsInTheBalance < Minitest::Test
   def test_parse_package_weights

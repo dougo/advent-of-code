@@ -1,5 +1,5 @@
 require 'test-helper'
-require 'day-14-reindeer-olympics'
+require '2015/day-14-reindeer-olympics'
 
 class TestDay14ReindeedOlympics < Minitest::Test
   def setup

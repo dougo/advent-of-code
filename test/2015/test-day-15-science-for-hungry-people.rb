@@ -1,5 +1,5 @@
 require 'test-helper'
-require 'day-15-science-for-hungry-people'
+require '2015/day-15-science-for-hungry-people'
 
 class TestDay15ScienceForHungryPeople < Minitest::Test
   def setup

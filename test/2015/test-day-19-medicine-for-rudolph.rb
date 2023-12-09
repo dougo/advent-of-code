@@ -1,5 +1,5 @@
 require 'test-helper'
-require 'day-19-medicine-for-rudolph'
+require '2015/day-19-medicine-for-rudolph'
 
 class TestDay19MedicineForRudolph < Minitest::Test
   def setup

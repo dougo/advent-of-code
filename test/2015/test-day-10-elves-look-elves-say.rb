@@ -1,5 +1,5 @@
 require 'test-helper'
-require 'day-10-elves-look-elves-say'
+require '2015/day-10-elves-look-elves-say'
 
 class TestDay10ElvesLookElvesSay < Minitest::Test
   def setup

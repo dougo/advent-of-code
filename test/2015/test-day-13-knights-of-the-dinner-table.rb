@@ -1,5 +1,5 @@
 require 'test-helper'
-require 'day-13-knights-of-the-dinner-table'
+require '2015/day-13-knights-of-the-dinner-table'
 
 class TestDay13KnightsOfTheDinnerTable < Minitest::Test
   def setup

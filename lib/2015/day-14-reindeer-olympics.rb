@@ -47,7 +47,7 @@ does the winning reindeer have?
 
 =end
 
-require_relative 'util'
+require_relative '../util'
 
 class ReindeerOlympics
   def initialize(reindeer_specs)

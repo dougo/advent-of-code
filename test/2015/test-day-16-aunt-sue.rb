@@ -1,5 +1,5 @@
 require 'test-helper'
-require 'day-16-aunt-sue'
+require '2015/day-16-aunt-sue'
 
 class TestDay16AuntSue < Minitest::Test
   def test_aunt_sue

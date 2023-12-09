@@ -74,7 +74,7 @@ Now, what is the quantum entanglement of the first group of packages in the idea
 
 =end
 
-require_relative 'util'
+require_relative '../util'
 
 class String
   def parse_package_weights

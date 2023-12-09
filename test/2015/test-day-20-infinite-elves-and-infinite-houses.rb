@@ -1,5 +1,5 @@
 require 'test-helper'
-require 'day-20-infinite-elves-and-infinite-houses'
+require '2015/day-20-infinite-elves-and-infinite-houses'
 
 class TestDay20InfiniteElvesAndInfiniteHouses < Minitest::Test
   def test_elves

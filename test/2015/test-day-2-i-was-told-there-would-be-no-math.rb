@@ -1,5 +1,5 @@
 require 'test-helper'
-require 'day-2-i-was-told-there-would-be-no-math'
+require '2015/day-2-i-was-told-there-would-be-no-math'
 
 class TestDay2IWasToldThereWouldBeNoMath < Minitest::Test
   def setup

@@ -140,7 +140,7 @@ how many lights are on after 100 steps?
 
 =end
 
-require_relative 'util'
+require_relative '../util'
 
 class LightGrid
   def initialize(input)

@@ -41,7 +41,7 @@ as 1 instead?
 =end
 
 require 'logger'
-require_relative 'util'
+require_relative '../util'
 
 def run_program(input, **opts)
   Computer.new(*input.split("\n"), **opts).run

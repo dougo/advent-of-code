@@ -1,5 +1,5 @@
 require 'test-helper'
-require 'day-17-no-such-thing-as-too-much'
+require '2015/day-17-no-such-thing-as-too-much'
 
 class TestDay17NoSuchThingAsTooMuch < Minitest::Test
   def setup

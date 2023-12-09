@@ -1,5 +1,5 @@
 require 'test-helper'
-require 'day-18-like-a-gif-for-your-yard'
+require '2015/day-18-like-a-gif-for-your-yard'
 
 class TestDay18LikeAGIFForYourYard < Minitest::Test
   def setup

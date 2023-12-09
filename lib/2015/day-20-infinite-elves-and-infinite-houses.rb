@@ -43,7 +43,7 @@ in your puzzle input?
 =end
 
 require 'prime'
-require_relative 'util'
+require_relative '../util'
 
 class Integer
   def elves(max_houses_per_elf: Float::INFINITY)

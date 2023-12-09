@@ -1,5 +1,5 @@
 require 'test-helper'
-require 'day-1-not-quite-lisp'
+require '2015/day-1-not-quite-lisp'
 
 class TestDay1NotQuiteLisp < Minitest::Test
   def setup

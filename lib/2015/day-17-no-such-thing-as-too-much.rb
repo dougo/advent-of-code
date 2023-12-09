@@ -29,7 +29,7 @@ and so the answer there would be 3.
 
 =end
 
-require_relative 'util'
+require_relative '../util'
 
 class EggnogContainers
   def initialize(input)

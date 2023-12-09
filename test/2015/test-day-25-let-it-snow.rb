@@ -1,5 +1,5 @@
 require 'test-helper'
-require 'day-25-let-it-snow'
+require '2015/day-25-let-it-snow'
 
 class TestDay25LetItSnow < Minitest::Test
   def setup

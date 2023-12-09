@@ -34,7 +34,7 @@ Ignore any object (and all of its children) which has any property with the valu
 =end
 
 require 'json'
-require_relative 'util'
+require_relative '../util'
 
 class Document
   def initialize(json_string)

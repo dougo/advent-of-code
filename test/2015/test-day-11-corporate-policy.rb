@@ -1,5 +1,5 @@
 require 'test-helper'
-require 'day-11-corporate-policy'
+require '2015/day-11-corporate-policy'
 
 class TestDay11CorporatePolicy < Minitest::Test
   def setup

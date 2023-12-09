@@ -61,7 +61,7 @@ spend and still win the fight?
 
 =end
 
-require_relative 'util'
+require_relative '../util'
 
 class Equipment
   def initialize(cost, damage, armor)

@@ -140,7 +140,7 @@ fight?
 
 =end
 
-require_relative 'util'
+require_relative '../util'
 
 class BossDead < Exception; end
 class PlayerDead < Exception; end

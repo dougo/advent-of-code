@@ -1,5 +1,5 @@
 require 'test-helper'
-require 'day-23-opening-the-turing-lock'
+require '2015/day-23-opening-the-turing-lock'
 
 class TestDay23OpeningTheTuringLock < Minitest::Test
   def test_example

@@ -49,7 +49,7 @@ For example:
 
 =end
 
-require_relative 'util'
+require_relative '../util'
 
 class Lights
   def initialize

@@ -1,5 +1,5 @@
 require 'test-helper'
-require 'day-12-js-abacus-framework-io.rb'
+require '2015/day-12-js-abacus-framework-io.rb'
 
 class TestDay12JSAbacusFramework_io < Minitest::Test
   def test_sum_numbers

@@ -1,5 +1,5 @@
 require 'test-helper'
-require 'day-22-wizard-simulator-20xx'
+require '2015/day-22-wizard-simulator-20xx'
 
 class TestDay22WizardSimulator20xx < Minitest::Test
   def setup

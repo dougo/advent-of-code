@@ -1,5 +1,5 @@
 require 'test-helper'
-require 'day-21-rpg-simulator-20xx'
+require '2015/day-21-rpg-simulator-20xx'
 
 class TestDay21RPGSimulator20XX < Minitest::Test
   def setup

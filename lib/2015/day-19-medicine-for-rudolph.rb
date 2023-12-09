@@ -68,7 +68,7 @@ puzzle input, what is the fewest number of steps to go from e to the medicine mo
 =end
 
 require 'set'
-require_relative 'util'
+require_relative '../util'
 
 class MoleculeFabricator
   def self.parse(input)

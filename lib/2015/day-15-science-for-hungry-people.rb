@@ -54,7 +54,7 @@ you can make with a calorie total of 500?
 =end
 
 require 'set'
-require_relative 'util'
+require_relative '../util'
 
 class Kitchen
   def initialize(input)
