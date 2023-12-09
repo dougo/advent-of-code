@@ -19,10 +19,10 @@ END
   end
 
   def test_extrapolated_values_backwards
-    assert_equal [-3, 0, 5], @subject.extrapolated_values_backwards
+    assert_equal [-3, 0, 5], @subject.extrapolated_values(backwards: true)
   end
 
   def test_sum_of_extrapolated_values_backwards
-    assert_equal 2, @subject.sum_of_extrapolated_values_backwards
+    assert_equal 2, @subject.sum_of_extrapolated_values(backwards: true)
   end
 end

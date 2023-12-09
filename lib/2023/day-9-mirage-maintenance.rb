@@ -115,45 +115,32 @@ class OasisReport
     @histories = text.lines.map { _1.split(' ').map(&:to_i) }
   end
 
-  def extrapolate(history)
-    diffs = history.each_cons(2).map { _2 - _1 }
-    if diffs.all?(&:zero?)
-      history.last
+  def extrapolate(history, backwards: false)
+    if history.all?(&:zero?)
+      0
     else
-      history.last + extrapolate(diffs)
+      diffs = history.each_cons(2).map { _2 - _1 }
+      if backwards
+        history.first - extrapolate(diffs, backwards: true)
+      else
+        history.last + extrapolate(diffs)
+      end
     end
   end
 
-  def extrapolated_values
-    @histories.map { extrapolate(_1) }
+  def extrapolated_values(...)
+    @histories.map { extrapolate(_1, ...) }
   end
 
-  def sum_of_extrapolated_values
-    extrapolated_values.sum
-  end
-
-  def extrapolate_backwards(history)
-    diffs = history.each_cons(2).map { _2 - _1 }
-    if diffs.all?(&:zero?)
-      history.first
-    else
-      history.first - extrapolate_backwards(diffs)
-    end
-  end
-
-  def extrapolated_values_backwards
-    @histories.map { extrapolate_backwards(_1) }
-  end
-
-  def sum_of_extrapolated_values_backwards
-    extrapolated_values_backwards.sum
+  def sum_of_extrapolated_values(...)
+    extrapolated_values(...).sum
   end
 end
 
 if defined? DATA
   report = OasisReport.new(DATA.read)
   puts report.sum_of_extrapolated_values
-  puts report.sum_of_extrapolated_values_backwards
+  puts report.sum_of_extrapolated_values(backwards: true)
 end
 
 __END__
