@@ -17,4 +17,12 @@ END
   def test_sum_of_extrapolated_values
     assert_equal 114, @subject.sum_of_extrapolated_values
   end
+
+  def test_extrapolated_values_backwards
+    assert_equal [-3, 0, 5], @subject.extrapolated_values_backwards
+  end
+
+  def test_sum_of_extrapolated_values_backwards
+    assert_equal 2, @subject.sum_of_extrapolated_values_backwards
+  end
 end
