@@ -111,17 +111,137 @@ Here are the distances for each tile on that loop:
 Find the single giant loop starting at S. How many steps along the loop does it take to get from the starting
 position to the point farthest from the starting position?
 
+--- Part Two ---
+
+You quickly reach the farthest point of the loop, but the animal never emerges. Maybe its nest is within the area
+enclosed by the loop?
+
+To determine whether it's even worth taking the time to search for such a nest, you should calculate how many tiles
+are contained within the loop. For example:
+
+...........
+.S-------7.
+.|F-----7|.
+.||.....||.
+.||.....||.
+.|L-7.F-J|.
+.|..|.|..|.
+.L--J.L--J.
+...........
+
+The above loop encloses merely four tiles - the two pairs of . in the southwest and southeast (marked I below). The
+middle . tiles (marked O below) are not in the loop. Here is the same loop again with those regions marked:
+
+...........
+.S-------7.
+.|F-----7|.
+.||OOOOO||.
+.||OOOOO||.
+.|L-7OF-J|.
+.|II|O|II|.
+.L--JOL--J.
+.....O.....
+
+In fact, there doesn't even need to be a full tile path to the outside for tiles to count as outside the loop -
+squeezing between pipes is also allowed! Here, I is still within the loop and O is still outside the loop:
+
+..........
+.S------7.
+.|F----7|.
+.||OOOO||.
+.||OOOO||.
+.|L-7F-J|.
+.|II||II|.
+.L--JL--J.
+..........
+
+In both of the above examples, 4 tiles are enclosed by the loop.
+
+Here's a larger example:
+
+.F----7F7F7F7F-7....
+.|F--7||||||||FJ....
+.||.FJ||||||||L7....
+FJL7L7LJLJ||LJ.L-7..
+L--J.L7...LJS7F-7L7.
+....F-J..F7FJ|L7L7L7
+....L7.F7||L7|.L7L7|
+.....|FJLJ|FJ|F7|.LJ
+....FJL-7.||.||||...
+....L---J.LJ.LJLJ...
+
+The above sketch has many random bits of ground, some of which are in the loop (I) and some of which are outside it
+(O):
+
+OF----7F7F7F7F-7OOOO
+O|F--7||||||||FJOOOO
+O||OFJ||||||||L7OOOO
+FJL7L7LJLJ||LJIL-7OO
+L--JOL7IIILJS7F-7L7O
+OOOOF-JIIF7FJ|L7L7L7
+OOOOL7IF7||L7|IL7L7|
+OOOOO|FJLJ|FJ|F7|OLJ
+OOOOFJL-7O||O||||OOO
+OOOOL---JOLJOLJLJOOO
+
+In this larger example, 8 tiles are enclosed by the loop.
+
+Any tile that isn't part of the main loop can count as being enclosed by the loop. Here's another example with many
+bits of junk pipe lying around that aren't connected to the main loop at all:
+
+FF7FSF7F7F7F7F7F---7
+L|LJ||||||||||||F--J
+FL-7LJLJ||||||LJL-77
+F--JF--7||LJLJ7F7FJ-
+L---JF-JLJ.||-FJLJJ7
+|F|F-JF---7F7-L7L|7|
+|FFJF7L7F-JF7|JL---7
+7-L-JL7||F7|L7F-7F7|
+L.L7LFJ|||||FJL7||LJ
+L7JLJL-JLJLJL--JLJ.L
+
+Here are just the tiles that are enclosed by the loop marked with I:
+
+FF7FSF7F7F7F7F7F---7
+L|LJ||||||||||||F--J
+FL-7LJLJ||||||LJL-77
+F--JF--7||LJLJIF7FJ-
+L---JF-JLJIIIIFJLJJ7
+|F|F-JF---7IIIL7L|7|
+|FFJF7L7F-JF7IIL---7
+7-L-JL7||F7|L7F-7F7|
+L.L7LFJ|||||FJL7||LJ
+L7JLJL-JLJLJL--JLJ.L
+
+In this last example, 10 tiles are enclosed by the loop.
+
+Figure out whether you have time to search for the nest by calculating the area within the loop. How many tiles are
+enclosed by the loop?
+
 =end
+
+require 'set'
 
 class PipeMaze
   def initialize(text)
     @sketch = text.lines
   end
 
+  def height; @sketch.length; end
+  def width; @sketch.first.length; end
+
+  def each_position
+    (0...height).each do |row|
+      (0...width).each do |col|
+        yield Position.new(row, col)
+      end
+    end
+  end
+
   def pipe_at(pos)
-    r, c = pos.row, pos.col
-    if r >= 0 && c >= 0 && r < @sketch.length && c < @sketch[r].length
-      @sketch[r][c]
+    row, col = pos.row, pos.col
+    if (0...height).include?(row) && (0...width).include?(col)
+      @sketch[row][col]
     end
   end
 
@@ -147,9 +267,8 @@ class PipeMaze
   end
 
   def start_position
-    @sketch.each_with_index do |line, row|
-      col = line.index('S')
-      return Position.new(row, col) if col
+    each_position do |pos|
+      return pos if pipe_at(pos) == 'S'
     end
   end
 
@@ -157,25 +276,45 @@ class PipeMaze
     pos.connected_neighbors(pipe_at(pos))
   end
 
-  def pipe_length
-    len = 1
+  def positions_connected_to_start
     last = start = start_position
+    positions = [start]
     pos = start.neighbors.find { connected_neighbors(_1).include? start }
     until pos == start
-      len += 1
+      positions << pos
       pos, last = connected_neighbors(pos).find { _1 != last }, pos
     end
-    len
+    positions
   end
 
   def farthest_distance_by_pipes
-    pipe_length / 2
+    positions_connected_to_start.length / 2
+  end
+
+  def area_enclosed_by_pipes
+    pipe_positions = positions_connected_to_start.to_set
+    area, inside, last_bend = 0, false, nil
+    each_position do |pos|
+      if pipe_positions.include?(pos)
+        case pipe_at(pos)
+        when '|' then inside = !inside
+        when 'F' then last_bend = 'F'
+        when 'J' then inside = !inside if last_bend == 'F'
+        when 'L' then last_bend = 'L'
+        when '7' then inside = !inside if last_bend == 'L'
+        end
+      elsif inside
+        area += 1
+      end
+    end
+    area
   end
 end
 
 if defined? DATA
   maze = PipeMaze.new(DATA.read)
   puts maze.farthest_distance_by_pipes
+  puts maze.area_enclosed_by_pipes
 end
 
 __END__
