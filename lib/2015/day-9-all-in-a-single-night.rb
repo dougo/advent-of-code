@@ -39,7 +39,6 @@ What is the distance of the longest route?
 
 =end
 
-require 'set'
 require_relative '../util'
 
 class SantaMap

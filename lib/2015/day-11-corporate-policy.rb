@@ -38,8 +38,6 @@ Santa's password expired again. What's the next one?
 
 =end
 
-require 'set'
-
 class SecurityElf
   def next_password(password)
     begin

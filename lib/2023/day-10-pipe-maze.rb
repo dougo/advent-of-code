@@ -220,8 +220,6 @@ enclosed by the loop?
 
 =end
 
-require 'set'
-
 class PipeMaze
   def initialize(text)
     @sketch = text.lines

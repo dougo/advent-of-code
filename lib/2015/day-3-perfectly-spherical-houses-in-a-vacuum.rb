@@ -36,8 +36,6 @@ For example:
 
 =end
 
-require 'set'
-
 class Santa
   def initialize(map = Set.new)
     @x, @y = 0, 0

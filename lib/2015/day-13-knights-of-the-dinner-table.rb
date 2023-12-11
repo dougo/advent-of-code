@@ -53,7 +53,6 @@ What is the total change in happiness for the optimal seating arrangement that a
 
 =end
 
-require 'set'
 require_relative '../util'
 
 class HolidayFeast
