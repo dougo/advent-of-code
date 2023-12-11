@@ -81,7 +81,7 @@ of scratchcards, how many total scratchcards do you end up with?
 =end
 
 class Scratchcards
-  Card = Struct.new(:winning_numbers, :your_numbers) do
+  Card = Data.define(:winning_numbers, :your_numbers) do
     def matching_numbers
       winning_numbers & your_numbers
     end
@@ -99,7 +99,7 @@ class Scratchcards
     @cards = text.lines(chomp: true).map do |line|
       _, numbers = line.split(': ')
       winning, your = numbers.split(' | ')
-      Card.new(winning.split(' ').map(&:to_i), your.split(' ').map(&:to_i))
+      Card[winning.split(' ').map(&:to_i), your.split(' ').map(&:to_i)]
     end
   end
 

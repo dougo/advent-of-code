@@ -111,7 +111,7 @@ class HauntedWasteland
     @network[node][instruction(index)]
   end
 
-  State = Struct.new(:node, :index) do
+  State = Data.define(:node, :index) do
     def self.start(node = 'AAA')
       new(node, 0)
     end

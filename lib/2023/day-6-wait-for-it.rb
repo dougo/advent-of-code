@@ -90,12 +90,12 @@ class ToyBoatRaces
         values.split(' ').map(&:to_i)
       end
     end
-    @races = times.zip(distances).map { Race.new(_1, _2) }
+    @races = times.zip(distances).map { Race[_1, _2] }
   end
 
   attr :races
 
-  Race = Struct.new(:time, :distance) do
+  Race = Data.define(:time, :distance) do
     def times_to_equal_the_record
       # Holding down the button for x milliseconds causes the boat to go x*(t-x) millimeters.
       # So the times to equal the distance record are the solutions to x*(t-x) = d,

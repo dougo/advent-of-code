@@ -167,7 +167,7 @@ class Almanac
 
   attr :maps
 
-  Conversion = Struct.new(:range, :delta)
+  Conversion = Data.define(:range, :delta)
 
   class Map
     def initialize(text)
@@ -175,7 +175,7 @@ class Almanac
       @source_category, _, @destination_category = map_line.split(' ')[0].split('-')
       @conversions = map_desc.map do |ranges|
         dest, source, length = ranges.split(' ').map(&:to_i)
-        Conversion.new(source ... source + length, dest - source)
+        Conversion[source ... source + length, dest - source]
       end
 
       # Find gaps in the source ranges and fill them with delta-0 conversions.
@@ -186,7 +186,7 @@ class Almanac
         gaps << (_1.end ... _2.begin) unless _1.end == _2.begin
       end
       gaps << (ranges.last.end ..)
-      @conversions += gaps.map { Conversion.new(_1, 0) }
+      @conversions += gaps.map { Conversion[_1, 0] }
     end
 
     def convert(number)

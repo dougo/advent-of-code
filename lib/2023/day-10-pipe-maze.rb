@@ -231,25 +231,24 @@ class PipeMaze
   def each_position
     (0...height).each do |row|
       (0...width).each do |col|
-        yield Position.new(row, col)
+        yield Position[row, col]
       end
     end
   end
 
   def pipe_at(pos)
-    row, col = pos.row, pos.col
+    pos => row, col
     if (0...height).include?(row) && (0...width).include?(col)
       @sketch[row][col]
     end
   end
 
-  Position = Struct.new(:row, :col) do
-    def neighbor(...); self.class.new(...); end
+  Position = Data.define(:row, :col) do
     def neighbors; [north, east, south, west]; end
-    def north; neighbor(row - 1, col); end
-    def east;  neighbor(row, col + 1); end
-    def south; neighbor(row + 1, col); end
-    def west;  neighbor(row, col - 1); end
+    def north; with(row: row - 1) end
+    def east;  with(col: col + 1) end
+    def south; with(row: row + 1) end
+    def west;  with(col: col - 1) end
 
     def connected_neighbors(pipe)
       case pipe
