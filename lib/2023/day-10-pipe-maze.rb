@@ -225,8 +225,8 @@ class PipeMaze
     @sketch = text.lines
   end
 
-  def height; @sketch.length; end
-  def width; @sketch.first.length; end
+  def height = @sketch.length
+  def width = @sketch.first.length
 
   def each_position
     (0...height).each do |row|
@@ -237,18 +237,18 @@ class PipeMaze
   end
 
   def pipe_at(pos)
-    pos => row, col
+    pos => row: row, col: col
     if (0...height).include?(row) && (0...width).include?(col)
       @sketch[row][col]
     end
   end
 
   Position = Data.define(:row, :col) do
-    def neighbors; [north, east, south, west]; end
-    def north; with(row: row - 1) end
-    def east;  with(col: col + 1) end
-    def south; with(row: row + 1) end
-    def west;  with(col: col - 1) end
+    def neighbors = [north, east, south, west]
+    def north = with(row: row - 1)
+    def east  = with(col: col + 1)
+    def south = with(row: row + 1)
+    def west  = with(col: col - 1)
 
     def connected_neighbors(pipe)
       case pipe
