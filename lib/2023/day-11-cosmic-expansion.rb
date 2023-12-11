@@ -100,6 +100,22 @@ In this example, after expanding the universe, the sum of the shortest path betw
 Expand the universe, then find the length of the shortest path between every pair of galaxies. What is the sum of
 these lengths?
 
+--- Part Two ---
+
+The galaxies are much older (and thus much farther apart) than the researcher initially estimated.
+
+Now, instead of the expansion you did before, make each empty row or column one million times larger. That is, each
+empty row should be replaced with 1000000 empty rows, and each empty column should be replaced with 1000000 empty
+columns.
+
+(In the example above, if each empty row or column were merely 10 times larger, the sum of the shortest paths
+between every pair of galaxies would be 1030. If each empty row or column were merely 100 times larger, the sum of
+the shortest paths between every pair of galaxies would be 8410. However, your universe will need to expand far
+beyond these values.)
+
+Starting with the same initial image, expand the universe according to these new rules, then find the length of the
+shortest path between every pair of galaxies. What is the sum of these lengths?
+
 =end
 
 class SpaceImage
@@ -121,24 +137,25 @@ class SpaceImage
 
   attr :galaxies, :empty_rows, :empty_cols
 
-  def shortest_path_length(g1, g2)
+  def shortest_path_length(g1, g2, expansion_factor = 2)
     [g1, g2] => [row1, col1], [row2, col2]
     rows = [row1, row2].min ... [row1, row2].max
     cols = [col1, col2].min ... [col1, col2].max
     rows.size + cols.size +
-      empty_rows.count { rows.include? _1 } +
-      empty_cols.count { cols.include? _1 }
+      (expansion_factor - 1) * empty_rows.count { rows.include? _1 } +
+      (expansion_factor - 1) * empty_cols.count { cols.include? _1 }
   end
 
-  def sum_of_shortest_path_lengths
+  def sum_of_shortest_path_lengths(expansion_factor = 2)
     # This double-counts each pair of galaxies, so divide the total sum by 2.
-    Enumerator.product(galaxies, galaxies).sum { shortest_path_length(_1, _2) } / 2
+    Enumerator.product(galaxies, galaxies).sum { shortest_path_length(_1, _2, expansion_factor) } / 2
   end
 end
 
 if defined? DATA
   image = SpaceImage.new(DATA.read)
   puts image.sum_of_shortest_path_lengths
+  puts image.sum_of_shortest_path_lengths(1_000_000)
 end
 
 __END__

@@ -34,5 +34,7 @@ END
 
   def test_sum_of_shortest_path_lengths
     assert_equal 374, @subject.sum_of_shortest_path_lengths
+    assert_equal 1030, @subject.sum_of_shortest_path_lengths(10)
+    assert_equal 8410, @subject.sum_of_shortest_path_lengths(100)
   end
 end
