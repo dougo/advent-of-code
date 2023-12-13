@@ -35,4 +35,10 @@ END
   def test_summarize_pattern_notes
     assert_equal 405, @subject.summarize_pattern_notes
   end
+
+  def test_smudged
+    assert_equal 3, @subject.patterns[0].rows_above_mirror(smudged: true)
+    assert_equal 1, @subject.patterns[1].rows_above_mirror(smudged: true)
+    assert_equal 400, @subject.summarize_pattern_notes(smudged: true)
+  end
 end
