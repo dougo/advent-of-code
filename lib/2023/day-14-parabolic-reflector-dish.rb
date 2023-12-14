@@ -113,16 +113,10 @@ Run the spin cycle for 1000000000 cycles. Afterward, what is the total load on t
 
 =end
 
-class ParabolicReflectorDish
+ParabolicReflectorDish = Data.define(:lines) do
   def self.parse(text)
     new(text.lines(chomp: true))
   end
-
-  def initialize(lines)
-    @lines = lines
-  end
-
-  attr :lines
 
   def height = lines.length
   def width = lines.first.length
@@ -188,12 +182,12 @@ class ParabolicReflectorDish
     history = []
     last = self
     A_BILLION.times do
-      history << last.lines
+      history << last
       cycled = last.cycle
-      seen_before = history.index(cycled.lines)
+      seen_before = history.index(cycled)
       if seen_before
         cycles_to_repeat = history.length - seen_before
-        return self.class.new(history[seen_before + (A_BILLION - seen_before) % cycles_to_repeat])
+        return history[seen_before + (A_BILLION - seen_before) % cycles_to_repeat]
       else
         last = cycled
       end
