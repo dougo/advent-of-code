@@ -121,12 +121,15 @@ ParabolicReflectorDish = Data.define(:lines) do
   def height = lines.length
   def width = lines.first.length
 
-  def each_position(backward: false)
-    unless backward
-      (0).upto(height-1)   { |r| (0).upto(width-1)   { |c| yield Position[r, c] } }
-    else
-      (height-1).downto(0) { |r| (width-1).downto(0) { |c| yield Position[r, c] } }
-    end      
+  def each_position(backward: false, &block)
+    enum = Enumerator.new do |y|
+      unless backward
+        (0).upto(height-1)   { |r| (0).upto(width-1)   { |c| y << Position[r, c] } }
+      else
+        (height-1).downto(0) { |r| (width-1).downto(0) { |c| y << Position[r, c] } }
+      end
+    end
+    block ? enum.each(&block) : enum
   end
 
   def rock_at(pos)
@@ -142,12 +145,10 @@ ParabolicReflectorDish = Data.define(:lines) do
   end
 
   Position = Data.define(:row, :col) do
-    def neighbors = [north, east, south, west]
     def north = with(row: row - 1)
     def east  = with(col: col + 1)
     def south = with(row: row + 1)
     def west  = with(col: col - 1)
-    def to_s = "#{row},#{col}"
   end
 
   def tilt!(dir)
@@ -195,14 +196,12 @@ ParabolicReflectorDish = Data.define(:lines) do
     raise 'wow, a billion times wthout repeating!'
   end
 
+  def load_at(pos)
+    rock_at(pos) == 'O' ? height - pos.row : 0
+  end
+
   def total_load
-    load = 0
-    each_position do |pos|
-      if rock_at(pos) == 'O'
-        load += height - pos.row
-      end
-    end
-    load
+    each_position.sum { load_at(_1) }
   end
 
   def total_load_when_tilted(dir)
