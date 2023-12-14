@@ -1,5 +1,5 @@
 require 'test-helper'
-require '2015/day-3-perfectly-spherical-houses-in-a-vacuum'
+require '2015/day-03-perfectly-spherical-houses-in-a-vacuum'
 
 class TestDay3PerfectlySphericalHousesInAVacuum < Minitest::Test
   def test_houses_visited

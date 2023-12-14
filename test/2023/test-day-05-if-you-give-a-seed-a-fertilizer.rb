@@ -1,5 +1,5 @@
 require 'test-helper'
-require '2023/day-5-if-you-give-a-seed-a-fertilizer'
+require '2023/day-05-if-you-give-a-seed-a-fertilizer'
 
 class TestAlmanac < Minitest::Test
   def test_range_intersection

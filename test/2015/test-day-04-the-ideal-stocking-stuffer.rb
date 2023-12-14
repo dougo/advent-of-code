@@ -1,5 +1,5 @@
 require 'test-helper'
-require '2015/day-4-the-ideal-stocking-stuffer'
+require '2015/day-04-the-ideal-stocking-stuffer'
 
 class TestDay4TheIdealStockingStuffer < Minitest::Test
   def test_mine_adventcoin

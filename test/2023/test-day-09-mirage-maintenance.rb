@@ -1,5 +1,5 @@
 require 'test-helper'
-require '2023/day-9-mirage-maintenance'
+require '2023/day-09-mirage-maintenance'
 
 class TestMirageMaintenance < Minitest::Test
   def setup

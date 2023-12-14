@@ -1,5 +1,5 @@
 require 'test-helper'
-require '2015/day-8-matchsticks'
+require '2015/day-08-matchsticks'
 
 class TestDay8Matchsticks < Minitest::Test
   def setup

@@ -1,5 +1,5 @@
 require 'test-helper'
-require '2023/day-6-wait-for-it'
+require '2023/day-06-wait-for-it'
 
 class TestToyBoatRaces < Minitest::Test
   def setup

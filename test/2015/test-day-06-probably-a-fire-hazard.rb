@@ -1,5 +1,5 @@
 require 'test-helper'
-require '2015/day-6-probably-a-fire-hazard'
+require '2015/day-06-probably-a-fire-hazard'
 
 class TestDay6ProbablyAFireHazard < Minitest::Test
   def setup

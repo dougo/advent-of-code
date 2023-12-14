@@ -1,5 +1,5 @@
 require 'test-helper'
-require '2023/day-4-scratchcards'
+require '2023/day-04-scratchcards'
 
 class TestScratchcards < Minitest::Test
   def setup

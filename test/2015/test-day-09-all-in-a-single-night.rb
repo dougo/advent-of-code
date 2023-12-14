@@ -1,5 +1,5 @@
 require 'test-helper'
-require '2015/day-9-all-in-a-single-night'
+require '2015/day-09-all-in-a-single-night'
 
 class TestDay9AllInASingleNight < Minitest::Test
   def setup

@@ -1,5 +1,5 @@
 require 'test-helper'
-require '2023/day-8-haunted-wasteland'
+require '2023/day-08-haunted-wasteland'
 
 class TestHauntedWasteland < Minitest::Test
   def setup

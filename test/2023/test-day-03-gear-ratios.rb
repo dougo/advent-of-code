@@ -1,5 +1,5 @@
 require 'test-helper'
-require '2023/day-3-gear-ratios'
+require '2023/day-03-gear-ratios'
 
 class TestGearRatios < Minitest::Test
   def setup

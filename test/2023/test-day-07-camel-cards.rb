@@ -1,5 +1,5 @@
 require 'test-helper'
-require '2023/day-7-camel-cards'
+require '2023/day-07-camel-cards'
 
 class TestCamelCards < Minitest::Test
   def setup

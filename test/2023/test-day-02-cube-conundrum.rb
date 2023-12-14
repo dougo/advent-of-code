@@ -1,5 +1,5 @@
 require 'test-helper'
-require '2023/day-2-cube-conundrum'
+require '2023/day-02-cube-conundrum'
 
 class TestCubeGame < Minitest::Test
   def setup

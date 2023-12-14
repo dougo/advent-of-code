@@ -1,5 +1,5 @@
 require 'test-helper'
-require '2015/day-5-doesnt-he-have-intern-elves-for-this'
+require '2015/day-05-doesnt-he-have-intern-elves-for-this'
 
 class TestDay5 < Minitest::Test
   def setup

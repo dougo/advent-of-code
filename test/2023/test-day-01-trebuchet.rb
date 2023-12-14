@@ -1,5 +1,5 @@
 require 'test-helper'
-require '2023/day-1-trebuchet'
+require '2023/day-01-trebuchet'
 
 class TestTrebuchet < Minitest::Test
   def test_calibration_line_part_1
