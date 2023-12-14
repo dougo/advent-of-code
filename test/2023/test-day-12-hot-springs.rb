@@ -1,5 +1,5 @@
 require 'test-helper'
-require '2023/day-12'
+require '2023/day-12-hot-springs'
 
 class TestHotSprings < Minitest::Test
   def setup
