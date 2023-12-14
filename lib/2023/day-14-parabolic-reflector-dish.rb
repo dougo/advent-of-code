@@ -67,43 +67,77 @@ class ParabolicReflectorDish
 
   attr :lines
 
-  def tilt_north!
-    (0...lines.length).each do |r|
-      (0...lines[r].length).each do |c|
-        if lines[r][c] == 'O'
-          i = r - 1
-          while i >= 0 && lines[i][c] == '.'
-            i -= 1
-          end
-          lines[r][c] = '.'
-          lines[i+1][c] = 'O'
-        end
+  def height = lines.length
+  def width = lines.first.length
+
+  def each_position
+    (0...height).each do |row|
+      (0...width).each do |col|
+        yield Position[row, col]
       end
     end
   end
 
-  def tilt_north
+  def rock_at(pos)
+    pos => row: row, col: col
+    if (0...height).include?(row) && (0...width).include?(col)
+      lines[row][col]
+    end
+  end
+
+  def set_rock_at!(pos, rock)
+    pos => row: row, col: col
+    lines[row][col] = rock
+  end
+
+  Position = Data.define(:row, :col) do
+    def neighbors = [north, east, south, west]
+    def north = with(row: row - 1)
+    def east  = with(col: col + 1)
+    def south = with(row: row + 1)
+    def west  = with(col: col - 1)
+    def to_s = "#{row},#{col}"
+  end
+
+  def tilt!(dir)
+    each_position do |pos|
+      if rock_at(pos) == 'O'
+        last = pos
+        cur = pos.send(dir)
+        while rock_at(cur) == '.'
+          last = cur
+          cur = cur.send(dir)
+        end
+        set_rock_at!(pos, '.')
+        set_rock_at!(last, 'O')
+      end
+    end
+  end
+
+  def tilt(dir)
     tilted = self.class.new(lines.map(&:dup))
-    tilted.tilt_north!
+    tilted.tilt!(dir)
     tilted
   end
 
   def total_load
-    (0...lines.length).sum do |r|
-      (0...lines[r].length).sum do |c|
-        lines[r][c] == 'O' ? lines.length - r : 0
+    load = 0
+    each_position do |pos|
+      if rock_at(pos) == 'O'
+        load += height - pos.row
       end
     end
+    load
   end
 
-  def total_load_when_tilted_north
-    tilt_north.total_load
+  def total_load_when_tilted(dir)
+    tilt(dir).total_load
   end
 end
 
 if defined? DATA
   dish = ParabolicReflectorDish.parse(DATA.read)
-  puts dish.total_load_when_tilted_north
+  puts dish.total_load_when_tilted(:north)
 end
 
 __END__
