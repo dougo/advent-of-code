@@ -78,12 +78,50 @@ Adding all of the possible arrangement counts together produces a total of 21 ar
 For each row, count all of the different arrangements of operational and broken springs that meet the given
 criteria. What is the sum of those counts?
 
+--- Part Two ---
+
+As you look out at the field of springs, you feel like there are way more springs than the condition records
+list. When you examine the records, you discover that they were actually folded up this whole time!
+
+To unfold the records, on each row, replace the list of spring conditions with five copies of itself (separated by
+?) and replace the list of contiguous groups of damaged springs with five copies of itself (separated by ,).
+
+So, this row:
+
+.# 1
+
+Would become:
+
+.#?.#?.#?.#?.# 1,1,1,1,1
+
+The first line of the above example would become:
+
+???.###????.###????.###????.###????.### 1,1,3,1,1,3,1,1,3,1,1,3,1,1,3
+
+In the above example, after unfolding, the number of possible arrangements for some rows is now much larger:
+
+???.### 1,1,3 - 1 arrangement
+.??..??...?##. 1,1,3 - 16384 arrangements
+?#?#?#?#?#?#?#? 1,3,1,6 - 1 arrangement
+????.#...#... 4,1,1 - 16 arrangements
+????.######..#####. 1,6,5 - 2500 arrangements
+?###???????? 3,2,1 - 506250 arrangements
+
+After unfolding, adding all of the possible arrangement counts together produces 525152.
+
+Unfold your condition records; what is the new sum of possible arrangement counts?
+
 =end
 
 class ConditionRecord
-  def initialize(text)
-    @pattern, groups_text = text.split(' ')
-    @groups = groups_text.split(',').map(&:to_i)
+  def self.parse(text)
+    pattern, groups_text = text.split(' ')
+    groups = groups_text.split(',').map(&:to_i)
+    new(pattern, groups)
+  end
+
+  def initialize(pattern, groups)
+    @pattern, @groups = pattern, groups
   end
 
   attr :pattern, :groups
@@ -118,11 +156,19 @@ class ConditionRecord
   def number_of_arrangements
     arrangements.length
   end
+
+  def unfold
+    self.class.new(([pattern] * 5).join('?'), groups * 5)
+  end
 end
 
 class HotSprings
-  def initialize(text)
-    @conditions = text.lines.map { ConditionRecord.new _1 }
+  def self.parse(text)
+    new(text.lines.map { ConditionRecord.parse _1 })
+  end
+
+  def initialize(conditions)
+    @conditions = conditions
   end
 
   attr :conditions
@@ -130,11 +176,16 @@ class HotSprings
   def sum_of_number_of_arrangements
     conditions.sum(&:number_of_arrangements)
   end
+
+  def unfold
+    self.class.new(conditions.map(&:unfold))
+  end
 end
 
 if defined? DATA
-  springs = HotSprings.new(DATA.read)
+  springs = HotSprings.parse(DATA.read)
   puts springs.sum_of_number_of_arrangements
+  # puts springs.unfold.sum_of_number_of_arrangements
 end
 
 __END__
