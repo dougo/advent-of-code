@@ -128,11 +128,11 @@ class ParabolicReflectorDish
   def width = lines.first.length
 
   def each_position(backward: false)
-    (0...height).each do |row|
-      (0...width).each do |col|
-        yield backward ? Position[height - row - 1, width - col - 1] : Position[row, col]
-      end
-    end
+    unless backward
+      (0).upto(height-1)   { |r| (0).upto(width-1)   { |c| yield Position[r, c] } }
+    else
+      (height-1).downto(0) { |r| (width-1).downto(0) { |c| yield Position[r, c] } }
+    end      
   end
 
   def rock_at(pos)
