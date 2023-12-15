@@ -186,16 +186,18 @@ class LensLibrary
 
   def initialize(init_seq)
     @init_seq = init_seq
+    @boxes = 0.upto(255).map { Box.new(_1, []) }
+    perform_hashmap!
   end
 
-  attr :init_seq
+  attr :init_seq, :boxes
 
   def self.hash_algorithm(string)
     cur = 0
-    string.chars.each do |char|
-      cur += char.codepoints.first
+    string.codepoints.each do |codepoint|
+      cur += codepoint
       cur *= 17
-      cur = cur % 256
+      cur %= 256
     end
     cur
   end
@@ -206,32 +208,51 @@ class LensLibrary
 
   Lens = Data.define(:label, :focal_length)
 
-  Box = Data.define(:id, :lenses)
-
-  def total_focusing_power
-    boxes = 0.upto(255).map { Box.new(_1, []) }
-    init_seq.each do |step|
-      if step.end_with? '-'
-        label, _ = step.split('-')
-        boxes[self.class.hash_algorithm(label)].lenses.delete_if { _1.label == label }
-      elsif step.include? '='
-        label, focal_length = step.split('=')
-        lens = Lens.new(label, focal_length.to_i)
-        lenses = boxes[self.class.hash_algorithm(lens.label)].lenses
-        index = lenses.index { _1.label == label }
-        if index
-          lenses[index] = lens
-        else
-          lenses << lens
-        end
+  Box = Data.define(:id, :lenses) do
+    def add_lens!(lens)
+      index = lenses.index { _1.label == lens.label }
+      if index
+        lenses[index] = lens
+      else
+        lenses << lens
       end
     end
 
-    boxes.map do |box|
-      box.lenses.map.with_index(1) do |lens, i|
-        (box.id + 1) * i * lens.focal_length
-      end.sum
-    end.sum
+    def delete_lens!(label)
+      lenses.delete_if { _1.label == label }
+    end
+
+    def total_focusing_power
+      lenses.each.with_index(1).sum { |lens, i| (id + 1) * i * lens.focal_length }
+    end
+  end
+
+  def box(label)
+    boxes[self.class.hash_algorithm(label)]
+  end
+
+  def add_lens!(lens)
+    box(lens.label).add_lens!(lens)
+  end
+
+  def delete_lens!(label)
+    box(label).delete_lens!(label)
+  end
+
+  def perform_hashmap!
+    init_seq.each do |step|
+      if step.end_with? '-'
+        label, _ = step.split('-')
+        delete_lens!(label)
+      elsif step.include? '='
+        label, focal_length = step.split('=')
+        add_lens!(Lens.new(label, focal_length.to_i))
+      end
+    end
+  end
+
+  def total_focusing_power
+    boxes.sum(&:total_focusing_power)
   end
 end
 
