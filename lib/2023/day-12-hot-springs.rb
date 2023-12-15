@@ -126,6 +126,10 @@ class ConditionRecord
 
   attr :pattern, :groups
 
+  OPERATIONAL = '.'
+  DAMAGED = '#'
+  UNKNOWN = '?'
+
   def self.distributions(amount, buckets)
     if buckets == 1
       [[amount]]
@@ -138,23 +142,59 @@ class ConditionRecord
 
   def self.all_arrangements(total_length, groups)
     wiggle_room = total_length - groups.sum - (groups.length - 1)
-    damaged = groups.map { '#' * _1 }
+    damaged = groups.map { DAMAGED * _1 }
     distributions(wiggle_room, groups.length + 1).map do |dist|
-      leading = '.' * dist[0]
-      middles = dist[1...-1].map { '.' * (_1 + 1) }
-      trailing = '.' * dist[-1]
+      leading = OPERATIONAL * dist[0]
+      middles = dist[1...-1].map { OPERATIONAL * (_1 + 1) }
+      trailing = OPERATIONAL * dist[-1]
       leading + damaged.zip([*middles, trailing]).flatten.join
     end
   end
 
   def arrangements
     self.class.all_arrangements(pattern.length, groups).filter do |arrangement|
-      arrangement.chars.zip(pattern.chars).all? { _1 == _2 || _2 == '?' }
+      arrangement.chars.zip(pattern.chars).all? { _1 == _2 || _2 == UNKNOWN }
     end
   end
 
+  def self.number_of_arrangements_unmemoized((first, *rest), groups, previous_was_damaged = false)
+    case first
+    when nil
+      if groups == [] || groups == [0]
+        1
+      else
+        0
+      end
+    when OPERATIONAL
+      if previous_was_damaged
+        if groups[0] == 0
+          number_of_arrangements(rest, groups[1..])
+        else
+          0
+        end
+      else
+        number_of_arrangements(rest, groups)
+      end
+    when DAMAGED
+      if groups == [] || groups[0] == 0
+        0
+      else
+        number_of_arrangements(rest, [groups[0] - 1, *groups[1..]], true)
+      end
+    when UNKNOWN
+      number_of_arrangements([DAMAGED] + rest, groups, previous_was_damaged) +
+        number_of_arrangements([OPERATIONAL] + rest, groups, previous_was_damaged)
+    end
+  end
+
+  @@memoized_numbers = {}
+
+  def self.number_of_arrangements(*args)
+    @@memoized_numbers[args] ||= number_of_arrangements_unmemoized(*args)
+  end
+
   def number_of_arrangements
-    arrangements.length
+    self.class.number_of_arrangements(pattern.chars, groups)
   end
 
   def unfold
@@ -185,7 +225,7 @@ end
 if defined? DATA
   springs = HotSprings.parse(DATA.read)
   puts springs.sum_of_number_of_arrangements
-  # puts springs.unfold.sum_of_number_of_arrangements
+  puts springs.unfold.sum_of_number_of_arrangements
 end
 
 __END__

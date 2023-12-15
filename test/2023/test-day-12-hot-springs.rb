@@ -62,9 +62,6 @@ END
     assert_equal [1,1,3,1,1,3,1,1,3,1,1,3,1,1,3], cond.groups
 
     assert_equal 1, unfolded.conditions[0].number_of_arrangements
-
-    skip
-
     assert_equal 16384, unfolded.conditions[1].number_of_arrangements
     assert_equal 1, unfolded.conditions[2].number_of_arrangements
     assert_equal 16, unfolded.conditions[3].number_of_arrangements
