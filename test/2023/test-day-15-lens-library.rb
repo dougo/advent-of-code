@@ -12,6 +12,10 @@ END
     assert_equal 52, LensLibrary.hash_algorithm('HASH')
   end
 
+  def test_hash_results
+    assert_equal [30, 253, 97, 47, 14, 180, 9, 197, 48, 214, 231], @subject.hash_results
+  end
+
   def test_sum_of_hash_results
     assert_equal 1320, @subject.sum_of_hash_results
   end

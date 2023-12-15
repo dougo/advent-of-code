@@ -202,9 +202,11 @@ class LensLibrary
     cur
   end
 
-  def sum_of_hash_results
-    init_seq.sum { self.class.hash_algorithm(_1) }
+  def hash_results
+    init_seq.map { self.class.hash_algorithm(_1) }
   end
+
+  def sum_of_hash_results = hash_results.sum
 
   Lens = Data.define(:label, :focal_length)
 
