@@ -15,4 +15,8 @@ END
   def test_sum_of_hash_results
     assert_equal 1320, @subject.sum_of_hash_results
   end
+
+  def test_total_focusing_power
+    assert_equal 145, @subject.total_focusing_power
+  end
 end
