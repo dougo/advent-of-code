@@ -71,8 +71,15 @@ MirrorContraption = Data.define(:grid) do
     puts new_grid
   end
 
-  def num_tiles_energized
-    tiles_energized.length
+  def num_tiles_energized(...)
+    tiles_energized(...).length
+  end
+
+  def num_tiles_energized_max
+    [(0...width).map { num_tiles_energized(Position.new(0, _1), :south) },
+     (0...width).map { num_tiles_energized(Position.new(height-1, _1), :north) },
+     (0...height).map { num_tiles_energized(Position.new(_1, 0), :east) },
+     (0...height).map { num_tiles_energized(Position.new(_1, width-1), :south) }].flatten.max
   end
 end
 
@@ -89,12 +96,14 @@ if defined? DATA
 .|....-|.\\
 ..//.|....
 END
-  contraption.show_tiles_energized
+  # contraption.show_tiles_energized
 
   return unless 46 == contraption.num_tiles_energized
+  return unless 51 == contraption.num_tiles_energized_max
 
   contraption = MirrorContraption.parse(DATA.read)
   puts contraption.num_tiles_energized
+  puts contraption.num_tiles_energized_max
 end
 
 __END__
