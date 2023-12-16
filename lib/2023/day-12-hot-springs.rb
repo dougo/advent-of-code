@@ -130,71 +130,61 @@ class ConditionRecord
   DAMAGED = '#'
   UNKNOWN = '?'
 
-  def self.distributions(amount, buckets)
-    if buckets == 1
-      [[amount]]
-    else
-      (0..amount).flat_map do |i|
-        distributions(amount - i, buckets - 1).map { [i, *_1] }
-      end
-    end
-  end
-
-  def self.all_arrangements(total_length, groups)
-    wiggle_room = total_length - groups.sum - (groups.length - 1)
-    damaged = groups.map { DAMAGED * _1 }
-    distributions(wiggle_room, groups.length + 1).map do |dist|
-      leading = OPERATIONAL * dist[0]
-      middles = dist[1...-1].map { OPERATIONAL * (_1 + 1) }
-      trailing = OPERATIONAL * dist[-1]
-      leading + damaged.zip([*middles, trailing]).flatten.join
-    end
-  end
-
-  def arrangements
-    self.class.all_arrangements(pattern.length, groups).filter do |arrangement|
-      arrangement.chars.zip(pattern.chars).all? { _1 == _2 || _2 == UNKNOWN }
-    end
-  end
-
-  def self.number_of_arrangements_unmemoized((first, *rest), groups, previous_was_damaged = false)
+  def self.process_pattern_unmemoized(pattern, groups, previous_was_damaged = false, &)
+    first, rest = pattern[0], pattern[1..]
     case first
     when nil
       if groups == [] || groups == [0]
-        1
+        yield :success
       else
-        0
+        yield :failure
       end
     when OPERATIONAL
       if previous_was_damaged
         if groups[0] == 0
-          number_of_arrangements(rest, groups[1..])
+          yield :known, first, process_pattern(rest, groups[1..], &)
         else
-          0
+          yield :failure
         end
       else
-        number_of_arrangements(rest, groups)
+        yield :known, first, process_pattern(rest, groups, &)
       end
     when DAMAGED
       if groups == [] || groups[0] == 0
-        0
+        yield :failure
       else
-        number_of_arrangements(rest, [groups[0] - 1, *groups[1..]], true)
+        yield :known, first, process_pattern(rest, [groups[0] - 1, *groups[1..]], true, &)
       end
     when UNKNOWN
-      number_of_arrangements([DAMAGED] + rest, groups, previous_was_damaged) +
-        number_of_arrangements([OPERATIONAL] + rest, groups, previous_was_damaged)
+      process_pattern(DAMAGED + rest, groups, previous_was_damaged, &) +
+        process_pattern(OPERATIONAL + rest, groups, previous_was_damaged, &)
     end
   end
 
-  @@memoized_numbers = {}
+  @@memoized_results = {}
 
-  def self.number_of_arrangements(*args)
-    @@memoized_numbers[args] ||= number_of_arrangements_unmemoized(*args)
+  def self.process_pattern(*args, &block)
+    @@memoized_results[[args, block]] ||= process_pattern_unmemoized(*args, &block)
+  end
+
+  def arrangements
+    self.class.process_pattern(pattern, groups) do |status, spring, arrangements|
+      case status
+      when :failure then []
+      when :success then ['']
+      when :known   then arrangements.map { spring + _1 }
+      end
+    end
   end
 
   def number_of_arrangements
-    self.class.number_of_arrangements(pattern.chars, groups)
+    self.class.process_pattern(pattern, groups) do |status, _, number|
+      case status
+      when :failure then 0
+      when :success then 1
+      when :known   then number
+      end
+    end
   end
 
   def unfold

@@ -14,18 +14,6 @@ END
     @subject = HotSprings.parse(@input)
   end
 
-  def test_distributions
-    assert_equal [[0, 2], [1, 1], [2, 0]], ConditionRecord.distributions(2, 2)
-    assert_equal [[0, 0, 2], [0, 1, 1], [0, 2, 0], [1, 0, 1], [1, 1, 0], [2, 0, 0]],
-                 ConditionRecord.distributions(2, 3)
-  end
-
-  def test_all_arrangements
-    assert_equal ['##..', '.##.', '..##'], ConditionRecord.all_arrangements(4, [2])
-    assert_equal ['#.#..', '#..#.', '#...#', '.#.#.', '.#..#', '..#.#'],
-                 ConditionRecord.all_arrangements(5, [1, 1])
-  end
-
   def test_arrangements
     expected = <<END
 .###.##.#...
