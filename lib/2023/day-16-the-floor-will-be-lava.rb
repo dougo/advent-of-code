@@ -62,13 +62,11 @@ MirrorContraption = Data.define(:grid) do
   end
 
   def show_tiles_energized
-    new_grid = grid.map(&:dup)
-    puts new_grid
-    puts
+    new_grid = grid.map { '.' * width }
     tiles_energized.each do |pos|
       new_grid[pos.row][pos.col] = '#'
     end
-    puts new_grid
+    new_grid
   end
 
   def num_tiles_energized(...)
@@ -84,23 +82,6 @@ MirrorContraption = Data.define(:grid) do
 end
 
 if defined? DATA
-  contraption = MirrorContraption.parse <<END
-.|...\\....
-|.-.\\.....
-.....|-...
-........|.
-..........
-.........\\
-..../.\\\\..
-.-.-/..|..
-.|....-|.\\
-..//.|....
-END
-  # contraption.show_tiles_energized
-
-  return unless 46 == contraption.num_tiles_energized
-  return unless 51 == contraption.num_tiles_energized_max
-
   contraption = MirrorContraption.parse(DATA.read)
   puts contraption.num_tiles_energized
   puts contraption.num_tiles_energized_max
