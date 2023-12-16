@@ -1,3 +1,121 @@
+=begin
+
+--- Day 16: The Floor Will Be Lava ---
+
+Upon closer inspection, the contraption appears to be a flat, two-dimensional square grid containing empty space
+(.), mirrors (/ and \), and splitters (| and -).
+
+The contraption is aligned so that most of the beam bounces around the grid, but each tile on the grid converts
+some of the beam's light into heat to melt the rock in the cavern.
+
+You note the layout of the contraption (your puzzle input). For example:
+
+.|...\....
+|.-.\.....
+.....|-...
+........|.
+..........
+.........\
+..../.\\..
+.-.-/..|..
+.|....-|.\
+..//.|....
+
+The beam enters in the top-left corner from the left and heading to the right. Then, its behavior depends on what
+it encounters as it moves:
+
+  - If the beam encounters empty space (.), it continues in the same direction.
+  - If the beam encounters a mirror (/ or \), the beam is reflected 90 degrees depending on the angle of the
+    mirror. For instance, a rightward-moving beam that encounters a / mirror would continue upward in the mirror's
+    column, while a rightward-moving beam that encounters a \ mirror would continue downward from the mirror's
+    column.
+  - If the beam encounters the pointy end of a splitter (| or -), the beam passes through the splitter as if the
+    splitter were empty space. For instance, a rightward-moving beam that encounters a - splitter would continue in
+    the same direction.
+  - If the beam encounters the flat side of a splitter (| or -), the beam is split into two beams going in each of
+    the two directions the splitter's pointy ends are pointing. For instance, a rightward-moving beam that
+    encounters a | splitter would split into two beams: one that continues upward from the splitter's column and
+    one that continues downward from the splitter's column.
+
+Beams do not interact with other beams; a tile can have many beams passing through it at the same time. A tile is
+energized if that tile has at least one beam pass through it, reflect in it, or split in it.
+
+In the above example, here is how the beam of light bounces around the contraption:
+
+>|<<<\....
+|v-.\^....
+.v...|->>>
+.v...v^.|.
+.v...v^...
+.v...v^..\
+.v../2\\..
+<->-/vv|..
+.|<<<2-|.\
+.v//.|.v..
+
+Beams are only shown on empty tiles; arrows indicate the direction of the beams. If a tile contains beams moving in
+multiple directions, the number of distinct directions is shown instead. Here is the same diagram but instead only
+showing whether a tile is energized (#) or not (.):
+
+######....
+.#...#....
+.#...#####
+.#...##...
+.#...##...
+.#...##...
+.#..####..
+########..
+.#######..
+.#...#.#..
+
+Ultimately, in this example, 46 tiles become energized.
+
+The light isn't energizing enough tiles to produce lava; to debug the contraption, you need to start by analyzing
+the current situation. With the beam starting in the top-left heading right, how many tiles end up being energized?
+
+--- Part Two ---
+
+As you try to work out what might be wrong, the reindeer tugs on your shirt and leads you to a nearby control
+panel. There, a collection of buttons lets you align the contraption so that the beam enters from any edge tile and
+heading away from that edge. (You can choose either of two directions for the beam if it starts on a corner; for
+instance, if the beam starts in the bottom-right corner, it can start heading either left or upward.)
+
+So, the beam could start on any tile in the top row (heading downward), any tile in the bottom row (heading
+upward), any tile in the leftmost column (heading right), or any tile in the rightmost column (heading left). To
+produce lava, you need to find the configuration that energizes as many tiles as possible.
+
+In the above example, this can be achieved by starting the beam in the fourth tile from the left in the top row:
+
+.|<2<\....
+|v-v\^....
+.v.v.|->>>
+.v.v.v^.|.
+.v.v.v^...
+.v.v.v^..\
+.v.v/2\\..
+<-2-/vv|..
+.|<<<2-|.\
+.v//.|.v..
+
+Using this configuration, 51 tiles are energized:
+
+.#####....
+.#.#.#....
+.#.#.#####
+.#.#.##...
+.#.#.##...
+.#.#.##...
+.#.#####..
+########..
+.#######..
+.#...#.#..
+
+Find the initial beam configuration that energizes the largest number of tiles; how many tiles are energized in
+that configuration?
+
+=end
+
+
 MirrorContraption = Data.define(:grid) do
   def self.parse(text)
     new(text.lines(chomp: true))
@@ -6,65 +124,67 @@ MirrorContraption = Data.define(:grid) do
   def height = grid.length
   def width = grid.first.length
 
-  Position = Data.define(:row, :col) do
+  Tile = Data.define(:row, :col) do
     def north = with(row: row - 1)
     def east  = with(col: col + 1)
     def south = with(row: row + 1)
     def west  = with(col: col - 1)
   end
 
-  def tile_at(pos)
-    pos => row: row, col: col
+  def get(tile)
+    tile => row, col
     if (0...height).include?(row) && (0...width).include?(col)
       grid[row][col]
     end
   end
 
-  def tiles_energized(pos = Position.new(0, 0), dir = :east, tiles = Set.new, memo = Set.new)
-    return tiles if memo.include?([pos, dir])
-    memo << [pos, dir]
-    tile = tile_at(pos)
-    return tiles unless tile
-    tiles << pos
-    new_dir = dir
-    other_new_dir = nil
-    case tile_at(pos)
+  Cursor = Data.define(:tile, :dir) do
+    def next(dir)
+      self.class[tile.send(dir), dir]
+    end
+  end
+
+  def tiles_energized(cur = Cursor[Tile[0, 0], :east], tiles = Set.new, memo = Set.new)
+    return tiles if memo.include?(cur)
+    memo << cur
+    cur => tile, dir
+    tile_contents = get(tile)
+    return tiles unless tile_contents
+    tiles << tile
+    dirs = [dir]
+    case tile_contents
     when '/'
       case dir
-      when :north then new_dir = :east
-      when :south then new_dir = :west
-      when :east  then new_dir = :north
-      when :west  then new_dir = :south
+      when :north then dirs = [:east]
+      when :south then dirs = [:west]
+      when :east  then dirs = [:north]
+      when :west  then dirs = [:south]
       end
     when '\\'
       case dir
-      when :north then new_dir = :west
-      when :south then new_dir = :east
-      when :east  then new_dir = :south
-      when :west  then new_dir = :north
+      when :north then dirs = [:west]
+      when :south then dirs = [:east]
+      when :east  then dirs = [:south]
+      when :west  then dirs = [:north]
       end
     when '|'
       case dir
-      when :east, :west
-        new_dir = :north
-        other_new_dir = :south
+      when :east, :west then dirs = [:north, :south]
       end
     when '-'
       case dir
-      when :north, :south
-        new_dir = :east
-        other_new_dir = :west
+      when :north, :south then dirs = [:east, :west]
       end
     end
-    tiles_energized(pos.send(new_dir), new_dir, tiles, memo)
-    tiles_energized(pos.send(other_new_dir), other_new_dir, tiles, memo) if other_new_dir
+    dirs.each { tiles_energized(cur.next(_1), tiles, memo) }
     tiles
   end
 
   def show_tiles_energized
     new_grid = grid.map { '.' * width }
-    tiles_energized.each do |pos|
-      new_grid[pos.row][pos.col] = '#'
+    tiles_energized.each do |tile|
+      tile => row, col
+      new_grid[row][col] = '#'
     end
     new_grid
   end
@@ -73,18 +193,25 @@ MirrorContraption = Data.define(:grid) do
     tiles_energized(...).length
   end
 
-  def num_tiles_energized_max
-    [(0...width).map { num_tiles_energized(Position.new(0, _1), :south) },
-     (0...width).map { num_tiles_energized(Position.new(height-1, _1), :north) },
-     (0...height).map { num_tiles_energized(Position.new(_1, 0), :east) },
-     (0...height).map { num_tiles_energized(Position.new(_1, width-1), :south) }].flatten.max
+  def tiles_in_row(row) = (0...width).map { Tile[row, _1] }
+  def tiles_in_col(col) = (0...height).map { Tile[_1, col] }
+
+  def initial_beam_configurations
+    [tiles_in_row(0)         .map { Cursor[_1, :south] },
+     tiles_in_row(height - 1).map { Cursor[_1, :north] },
+     tiles_in_col(0)         .map { Cursor[_1, :east] },
+     tiles_in_col(width - 1) .map { Cursor[_1, :west] }].flatten
+  end
+
+  def max_tiles_energized
+    initial_beam_configurations.map { num_tiles_energized(_1) }.max
   end
 end
 
 if defined? DATA
   contraption = MirrorContraption.parse(DATA.read)
   puts contraption.num_tiles_energized
-  puts contraption.num_tiles_energized_max
+  puts contraption.max_tiles_energized
 end
 
 __END__

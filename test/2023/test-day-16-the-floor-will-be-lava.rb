@@ -38,7 +38,7 @@ END
     assert_equal 46, @subject.num_tiles_energized
   end
 
-  def test_num_tiles_energized_max
-    assert_equal 51, @subject.num_tiles_energized_max
+  def test_max_tiles_energized
+    assert_equal 51, @subject.max_tiles_energized
   end
 end
