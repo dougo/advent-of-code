@@ -2,47 +2,19 @@
 
 =end
 
-
-class Grid
-  def initialize(rows)
-    @rows = rows
-  end
-
-  attr :rows
-
-  def height = rows.length
-  def width = rows.first.length
-
-  Position = Data.define(:row, :col) do
-    def north = with(row: row - 1)
-    def east  = with(col: col + 1)
-    def south = with(row: row + 1)
-    def west  = with(col: col - 1)
-    def neighbors = [east, south, west, north]
-  end
-
-  def has?(pos)
-    pos => row, col
-    (0...height).include?(row) && (0...width).include?(col)
-  end  
-
-  def [](pos)
-    pos => row, col
-    rows[row][col] if has?(pos)
-  end
-
-  def []=(pos, value)
-    pos => row, col
-    rows[row][col] = value if has?(pos)
-  end
-end
-
 class ClumsyCrucible
+  # I cheated and peeked at the top finisher's code:
+  # https://github.com/danielhuang/aoc-2023/blob/master/src/bin/17.rs
+
+  # The first a-ha is to use Dijkstra's algorithm.
+  # https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
+
+  # The second a-ha is to use crucible states and legal moves as the nodes and edges in the graph, rather than
+  # just grid positions and neighbors. In particular, a crucible state includes both its position and the
+  # direction it's facing, and a move is either 1, 2, or 3 steps forward followed by a left or right turn.
+
   def self.parse(text)
-    rows = text.lines(chomp: true).map do |line|
-      line.split('').map(&:to_i)
-    end
-    new(Grid.new(rows))
+    new(Grid.new(text.lines(chomp: true).map { _1.chars.map(&:to_i) }))
   end
 
   def initialize(heat_loss)
@@ -51,42 +23,108 @@ class ClumsyCrucible
 
   attr :heat_loss
 
+  Position = Data.define(:row, :col) do
+    def north = with(row: row - 1)
+    def east  = with(col: col + 1)
+    def south = with(row: row + 1)
+    def west  = with(col: col - 1)
+  end
+
+  class Grid
+    def initialize(rows)
+      @rows = rows
+    end
+
+    attr :rows
+
+    def height = rows.length
+    def width = rows.first.length
+
+    def has?(pos)
+      pos => row, col
+      (0...height).include?(row) && (0...width).include?(col)
+    end  
+
+    def [](pos)
+      pos => row, col
+      rows[row][col] if has?(pos)
+    end
+  end
+
   def in_grid?(pos) = heat_loss.has?(pos)
   def height = heat_loss.height
   def width = heat_loss.width
 
+  State = Data.define(:position, :facing)
+
+  Move = Data.define(:from, :to, :heat_loss)
+
+  def step_forward(state)
+    next_position = state.position.send(state.facing)
+    state.with(position: next_position) if in_grid?(next_position)
+  end
+
+  CLOCKWISE_DIRECTIONS = %i(north east south west)
+
+  def turn(state, delta)
+    i = CLOCKWISE_DIRECTIONS.index(state.facing)
+    state.with(facing: CLOCKWISE_DIRECTIONS[(i + delta) % 4])
+  end
+  def turn_left(state) = turn(state, -1)
+  def turn_right(state) = turn(state, +1)
+
+  def each_legal_move(state)
+    start_state = state
+    heat_loss_of_move = 0
+    3.times do
+      state = step_forward(state) or return
+      heat_loss_of_move += heat_loss[state.position]
+      [turn_left(state), turn_right(state)].each do |state_after_move|
+        yield Move[start_state, state_after_move, heat_loss_of_move]
+      end
+    end
+  end
+
   def minimal_heat_loss
-    # https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
+    origin = Position[0,0]
+    destination = Position[height-1, width-1]
+    start_states = [State[origin, :east], State[origin, :south]]
 
-    start = Grid::Position[0,0]
-    target = Grid::Position[height-1, width-1]
-
-    total_heat_loss = Grid.new(height.times.map { [Float::INFINITY] * width })
-    previous_position_along_minimal_path = {}
-    frontier = [start]
+    frontier = Set[]
     explored = Set[]
-    total_heat_loss[start] = 0
+    end_states = Set[]
+
+    total_heat_loss = Hash.new(Float::INFINITY)
+    start_states.each do
+      total_heat_loss[_1] = 0
+      frontier << _1
+    end
 
     until frontier.empty?
-      minimal_unexplored_position = frontier.min_by { total_heat_loss[_1] }
-      frontier.delete(minimal_unexplored_position)
-      explored << minimal_unexplored_position
-      cur_heat_loss = total_heat_loss[minimal_unexplored_position]
+      state = frontier.min_by { total_heat_loss[_1] } # TODO: use a priority queue
+      frontier.delete(state)
+      explored << state
+      end_states << state if state.position == destination
+      current_heat_loss = total_heat_loss[state]
 
-      minimal_unexplored_position.neighbors.each do |neighbor|
-        if in_grid?(neighbor) && !explored.include?(neighbor)
-          frontier << neighbor
-          total_heat_loss_of_neighbor = cur_heat_loss + heat_loss[neighbor]
-          if total_heat_loss_of_neighbor < total_heat_loss[neighbor]
-            total_heat_loss[neighbor] = total_heat_loss_of_neighbor
-            previous_position_along_minimal_path[neighbor] = minimal_unexplored_position
+      each_legal_move(state) do |move|
+        unless explored.include?(move.to)
+          frontier << move.to
+          total_heat_loss_after_move = current_heat_loss + move.heat_loss
+          if total_heat_loss_after_move < total_heat_loss[move.to]
+            total_heat_loss[move.to] = total_heat_loss_after_move
           end
         end
       end
     end
 
-    total_heat_loss[target]
+    end_states.map { total_heat_loss[_1] }.min
   end
+end
+
+if defined? DATA
+  crucible = ClumsyCrucible.parse(DATA.read)
+  puts crucible.minimal_heat_loss
 end
 
 __END__
