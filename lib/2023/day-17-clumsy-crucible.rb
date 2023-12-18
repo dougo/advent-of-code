@@ -57,7 +57,7 @@ class ClumsyCrucible
 
   State = Data.define(:position, :facing)
 
-  Move = Data.define(:from, :to, :heat_loss)
+  Move = Data.define(:to, :heat_loss)
 
   def step_forward(state)
     next_position = state.position.send(state.facing)
@@ -74,13 +74,12 @@ class ClumsyCrucible
   def turn_right(state) = turn(state, +1)
 
   def each_legal_move(state)
-    start_state = state
     heat_loss_of_move = 0
     3.times do
       state = step_forward(state) or return
       heat_loss_of_move += heat_loss[state.position]
       [turn_left(state), turn_right(state)].each do |state_after_move|
-        yield Move[start_state, state_after_move, heat_loss_of_move]
+        yield Move[state_after_move, heat_loss_of_move]
       end
     end
   end
@@ -90,35 +89,43 @@ class ClumsyCrucible
     destination = Position[height-1, width-1]
     start_states = [State[origin, :east], State[origin, :south]]
 
-    frontier = Set[]
+    # The frontier is the set of unexplored states that are one move away from an explored state.  In lieu of a
+    # priority queue, frontier is indexed by total heat loss; since the heat loss of every city block is a small
+    # positive integer, these indexes grow monotonically and slowly, so we can just count up from zero and explore
+    # them in ascending order.
+    # (I got this idea from Tahnan's code: https://github.com/Tahnan/Advent-of-Code-2023/blob/main/advent_17.py)
+    frontier = Hash.new { |h,k| h[k] = Set[] }
     explored = Set[]
-    end_states = Set[]
 
     total_heat_loss = Hash.new(Float::INFINITY)
     start_states.each do
       total_heat_loss[_1] = 0
-      frontier << _1
+      frontier[0] << _1
     end
 
-    until frontier.empty?
-      state = frontier.min_by { total_heat_loss[_1] } # TODO: use a priority queue
-      frontier.delete(state)
-      explored << state
-      end_states << state if state.position == destination
-      current_heat_loss = total_heat_loss[state]
+    current_heat_loss = 0
+    loop do
+      current_heat_loss += 1 until frontier.key?(current_heat_loss)
+      frontier.delete(current_heat_loss).each do |state|
 
-      each_legal_move(state) do |move|
-        unless explored.include?(move.to)
-          frontier << move.to
-          total_heat_loss_after_move = current_heat_loss + move.heat_loss
-          if total_heat_loss_after_move < total_heat_loss[move.to]
-            total_heat_loss[move.to] = total_heat_loss_after_move
+        return current_heat_loss if state.position == destination
+
+        explored << state
+        each_legal_move(state) do |move|
+          unless explored.include?(move.to)
+            total_heat_loss_of_dest = total_heat_loss[move.to]
+            total_heat_loss_after_move = current_heat_loss + move.heat_loss
+            if total_heat_loss_after_move < total_heat_loss_of_dest
+              frontier[total_heat_loss_of_dest].delete(move.to)
+              total_heat_loss[move.to] = total_heat_loss_after_move
+              frontier[total_heat_loss_after_move] << move.to
+            else
+              frontier[total_heat_loss_of_dest] << move.to
+            end
           end
         end
       end
     end
-
-    end_states.map { total_heat_loss[_1] }.min
   end
 end
 
