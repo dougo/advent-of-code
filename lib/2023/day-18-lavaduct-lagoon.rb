@@ -59,124 +59,109 @@ edges are also painted according to the color codes in the dig plan.
 The Elves are concerned the lagoon won't be large enough; if they follow their dig plan, how many cubic meters of
 lava could it hold?
 
+--- Part Two ---
+
+The Elves were right to be concerned; the planned lagoon would be much too small.
+
+After a few minutes, someone realizes what happened; someone swapped the color and instruction parameters when
+producing the dig plan. They don't have time to fix the bug; one of them asks if you can extract the correct
+instructions from the hexadecimal codes.
+
+Each hexadecimal code is six hexadecimal digits long. The first five hexadecimal digits encode the distance in
+meters as a five-digit hexadecimal number. The last hexadecimal digit encodes the direction to dig: 0 means R, 1
+means D, 2 means L, and 3 means U.
+
+So, in the above example, the hexadecimal codes can be converted into the true instructions:
+
+#70c710 = R 461937
+#0dc571 = D 56407
+#5713f0 = R 356671
+#d2c081 = D 863240
+#59c680 = R 367720
+#411b91 = D 266681
+#8ceee2 = L 577262
+#caa173 = U 829975
+#1b58a2 = L 112010
+#caa171 = D 829975
+#7807d2 = L 491645
+#a77fa3 = U 686074
+#015232 = L 5411
+#7a21e3 = U 500254
+
+Digging out this loop and its interior produces a lagoon that can hold an impressive 952408144115 cubic meters of
+lava.
+
+Convert the hexadecimal color codes into the correct instructions; if the Elves follow this new dig plan, how many
+cubic meters of lava could the lagoon hold?
+
 =end
 
 class LavaductLagoon
-  def self.parse(text)
-    new(text.lines.map { Instruction.parse(_1) })
+  def self.parse(text, corrected: false)
+    new(text.lines.map { Instruction.parse(_1, corrected:) })
   end
 
   def initialize(instructions)
-    trench = [Position[0,0]]
-    instructions.each do |instr|
-      trench += instr.positions(trench.last)
-    end
-
-    min_row, max_row = trench.map(&:row).minmax
-    min_col, max_col = trench.map(&:col).minmax
-
-    height = max_row - min_row + 1
-    width  = max_col - min_col + 1
-
-    @grid = Grid.new(height.times.map { '.' * width })
-
-    trench.each do |pos|
-      pos => row, col
-      new_pos = Position[row - min_row, col - min_col]
-      grid[new_pos] = '#'
-    end
+    @instructions = instructions
   end
 
-  attr :grid
+  attr :instructions
 
   Instruction = Data.define(:dir, :len) do
     DIR_MAP = { north: 'U', south: 'D', east: 'R', west: 'L' }.invert
+    CORRECTED_DIRS = %i(east south west north)
 
-    def self.parse(line)
-      line =~ /([UDLR]) (\d+) \(#(......)\)/
-      new(DIR_MAP[$1], $2.to_i)
-    end
-
-    def positions(pos)
-      positions = []
-      len.times do
-        pos = pos.send(dir)
-        positions << pos
+    def self.parse(line, corrected: false)
+      line =~ /([UDLR]) (\d+) \(#(.....)(.)\)/
+      unless corrected
+        new(DIR_MAP[$1], $2.to_i)
+      else
+        new(CORRECTED_DIRS[$4.to_i], $3.to_i(16))
       end
-      positions
+    end
+
+    def move(start)
+      start => row, col
+      VECTOR_MAP[dir] => drow, dcol
+      Position[row + drow * len, col + dcol * len]
     end
   end
 
-  Position = Data.define(:row, :col) do
-    def north = with(row: row - 1)
-    def east  = with(col: col + 1)
-    def south = with(row: row + 1)
-    def west  = with(col: col - 1)
-  end
+  Position = Data.define(:row, :col)
 
-  class Grid
-    def initialize(rows)
-      @rows = rows
-    end
+  Vector = Data.define(:drow, :dcol)
 
-    attr :rows
+  VECTOR_MAP = { north: Vector[-1,0], south: Vector[1,0], west: Vector[0,-1], east: Vector[0,1] }
 
-    def height = rows.length
-    def width = rows.first.length
-
-    def has?(pos)
-      pos => row, col
-      (0...height).include?(row) && (0...width).include?(col)
-    end  
-
-    def [](pos)
-      pos => row, col
-      rows[row][col] if has?(pos)
-    end
-
-    def []=(pos, char)
-      pos => row, col
-      rows[row][col] = char if has?(pos)
-    end
-  end
-
-  def first_pos_inside_trench
+  def vertices
     pos = Position[0,0]
-    until grid[pos] == '#'
-      pos = pos.east
-    end
-    pos.east.south
+    instructions.map { pos = _1.move(pos) }
   end
 
-  def fill_trench(pos)
-    queue = [pos]
-    until queue.empty?
-      pos = queue.shift
-      if grid[pos] == '.'
-        grid[pos] = '*'
-        queue.push(pos.west)
-        queue.push(pos.east)
-        queue.push(pos.north)
-        queue.push(pos.south)
-      end
-    end
+  def determinant(pos1, pos2)
+    pos1 => row1, col1
+    pos2 => row2, col2
+    row1 * col2 - row2 * col1
+  end
+
+  # https://en.wikipedia.org/wiki/Shoelace_formula
+  def shoelace_formula
+    vertices.each_cons(2).sum { determinant(_1, _2) } + determinant(vertices.last, vertices.first)
   end
 
   def lava_area
-    fill_trench(first_pos_inside_trench)
-
-    (0...grid.height).sum do |row|
-      (0...grid.width).count do |col|
-        pos = Position[row, col]
-        grid[pos] == '#' || grid[pos] == '*'
-      end
-    end
+    # I somehow combined the shoelace formula and Pick's theorem to get this formula.
+    # https://en.wikipedia.org/wiki/Pick%27s_theorem
+    # TODO: explain why this works!
+    perimeter = instructions.sum(&:len)
+    (shoelace_formula.abs + perimeter) / 2 + 1
   end
 end
 
 if defined? DATA
   input = DATA.read
   puts LavaductLagoon.parse(input).lava_area
+  puts LavaductLagoon.parse(input, corrected: true).lava_area
 end
       
 
