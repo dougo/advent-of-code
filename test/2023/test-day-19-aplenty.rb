@@ -28,4 +28,8 @@ END
   def test_sum_accepted_ratings
     assert_equal 19114, @subject.sum_accepted_ratings
   end
+
+  def test_num_combinations_of_acceptable_ratings
+    assert_equal 167409079868000, @subject.num_combinations_of_acceptable_ratings
+  end
 end

@@ -63,6 +63,21 @@ ratings for all of the accepted parts gives the sum total of 19114.
 Sort through all of the parts you've been given; what do you get if you add together all of the rating numbers for
 all of the parts that ultimately get accepted?
 
+--- Part Two ---
+
+Even with your help, the sorting process still isn't fast enough.
+
+One of the Elves comes up with a new plan: rather than sort parts individually through all of these workflows,
+maybe you can figure out in advance which combinations of ratings will be accepted or rejected.
+
+Each of the four ratings (x, m, a, s) can have an integer value ranging from a minimum of 1 to a maximum of
+4000. Of all possible distinct combinations of ratings, your job is to figure out which ones will be accepted.
+
+In the above example, there are 167409079868000 distinct combinations of ratings that will be accepted.
+
+Consider only your list of workflows; the list of part ratings that the Elves wanted you to sort is no longer
+relevant. How many distinct combinations of ratings will be accepted by the Elves' workflows?
+
 =end
 
 require_relative '../util'
@@ -105,10 +120,33 @@ Aplenty = Data.define(:workflows, :parts) do
           when '>' then rating > value
           end
         end
+
+        def fraction_of_matching_ratings
+          case comparator
+          when '<' then (value - 1)/4000
+          when '>' then (4000 - value)/4000
+          end
+        end
+
+        def invert
+          case comparator
+          when '<' then with(comparator: '>', value: value - 1)
+          when '>' then with(comparator: '<', value: value + 1)
+          end
+        end
       end
 
       def process(part)
         destination if !condition || condition.matches?(part)
+      end
+
+      def invert_condition
+        condition.invert
+      end
+
+      def num_combinations_of_acceptable_ratings(system, conditions)
+        conditions += [condition] if condition
+        system.num_combinations_of_acceptable_ratings(destination, conditions)
       end
     end
 
@@ -116,6 +154,15 @@ Aplenty = Data.define(:workflows, :parts) do
       rules.each do |rule|
         destination = rule.process(part)
         return destination if destination
+      end
+    end
+
+    def num_combinations_of_acceptable_ratings(system, conditions)
+      inverted_conditions = []
+      rules.sum do |rule|
+        rule.num_combinations_of_acceptable_ratings(system, conditions + inverted_conditions).tap do
+          inverted_conditions << rule.invert_condition if rule.condition
+        end
       end
     end
   end
@@ -138,10 +185,10 @@ Aplenty = Data.define(:workflows, :parts) do
   def accept?(part)
     label = :in
     loop do
-      label = workflows[label].process(part)
       case label
       when :A then return true
       when :R then return false
+      else label = workflows[label].process(part)
       end
     end
   end
@@ -149,12 +196,42 @@ Aplenty = Data.define(:workflows, :parts) do
   def sum_accepted_ratings
     parts.filter { accept?(_1) }.sum(&:sum_ratings)
   end
+
+  def combine_conditions_for_comparator(comparator, conditions)
+    values = conditions.map(&:value)
+    case comparator
+    when '<' then values.min || 4001
+    when '>' then values.max || 0
+    end
+  end
+
+  def combine_conditions_for_category(conditions)
+    max, min = ['<', '>'].map do |comparator|
+      combine_conditions_for_comparator(comparator, conditions.filter { _1.comparator == comparator })
+    end
+    max - min - 1
+  end
+
+  def combine_conditions(conditions)
+    %i(x m a s).map do |category|
+      combine_conditions_for_category(conditions.filter { _1.category == category })
+    end.reduce(:*)
+  end
+
+  def num_combinations_of_acceptable_ratings(label = :in, conditions = [])
+    case label
+    when :A then combine_conditions(conditions)
+    when :R then 0
+    else workflows[label].num_combinations_of_acceptable_ratings(self, conditions)
+    end
+  end
 end
 
 if defined? DATA
   input = DATA.read
   obj = Aplenty.parse(input)
   puts obj.sum_accepted_ratings
+  puts obj.num_combinations_of_acceptable_ratings
 end
 
 __END__
