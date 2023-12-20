@@ -10,18 +10,27 @@ class TestUtil < Minitest::Test
     assert_equal({ a: 'a', b: 'b' }, %w(a b b).index_by(&:to_sym))
   end
 
-  def test_sum
-    assert_equal 0, [].sum
-    assert_equal 0, [].sum { }
-    assert_equal 1, [1].sum
-    assert_equal 3, (1..2).sum
-    assert_equal 7, (1..2).sum { |x| x + 2 }
-    assert_equal 11, %w(one two three).sum(&:length)
-  end
-
   def test_in?
     assert 2.in?(1..3)
     assert 'b'.in?(%w(a b c))
     refute 'x'.in?(%w(a b c))
+  end
+
+  def test_position
+    pos = Position[23, 45]
+    assert_equal Position[23, 56], pos.move(EAST, 11)
+    assert_equal Position[23, -13], pos.move(WEST, 58)
+    assert_equal Position[16, 45], pos.move(NORTH, 7)
+    assert_equal Position[34, 45], pos.move(SOUTH, 11)
+    assert_equal Position[24, 45], pos.move(SOUTH)
+  end
+
+  def test_direction
+    assert_equal EAST, NORTH.turn_right
+    assert_equal SOUTH, EAST.turn_right
+    assert_equal WEST, NORTH.turn_left
+    assert_equal SOUTH, WEST.turn_left
+    assert_equal NORTH, EAST.turn(-1)
+    assert_equal SOUTH, EAST.turn(+1)
   end
 end
