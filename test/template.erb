@@ -1,0 +1,14 @@
+require 'test-helper'
+require '<%= require_name %>'
+
+class Test<%= class_name %> < Minitest::Test
+  def setup
+    @input = <<END
+END
+    @subject = <%= class_name %>.parse(@input)
+  end
+
+  def test_<%= method_name %>
+    assert_equal 0, @subject.<%= method_name %>
+  end
+end

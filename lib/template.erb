@@ -1,0 +1,27 @@
+=begin
+
+=end
+
+require_relative '../util'
+
+class <%= class_name %>
+  def self.parse(text)
+    lines = text.lines(chomp: true)
+    new(lines)
+  end
+
+  def initialize(*args)
+  end
+
+  def <%= method_name %>
+    0
+  end
+end
+
+if defined? DATA
+  input = DATA.read
+  obj = <%= class_name %>.parse(input)
+  puts obj.<%= method_name %>
+end
+
+__END__
