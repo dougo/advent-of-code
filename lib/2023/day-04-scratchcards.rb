@@ -82,36 +82,25 @@ of scratchcards, how many total scratchcards do you end up with?
 
 class Scratchcards
   Card = Data.define(:winning_numbers, :your_numbers) do
-    def matching_numbers
-      winning_numbers & your_numbers
+    def self.parse(line)
+      _, numbers = line.split(': ')
+      new(*numbers.split(' | ').map { _1.split(' ').map(&:to_i) })
     end
 
-    def points
-      if matching_numbers.length > 0
-        2 ** (matching_numbers.length - 1)
-      else
-        0
-      end
-    end
+    def matching_numbers = winning_numbers & your_numbers
+
+    def points = matching_numbers.any? ? 2 ** (matching_numbers.length - 1) : 0
   end
 
   def initialize(text)
-    @cards = text.lines(chomp: true).map do |line|
-      _, numbers = line.split(': ')
-      winning, your = numbers.split(' | ')
-      Card[winning.split(' ').map(&:to_i), your.split(' ').map(&:to_i)]
-    end
+    @cards = text.lines(chomp: true).map { Card.parse(_1) }
   end
 
   attr :cards
 
-  def points
-    cards.map(&:points)
-  end
+  def points = cards.map(&:points)
 
-  def total_points
-    points.sum
-  end
+  def total_points = points.sum
 
   def instance_counts
     counts = [1] * cards.length
@@ -123,9 +112,7 @@ class Scratchcards
     counts
   end
 
-  def total_cards
-    instance_counts.sum
-  end
+  def total_cards = instance_counts.sum
 end
 
 if defined? DATA
