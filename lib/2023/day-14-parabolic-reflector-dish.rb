@@ -113,6 +113,8 @@ Run the spin cycle for 1000000000 cycles. Afterward, what is the total load on t
 
 =end
 
+require_relative '../util'
+
 ParabolicReflectorDish = Data.define(:lines) do
   def self.parse(text)
     new(text.lines(chomp: true))
@@ -144,22 +146,15 @@ ParabolicReflectorDish = Data.define(:lines) do
     lines[row][col] = rock
   end
 
-  Position = Data.define(:row, :col) do
-    def north = with(row: row - 1)
-    def east  = with(col: col + 1)
-    def south = with(row: row + 1)
-    def west  = with(col: col - 1)
-  end
-
   def tilt!(dir)
-    backward = (dir == :south || dir == :east)
+    backward = (dir == SOUTH || dir == EAST)
     each_position(backward: backward) do |pos|
       if rock_at(pos) == 'O'
         last = pos
-        cur = pos.send(dir)
+        cur = pos.move(dir)
         while rock_at(cur) == '.'
           last = cur
-          cur = cur.send(dir)
+          cur = cur.move(dir)
         end
         set_rock_at!(pos, '.')
         set_rock_at!(last, 'O')
@@ -174,7 +169,7 @@ ParabolicReflectorDish = Data.define(:lines) do
   end
 
   def cycle
-    tilt(:north).tilt(:west).tilt(:south).tilt(:east)
+    tilt(NORTH).tilt(WEST).tilt(SOUTH).tilt(EAST)
   end
 
   A_BILLION = 1_000_000_000
@@ -211,7 +206,7 @@ end
 
 if defined? DATA
   dish = ParabolicReflectorDish.parse(DATA.read)
-  puts dish.total_load_when_tilted(:north)
+  puts dish.total_load_when_tilted(NORTH)
   puts dish.cycle_a_billion_times.total_load
 end
 

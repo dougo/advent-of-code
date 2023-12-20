@@ -30,11 +30,11 @@ O..#.OO...
 #....###..
 #....#....
 END
-    assert_equal tilted.lines(chomp: true), @subject.tilt(:north).lines
+    assert_equal tilted.lines(chomp: true), @subject.tilt(NORTH).lines
   end
 
   def test_total_load_when_tilted_north
-    assert_equal 136, @subject.total_load_when_tilted(:north)
+    assert_equal 136, @subject.total_load_when_tilted(NORTH)
   end
 
   def test_cycle
