@@ -156,10 +156,9 @@ class PulsePropagation
     connect_modules
     @pulse_queue = []
     @pulses_sent = { high: 0, low: 0 }
-    @state_history = []
   end
 
-  attr :modules, :pulse_queue, :pulses_sent, :state_history
+  attr :modules, :pulse_queue, :pulses_sent
 
   def connect_modules
     modules.values.each do |source|
@@ -202,9 +201,6 @@ class PulsePropagation
 
     def receive_pulse(system, pulse)
     end
-
-    def state
-    end
   end
 
   class FlipFlop < Module
@@ -214,10 +210,6 @@ class PulsePropagation
     end
 
     attr_accessor :on
-
-    def state
-      on
-    end
 
     def receive_pulse(system, pulse)
       if pulse.type == :low
@@ -237,10 +229,6 @@ class PulsePropagation
 
     def add_input(source)
       remembered_pulse_types[source] = :low
-    end
-
-    def state
-      remembered_pulse_types
     end
 
     def receive_pulse(system, pulse)
@@ -281,17 +269,12 @@ class PulsePropagation
     end
   end
 
-  def state
-    modules.map { [_1, _2.state] }.to_h
-  end
-
   def send_pulse(pulse)
     pulse_queue << pulse
     pulses_sent[pulse.type] += 1
   end
 
   def push_button
-    state_history << state
     modules[:button].push(self)
     until pulse_queue.empty?
       pulse = pulse_queue.shift
@@ -300,12 +283,8 @@ class PulsePropagation
   end
 
   def pulse_product
-    1000.times do
-      push_button
-      break if state.in?(state_history)
-    end
-    cycle_times = 1000 / state_history.length
-    pulses_sent[:low] * cycle_times * pulses_sent[:high] * cycle_times
+    1000.times { push_button }
+    pulses_sent[:low] * pulses_sent[:high]
   end
 end
 
