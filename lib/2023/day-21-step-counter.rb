@@ -161,9 +161,7 @@ class StepCounter
       if grid[pos] == '.'
         neighbor_steps = neighbors(pos).filter_map do |n|
           s = grid[n]
-          case s
-          when Integer then s
-          end
+          s if Integer === s
         end
         if neighbor_steps.any?
           new_grid[pos] = neighbor_steps.min + 1
@@ -182,10 +180,7 @@ class StepCounter
     num = 0
     new_grid.each_position do |pos|
       s = new_grid[pos]
-      case s
-      when Integer
-        num += 1 if s.even?
-      end
+      num += 1 if Integer === s && s.even?
     end
     num
   end
