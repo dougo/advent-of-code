@@ -2,7 +2,7 @@ require 'date'
 require 'erb'
 
 year = ENV['YEAR'] || Date.today.year
-day = (ENV['DAY'] || Date.today.day).rjust(2, '0')
+day = (ENV['DAY'] || Date.today.day.to_s).rjust(2, '0')
 class_name = ARGV[0]
 method_name = ARGV[1]
 dasherize = class_name.gsub(/([A-Z])/, '-\1').downcase
