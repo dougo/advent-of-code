@@ -185,15 +185,15 @@ class StepCounter
   def num_plots_in_steps(steps)
     pos = start_pos
     visited = Set[pos]
-    plots_at_steps = [[pos]]
+    last_count, count = 0, 1
+    frontier = [pos]
     1.upto(steps) do
-      frontier = plots_at_steps.last.flat_map(&:neighbors).to_set
+      frontier = frontier.flat_map(&:neighbors).to_set
       frontier = (frontier - visited).filter { empty?(_1) }
       visited.merge(frontier)
-      plots_at_steps << frontier
+      last_count, count = count, last_count + frontier.length
     end
-
-    (steps.even? ? 0 : 1).step(by: 2, to: steps).sum { plots_at_steps[_1].length }
+    count
   end
 end
 
