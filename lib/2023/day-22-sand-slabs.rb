@@ -131,6 +131,24 @@ So, in this example, 5 bricks can be safely disintegrated.
 Figure how the blocks will settle based on the snapshot. Once they've settled, consider disintegrating a single
 brick; how many bricks could be safely chosen as the one to get disintegrated?
 
+--- Part Two ---
+
+Disintegrating bricks one at a time isn't going to be fast enough. While it might sound dangerous, what you really
+need is a chain reaction.
+
+You'll need to figure out the best brick to disintegrate. For each brick, determine how many other bricks would
+fall if that brick were disintegrated.
+
+Using the same example as above:
+
+  - Disintegrating brick A would cause all 6 other bricks to fall.
+  - Disintegrating brick F would cause only 1 other brick, G, to fall.
+  - Disintegrating any other brick would cause no other bricks to fall. So, in this example, the sum of the number
+    of other bricks that would fall as a result of disintegrating each brick is 7.
+
+For each brick, determine how many other bricks would fall if that brick were disintegrated. What is the sum of the
+number of other bricks that would fall?
+
 =end
 
 require_relative '../util'
@@ -192,16 +210,23 @@ class SandSlabs
   def bricks_above(brick) = brick.positions.filter_map { by_position[_1.above] }.to_set - Set[brick]
   def bricks_below(brick) = brick.positions.filter_map { by_position[_1.below] }.to_set - Set[brick]
 
-  def disintegrateable_bricks
-    settled.filter do |brick|
-      bricks_above(brick).none? do |above|
-        bricks_below(above) == Set[brick]
-      end
-    end
+  def bricks_supported_by(bricks)
+    above = bricks.map { bricks_above(_1) }.reduce(:union) - bricks
+    above.filter { (bricks_below(_1) - bricks).empty? }
   end
 
-  def num_disintegrateable_bricks
-    disintegrateable_bricks.length
+  def disintegrateable_bricks = settled.filter { bricks_supported_by([_1]).empty? }
+  def num_disintegrateable_bricks = disintegrateable_bricks.length
+
+  def bricks_that_would_fall(supporting_bricks)
+    # TODO: can this be made more efficient?
+    supported = bricks_supported_by(supporting_bricks)
+    return [] if supported.empty?
+    supported + bricks_that_would_fall(supporting_bricks + supported)
+  end
+
+  def sum_other_bricks_that_would_fall
+    (settled - disintegrateable_bricks).sum { bricks_that_would_fall([_1]).length }
   end
 end
 
@@ -209,6 +234,7 @@ if defined? DATA
   input = DATA.read
   obj = SandSlabs.parse(input)
   puts obj.num_disintegrateable_bricks
+  puts obj.sum_other_bricks_that_would_fall
 end
 
 __END__
