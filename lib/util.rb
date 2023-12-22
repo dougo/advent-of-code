@@ -34,3 +34,39 @@ EAST = Direction[0,1]
 WEST = Direction[0,-1]
 
 DIRECTIONS_CLOCKWISE = [NORTH, EAST, SOUTH, WEST]
+
+class Grid
+  def self.parse(text) = new(text.lines(chomp: true))
+  def initialize(rows) = @rows = rows
+  attr :rows
+
+  def height = rows.length
+  def width = rows.first.length
+
+  def row_range = 0...height
+  def col_range = 0...width
+
+  def include?(pos) = pos.row.in?(row_range) && pos.col.in?(col_range)
+
+  def [](pos)
+    rows[pos.row][pos.col] if include?(pos)
+  end
+
+  def []=(pos, val)
+    rows[pos.row][pos.col] = val if include?(pos)
+  end
+
+  def each_position(&block)
+    enum = Enumerator.new do |y|
+      row_range.each { |row| col_range.each { |col| y << Position[row,col] } }
+      self
+    end
+    block ? enum.each(&block) : enum
+  end
+
+  def ==(grid) = rows == grid.rows
+  def eql?(grid) = rows.eql?(grid.rows)
+  def hash = rows.hash
+
+  def dup = self.class.new(rows.map(&:dup))
+end

@@ -103,57 +103,12 @@ class StepCounter
     new(Grid.new(lines))
   end
 
-  def initialize(grid)
-    @grid = grid
-  end
-
+  def initialize(grid) = @grid = grid
   attr :grid
 
-  class Grid
-    def initialize(rows)
-      @rows = rows
-    end
+  def start_pos = grid.each_position.find { grid[_1] == 'S' }
 
-    attr :rows
-
-    def height = rows.length
-    def width = rows.first.length
-
-    def has?(pos)
-      pos => row, col
-      (0...height).include?(row) && (0...width).include?(col)
-    end  
-
-    def [](pos)
-      pos => row, col
-      rows[row][col] if has?(pos)
-    end
-
-    def []=(pos, contents)
-      pos => row, col
-      rows[row][col] = contents if has?(pos)
-    end
-
-    def each_position
-      (0...height).each do |row|
-        (0...width).each do |col|
-          yield Position[row, col]
-        end
-      end
-    end
-
-    def dup
-      self.class.new(rows.map(&:dup))
-    end
-  end
-
-  def start_pos
-    grid.each_position { return _1 if grid[_1] == 'S' }
-  end
-
-  def empty?(pos)
-    grid[pos].in?('.S')
-  end
+  def empty?(pos) = grid[pos].in?('.S')
 
   def num_plots_in_steps(steps)
     pos = start_pos

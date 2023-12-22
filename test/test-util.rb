@@ -34,4 +34,51 @@ class TestUtil < Minitest::Test
     assert_equal NORTH, EAST.turn(-1)
     assert_equal SOUTH, EAST.turn(+1)
   end
+
+  def test_grid
+    grid = Grid.parse <<END
+1234
+ABCD
+*.#@
+END
+    assert_equal 3, grid.height
+    assert_equal 4, grid.width
+    assert_equal 0...3, grid.row_range
+    assert_equal 0...4, grid.col_range
+
+    assert_includes grid, Position[1,2]
+    refute_includes grid, Position[-1,2]
+    refute_includes grid, Position[3,2]
+    refute_includes grid, Position[1,-1]
+    refute_includes grid, Position[1,4]
+    assert_equal 'C', grid[Position[1,2]]
+    assert_nil grid[Position[3,4]]
+
+    grid[Position[1,2]] = 'Q'
+    assert_equal 'ABQD', grid.rows[1]
+    grid[Position[-2,2]] = 'Z'
+    assert_equal 'ABQD', grid.rows[1]
+
+    posns = []
+    assert_same grid, grid.each_position { posns << _1 }
+    assert_equal 12, posns.length
+    assert_equal Position[0,0], posns[0]
+    assert_equal Position[0,1], posns[1]
+    assert_equal Position[2,3], posns[11]
+
+    assert_equal posns, grid.each_position.to_a
+
+    int_grid, float_grid = Grid.new([[2]]), Grid.new([[2.0]])
+    assert_equal int_grid, float_grid
+    refute_operator int_grid, :eql?, float_grid
+    assert_operator Grid.new([[2]]), :eql?, int_grid
+    assert_includes Set[int_grid], Grid.new([[2]])
+    refute_includes Set[int_grid], float_grid
+
+    copy = grid.dup
+    refute_same grid, copy
+    assert_equal grid, copy
+    copy[Position[1,2]] = 'C'
+    assert_equal 'ABQD', grid.rows[1]
+  end
 end
