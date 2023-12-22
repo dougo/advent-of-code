@@ -23,6 +23,7 @@ class TestUtil < Minitest::Test
     assert_equal Position[16, 45], pos.move(NORTH, 7)
     assert_equal Position[34, 45], pos.move(SOUTH, 11)
     assert_equal Position[24, 45], pos.move(SOUTH)
+    assert_equal [Position[22, 45], Position[23, 46], Position[24, 45], Position[23, 44]], pos.neighbors
   end
 
   def test_direction

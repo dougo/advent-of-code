@@ -151,15 +151,11 @@ class StepCounter
     grid.each_position { return _1 if grid[_1] == 'S' }
   end
 
-  def neighbors(pos)
-    [NORTH, EAST, SOUTH, WEST].map { pos.move(_1) }
-  end
-
   def expand_steps(grid)
     new_grid = grid.dup
     grid.each_position do |pos|
       if grid[pos] == '.'
-        neighbor_steps = neighbors(pos).filter_map do |n|
+        neighbor_steps = pos.neighbors.filter_map do |n|
           s = grid[n]
           s if Integer === s
         end

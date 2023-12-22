@@ -15,6 +15,7 @@ end
 
 Position = Data.define(:row, :col) do
   def move(dir, dist=1) = self.class.new(row + dir.drow * dist, col + dir.dcol * dist)
+  def neighbors = DIRECTIONS_CLOCKWISE.map { move(_1) }
 end
 
 Direction = Data.define(:drow, :dcol) do
