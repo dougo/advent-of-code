@@ -151,34 +151,23 @@ class StepCounter
     grid.each_position { return _1 if grid[_1] == 'S' }
   end
 
-  def expand_steps(grid)
-    new_grid = grid.dup
-    grid.each_position do |pos|
-      if grid[pos] == '.'
-        neighbor_steps = pos.neighbors.filter_map do |n|
-          s = grid[n]
-          s if Integer === s
-        end
-        if neighbor_steps.any?
-          new_grid[pos] = neighbor_steps.min + 1
-        end
-      end
-    end
-    new_grid
+  def empty?(pos)
+    grid[pos].in?('.S')
   end
 
   def num_plots_in_steps(steps)
-    new_grid = grid.dup
-    new_grid[start_pos] = 0
-    steps.times do |i|
-      new_grid = expand_steps(new_grid)
+    pos = start_pos
+    visited = Set[pos]
+    plots_at_steps = [[pos]]
+    1.upto(steps) do
+      frontier = plots_at_steps.last.flat_map(&:neighbors).to_set
+      frontier = (frontier - visited).filter { empty?(_1) }
+      visited.merge(frontier)
+      plots_at_steps << frontier
     end
-    num = 0
-    new_grid.each_position do |pos|
-      s = new_grid[pos]
-      num += 1 if Integer === s && s.even?
-    end
-    num
+
+    # TOOD: odd steps, start at 1 -- add a failing test
+    0.step(by: 2, to: steps).sum { plots_at_steps[_1].length }
   end
 end
 
