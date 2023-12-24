@@ -98,35 +98,17 @@ class NeverTellMeTheOdds
   Hailstone = Data.define(:pos, :vel) do
     def self.parse(text)
       pos_vals, vel_vals = text.split(' @ ').map { _1.split(', ').map(&:to_i) }
-      new(Position3D.new(*pos_vals), Velocity.new(*vel_vals))
+      new(Vector[*pos_vals], Vector[*vel_vals])
     end
 
     def inspect = "#{pos} @ #{vel}"
     def to_s = inspect
 
-    def x = pos.x
-    def y = pos.y
-    def z = pos.z
-    def dx = vel.dx
-    def dy = vel.dy
-    def dz = vel.dz
+    def pos2d = Vector[*pos[0..1]]
+    def vel2d = Vector[*vel[0..1]]
 
-    def pos2d = Matrix.column_vector([x, y])
-    def vel2d = Matrix.column_vector([dx, dy])
-
-    def pos_at_time(t)
-      Position3D[x + t * dx, y + t * dy, z + t * dz] if t
-    end
-  end
-
-  Position3D = Data.define(:x, :y, :z) do
-    def inspect = "[#{x},#{y},#{z}]"
-    def to_s = inspect
-  end
-
-  Velocity = Data.define(:dx, :dy, :dz) do
-    def inspect = "[#{dx},#{dy},#{dz}]"
-    def to_s = inspect
+    def pos_at_time(t) = pos + t * vel
+    def pos2d_at_time(t) = pos2d + t * vel2d
   end
 
   def hailstone_pairs
@@ -154,25 +136,21 @@ class NeverTellMeTheOdds
   # T = M^-1 * (b.pos - a.pos)
 
   def times_when_paths_cross(a, b)
-    coeffs = a.vel2d.hstack(-b.vel2d)
+    coeffs = Matrix.columns([a.vel2d, -b.vel2d])
     unless coeffs.singular? # a singular matrix is not invertible, i.e. the paths are parallel.
-      times = coeffs.inverse * (b.pos2d - a.pos2d)
-      times.column(0).to_a # convert the column matrix to an array of [t_a, t_b]
+      coeffs.inverse * (b.pos2d - a.pos2d)
     end
   end
 
   def position_where_paths_cross(a, b)
-    t_a, _ = times_when_paths_cross(a, b)
-    a.pos_at_time(t_a)
+    times = times_when_paths_cross(a, b)
+    a.pos2d_at_time(times[0]) if times
   end
 
   def num_intersections_in_test_area(range)
     hailstone_pairs.count do |a, b|
-      t_a, t_b = times_when_paths_cross(a, b)
-      if t_a && t_a > 0 && t_b > 0
-        pos = a.pos_at_time(t_a)
-        pos.x.in?(range) && pos.y.in?(range)
-      end
+      times = times_when_paths_cross(a, b)
+      times&.all?(&:positive?) && a.pos2d_at_time(times[0]).all? { _1.in?(range) }
     end
   end
 end

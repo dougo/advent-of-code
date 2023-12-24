@@ -1,4 +1,5 @@
 require 'test-helper'
+require 'matrix'
 require '2023/day-24-never-tell-me-the-odds'
 
 class TestNeverTellMeTheOdds < Minitest::Test
@@ -15,45 +16,40 @@ END
 
   def test_paths_cross
     a, b = @subject.hailstones.values_at(0, 1)
-    pos = @subject.position_where_paths_cross(a, b)
-    assert_equal [14+1/3r, 15+1/3r], [pos.x, pos.y]
+    assert_equal Vector[14+1/3r, 15+1/3r], @subject.position_where_paths_cross(a, b)
 
     a, b = @subject.hailstones.values_at(0, 2)
-    pos = @subject.position_where_paths_cross(a, b)
-    assert_equal [11+2/3r, 16+2/3r], [pos.x, pos.y]
+    assert_equal Vector[11+2/3r, 16+2/3r], @subject.position_where_paths_cross(a, b)
 
     a, b = @subject.hailstones.values_at(0, 3)
-    pos = @subject.position_where_paths_cross(a, b)
-    assert_equal [6.2, 19.4], [pos.x, pos.y]
+    assert_equal Vector[6.2, 19.4], @subject.position_where_paths_cross(a, b)
 
     a, b = @subject.hailstones.values_at(0, 4)
-    t_a, _ = @subject.times_when_paths_cross(a, b)
-    assert_predicate t_a, :negative?
+    times = @subject.times_when_paths_cross(a, b)
+    assert_predicate times[0], :negative?
 
     a, b = @subject.hailstones.values_at(1, 2)
     assert_nil @subject.position_where_paths_cross(a, b)
 
     a, b = @subject.hailstones.values_at(1, 3)
-    pos = @subject.position_where_paths_cross(a, b)
-    assert_equal [-6, -5], [pos.x, pos.y]
+    assert_equal Vector[-6, -5], @subject.position_where_paths_cross(a, b)
 
     a, b = @subject.hailstones.values_at(1, 4)
-    t_a, t_b = @subject.times_when_paths_cross(a, b)
-    assert_predicate t_a, :negative?
-    assert_predicate t_b, :negative?
+    times = @subject.times_when_paths_cross(a, b)
+    assert_predicate times[0], :negative?
+    assert_predicate times[1], :negative?
 
     a, b = @subject.hailstones.values_at(2, 3)
-    pos = @subject.position_where_paths_cross(a, b)
-    assert_equal [-2, 3], [pos.x, pos.y]
+    assert_equal Vector[-2, 3], @subject.position_where_paths_cross(a, b)
 
     a, b = @subject.hailstones.values_at(2, 4)
-    _, t_b = @subject.times_when_paths_cross(a, b)
-    assert_predicate t_b, :negative?
+    times = @subject.times_when_paths_cross(a, b)
+    assert_predicate times[1], :negative?
 
     a, b = @subject.hailstones.values_at(3, 4)
-    t_a, t_b = @subject.times_when_paths_cross(a, b)
-    assert_predicate t_a, :negative?
-    assert_predicate t_b, :negative?
+    times = @subject.times_when_paths_cross(a, b)
+    assert_predicate times[0], :negative?
+    assert_predicate times[1], :negative?
   end
 
   def test_num_intersections_in_test_area
