@@ -28,7 +28,7 @@ END
 
     a, b = @subject.hailstones.values_at(0, 4)
     t_a, _ = @subject.times_when_paths_cross(a, b)
-    assert_operator t_a, :<, 0
+    assert_predicate t_a, :negative?
 
     a, b = @subject.hailstones.values_at(1, 2)
     assert_nil @subject.position_where_paths_cross(a, b)
@@ -39,8 +39,8 @@ END
 
     a, b = @subject.hailstones.values_at(1, 4)
     t_a, t_b = @subject.times_when_paths_cross(a, b)
-    assert_operator t_a, :<, 0
-    assert_operator t_b, :<, 0
+    assert_predicate t_a, :negative?
+    assert_predicate t_b, :negative?
 
     a, b = @subject.hailstones.values_at(2, 3)
     pos = @subject.position_where_paths_cross(a, b)
@@ -48,12 +48,12 @@ END
 
     a, b = @subject.hailstones.values_at(2, 4)
     _, t_b = @subject.times_when_paths_cross(a, b)
-    assert_operator t_b, :<, 0
+    assert_predicate t_b, :negative?
 
     a, b = @subject.hailstones.values_at(3, 4)
     t_a, t_b = @subject.times_when_paths_cross(a, b)
-    assert_operator t_a, :<, 0
-    assert_operator t_b, :<, 0
+    assert_predicate t_a, :negative?
+    assert_predicate t_b, :negative?
   end
 
   def test_num_intersections_in_test_area
