@@ -68,6 +68,44 @@ long.)
 Find the longest hike you can take through the hiking trails listed on your map. How many steps long is the longest
 hike?
 
+--- Part Two ---
+
+As you reach the trailhead, you realize that the ground isn't as slippery as you expected; you'll have no problem
+climbing up the steep slopes.
+
+Now, treat all slopes as if they were normal paths (.). You still want to make sure you have the most scenic hike
+possible, so continue to ensure that you never step onto the same tile twice. What is the longest hike you can
+take?
+
+In the example above, this increases the longest hike to 154 steps:
+
+#S#####################
+#OOOOOOO#########OOO###
+#######O#########O#O###
+###OOOOO#.>OOO###O#O###
+###O#####.#O#O###O#O###
+###O>...#.#O#OOOOO#OOO#
+###O###.#.#O#########O#
+###OOO#.#.#OOOOOOO#OOO#
+#####O#.#.#######O#O###
+#OOOOO#.#.#OOOOOOO#OOO#
+#O#####.#.#O#########O#
+#O#OOO#...#OOO###...>O#
+#O#O#O#######O###.###O#
+#OOO#O>.#...>O>.#.###O#
+#####O#.#.###O#.#.###O#
+#OOOOO#...#OOO#.#.#OOO#
+#O#########O###.#.#O###
+#OOO###OOO#OOO#...#O###
+###O###O#O###O#####O###
+#OOO#OOO#O#OOO>.#.>O###
+#O###O###O#O###.#.#O###
+#OOOOO###OOO###...#OOO#
+#####################O#
+
+Find the longest hike you can take through the surprisingly dry hiking trails listed on your map. How many steps
+long is the longest hike?
+
 =end
 
 require_relative '../util'
@@ -79,11 +117,15 @@ class ALongWalk
 
   def initialize(grid)
     @grid = grid
+    @start = empty_pos(0)
+    @goal = empty_pos(grid.height-1)
+    @graph = to_graph
   end
 
-  attr :grid
+  attr :grid, :start, :goal, :graph
 
-  def empty?(pos) = grid[pos].in?('.<^>v'.chars)
+  def arrow?(pos) = grid[pos].in?('<^>v'.chars)
+  def empty?(pos) = grid[pos] == '.' || arrow?(pos)
 
   def empty_pos(row) = grid.col_range.map { Position[row,_1] }.find { empty?(_1) }
 
@@ -96,54 +138,115 @@ class ALongWalk
     end
   end
 
-  State = Data.define(:pos, :prev_pos)
-
-  def neighbors(pos)
+  def neighbors(pos, dry: false)
     dir = direction(pos)
-    dir ? [pos.move(dir)] : pos.neighbors
+    dir && !dry ? [pos.move(dir)] : pos.neighbors
   end
 
-  def next_states(state)
-    posns = neighbors(state.pos).reject { _1 == state.prev_pos || !empty?(_1) }
-    posns.map { State[_1, state.pos] }
+  def empty_neighbors(...)
+    neighbors(...).filter { empty?(_1) }
   end
 
-  def longest_hike_steps
-    # Google says, if the graph is acyclic, use shortest path algorithm with negative weights.
-    # The example seems to be acyclic (obeying the slope constraints), but then why do the instructions specify
-    # that you can't retrace your steps?
+  def intersection?(pos)
+    pos.neighbors.count { arrow?(_1) } > 1
+  end
 
-    origin, destination = empty_pos(0), empty_pos(grid.height - 1)
-    start_state = State[origin, nil]
+  Graph = Data.define(:edges) do
+    def outgoing_edges(node) = edges.filter { _1.source == node }
+    def incoming_edges(node) = edges.filter { _1.target == node }
+  end
+
+  Edge = Data.define(:source, :steps, :target) do
+    def reverse = with(source: target, target: source)
+    def inspect = "#{source} -#{steps}-> #{target}"
+    def to_s = inspect
+  end
+
+  def node?(pos) = pos == goal || intersection?(pos)
+
+  def next_pos(pos, prev = nil) = empty_neighbors(pos).find { _1 != prev }
+
+  def next_node(pos, prev = nil, steps = 0)
+    node?(pos) ? [pos, steps] : next_node(next_pos(pos, prev), pos, steps + 1)
+  end
+
+  def all_edges_from(node, nodes)
+    return [] if node == goal # TODO: write a test that needs this line??
+    return [] if node.in?(nodes)
+    empty_neighbors(node).filter_map do |arrow|
+      unless next_pos(arrow) == node
+        dest, steps = next_node(arrow)
+        nodes << node
+        [Edge[node, steps+1, dest]] + all_edges_from(dest, nodes)
+      end
+    end.flatten
+  end
+
+  def to_graph
+    node, steps = next_node(start)
+    nodes = Set[start]
+    edges = [Edge[start, steps, node]] + all_edges_from(node, nodes)
+    Graph[edges]
+  end
+
+  # Google says, if the graph is acyclic, use shortest path algorithm with negative weights. The slope constraints
+  # make the graph acyclic. But in part 2 we're ignoring the slopes, so we have to keep around the history of
+  # intersections in each state so we don't revisit an intersection.
+  State = Data.define(:pos, :history) do
+    def to_s = "#{pos}, [#{history.join(', ')}]"
+  end
+
+  def state_edges(state, dry)
+    outgoing = graph.outgoing_edges(state.pos)
+    if dry
+      incoming = graph.incoming_edges(state.pos).map(&:reverse)
+      (outgoing + incoming).reject { _1.target.in?(state.history) }
+    else
+      outgoing
+    end
+  end
+
+  def next_state(state, edge)
+    State[edge.target, state.history + [edge.target]]
+  end
+
+  def longest_hike_steps(dry: false)
+    start_state = State[start, Set[start]]
 
     total_steps = Hash.new(Float::INFINITY)
-    frontier = Hash.new { |h,k| h[k] = Set[] }
+    frontier = Hash.new { |h,k| h[k] = [] }
 
     total_steps[start_state] = 0
     frontier[0] << start_state 
 
-    end_states = []
-    loop do
+    min_steps = 0
+    until frontier.empty?
       current_steps = frontier.keys.min
-      min_frontier = frontier.delete(current_steps)
-      break if min_frontier.empty?
-      min_frontier.each do |state|
-        end_states << state if state.pos == destination
-        next_states(state).each do |dest|
-          total_steps_to_dest = total_steps[dest]
-          total_steps_after_stepping = current_steps - 1
-          if total_steps_after_stepping < total_steps_to_dest
-            frontier[total_steps_to_dest].delete(dest)
-            total_steps[dest] = total_steps_after_stepping
-            frontier[total_steps_after_stepping] << dest
-          else
-            frontier[total_steps_to_dest] << dest
-          end
+      if frontier[current_steps].empty?
+        frontier.delete(current_steps)
+        next
+      end
+      state = frontier[current_steps].shift
+      if state.pos == goal && current_steps < min_steps
+        min_steps = current_steps
+        # TODO: figure out how to actually terminate once the best guess is correct
+        puts "new best guess: #{-current_steps} ?"
+      end
+      state_edges(state, dry).each do |edge|
+        target_state = next_state(state, edge)
+        total_steps_to_dest = total_steps[target_state]
+        total_steps_after_stepping = current_steps - edge.steps
+        if total_steps_after_stepping < total_steps_to_dest
+          frontier[total_steps_to_dest].delete(target_state)
+          total_steps[target_state] = total_steps_after_stepping
+          frontier[total_steps_after_stepping] << target_state
+        else
+          frontier[total_steps_to_dest] << target_state
         end
       end
     end
 
-    end_states.map { -total_steps[_1] }.max
+    -min_steps
   end
 end
 
@@ -151,6 +254,7 @@ if defined? DATA
   input = DATA.read
   obj = ALongWalk.parse(input)
   puts obj.longest_hike_steps
+  puts obj.longest_hike_steps(dry: true)
 end
 
 __END__
