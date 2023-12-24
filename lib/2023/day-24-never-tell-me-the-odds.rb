@@ -81,6 +81,7 @@ intersections occur within the test area?
 
 =end
 
+require 'matrix'
 require_relative '../util'
 
 class NeverTellMeTheOdds
@@ -110,6 +111,9 @@ class NeverTellMeTheOdds
     def dy = vel.dy
     def dz = vel.dz
 
+    def pos2d = Matrix.column_vector([x, y])
+    def vel2d = Matrix.column_vector([dx, dy])
+
     def pos_at_time(t)
       Position3D[x + t * dx, y + t * dy, z + t * dz] if t
     end
@@ -130,31 +134,36 @@ class NeverTellMeTheOdds
     range.product(range).filter { _1 < _2 }.map { hailstones.values_at(_1, _2) }
   end
 
-  # Ignoring the Z dimension, the two paths will intersect at [x,y] when:
+  # Ignoring the Z dimension, the paths of a and b will intersect at [x,y] at times t_a and t_b:
   #      x = a.x + t_a * a.dx = b.x + t_b * b.dx
   # and  y = a.y + t_a * a.dy = b.y + t_b * b.dy.
-  # 
-  # Solve both equations for t_a in terms of t_b, then equate them to solve for t_b:
-  # t_a =  (b.x - a.x + t_b * b.dx) / a.dx = (b.y - a.y + t_b * b.dy) / a.dy
-  #        a.dy * (b.x - a.x + t_b * b.dx) = a.dx * (b.y - a.y + t_b * b.dy)
-  # a.dy * (b.x - a.x) + a.dy * t_b * b.dx = a.dx * (b.y - a.y) + a.dx * t_b * b.dy
-  #  a.dy * t_b * b.dx - a.dx * t_b * b.dy = a.dx * (b.y - a.y) - a.dy * (b.x - a.x)
-  #      t_b * (a.dy * b.dx - a.dx * b.dy) = a.dx * (b.y - a.y) - a.dy * (b.x - a.x
-  # 
-  # t_b = (a.dx * (b.y - a.y) - a.dy * (b.x - a.x)) / (a.dy * b.dx - a.dx * b.dy)
+  #
+  # We can represent this system of linear equations using column vectors:
+  # https://en.wikipedia.org/wiki/System_of_linear_equations#Vector_equation
+  #
+  # a.pos + t_a * a.vel = b.pos + t_b * b.vel
+  # t_a * a.vel - t_b * b.vel = b.pos - a.pos
+  #
+  # We can simplify this using matrixes: https://en.wikipedia.org/wiki/System_of_linear_equations#Matrix_equation
+  # Let T be the column matrix [t_a, t_b] and M be the matrix of coefficients with columns a.vel and -b.vel. Then:
+  #
+  # M * T = b.pos - a.pos
+  #
+  # and we can solve for T: https://en.wikipedia.org/wiki/System_of_linear_equations#Matrix_solution
+  #
+  # T = M^-1 * (b.pos - a.pos)
 
   def times_when_paths_cross(a, b)
-    denom = a.dy * b.dx - a.dx * b.dy
-    unless denom == 0
-      t_b = (a.dx * (b.y - a.y) - a.dy * (b.x - a.x)) / denom.to_r
-      t_a = (b.x - a.x + t_b * b.dx) / a.dx # TODO: handle a.dx = 0?
-      [t_a, t_b]
+    coeffs = a.vel2d.hstack(-b.vel2d)
+    unless coeffs.singular? # a singular matrix is not invertible, i.e. the paths are parallel.
+      times = coeffs.inverse * (b.pos2d - a.pos2d)
+      times.column(0).to_a # convert the column matrix to an array of [t_a, t_b]
     end
   end
 
   def position_where_paths_cross(a, b)
     t_a, _ = times_when_paths_cross(a, b)
-    t_a && a.pos_at_time(t_a)
+    a.pos_at_time(t_a)
   end
 
   def num_intersections_in_test_area(range)
