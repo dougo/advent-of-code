@@ -135,16 +135,18 @@ class NeverTellMeTheOdds
   # and  y = a.y + t_a * a.dy = b.y + t_b * b.dy.
   # 
   # Solve both equations for t_a in terms of t_b, then equate them to solve for t_b:
-  # t_a =       (b.x - a.x + t_b * b.dx) / a.dx = (b.y - a.y + t_b * b.dy) / a.dy
-  #             a.dy * (b.x - a.x + t_b * b.dx) = a.dx * (b.y - a.y + t_b * b.dy)
-  # a.dy * b.x - a.dy * a.x + t_b * a.dy * b.dx = a.dx * b.y - a.dx * a.y + t_b * a.dx * b.dy
-  #       t_b * a.dy * b.dx - t_b * a.dx * b.dy = a.dx * b.y - a.dx * a.y - a.dy * b.x + a.dy * a.x
-  # t_b = (a.dx * b.y - a.dx * a.y - a.dy * b.x + a.dy * a.x) / (a.dy * b.dx - a.dx * b.dy)
+  # t_a =  (b.x - a.x + t_b * b.dx) / a.dx = (b.y - a.y + t_b * b.dy) / a.dy
+  #        a.dy * (b.x - a.x + t_b * b.dx) = a.dx * (b.y - a.y + t_b * b.dy)
+  # a.dy * (b.x - a.x) + a.dy * t_b * b.dx = a.dx * (b.y - a.y) + a.dx * t_b * b.dy
+  #  a.dy * t_b * b.dx - a.dx * t_b * b.dy = a.dx * (b.y - a.y) - a.dy * (b.x - a.x)
+  #      t_b * (a.dy * b.dx - a.dx * b.dy) = a.dx * (b.y - a.y) - a.dy * (b.x - a.x
+  # 
+  # t_b = (a.dx * (b.y - a.y) - a.dy * (b.x - a.x)) / (a.dy * b.dx - a.dx * b.dy)
 
   def times_when_paths_cross(a, b)
     denom = a.dy * b.dx - a.dx * b.dy
     unless denom == 0
-      t_b = (a.dx * b.y - a.dx * a.y - a.dy * b.x + a.dy * a.x) / denom.to_r
+      t_b = (a.dx * (b.y - a.y) - a.dy * (b.x - a.x)) / denom.to_r
       t_a = (b.x - a.x + t_b * b.dx) / a.dx # TODO: handle a.dx = 0?
       [t_a, t_b]
     end
