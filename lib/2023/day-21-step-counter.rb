@@ -170,11 +170,10 @@ class StepCounter
 
   def initialize(grid, infinite: false)
     @grid, @infinite = grid, infinite
+    @start = grid.each_position.find { grid[_1] == 'S' }
   end
-  attr :grid
+  attr :grid, :start
   def infinite? = @infinite
-
-  def start_pos = grid.each_position.find { grid[_1] == 'S' }
 
   def plot_at(pos)
     grid[infinite? ? Position[pos.row % grid.height, pos.col % grid.width] : pos]
@@ -182,14 +181,14 @@ class StepCounter
 
   def empty?(pos) = plot_at(pos).in?(['.', 'S'])
 
+  def empty_neighbors(pos) = pos.neighbors.filter { empty?(_1) }
+
   def num_plots_in_steps(steps)
-    pos = start_pos
-    visited = Set[pos]
+    visited = Set[start]
     last_count, count = 0, 1
-    frontier = [pos]
+    frontier = [start]
     1.upto(steps) do
-      frontier = frontier.flat_map(&:neighbors).to_set
-      frontier = (frontier - visited).filter { empty?(_1) }
+      frontier = frontier.flat_map { empty_neighbors(_1) }.to_set - visited
       visited.merge(frontier)
       last_count, count = count, last_count + frontier.length
     end
