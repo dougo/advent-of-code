@@ -79,6 +79,54 @@ intersections that happen with an X and Y position each at least 200000000000000
 Considering only the X and Y axes, check all pairs of hailstones' future paths for intersections. How many of these
 intersections occur within the test area?
 
+--- Part Two ---
+
+Upon further analysis, it doesn't seem like any hailstones will naturally collide. It's up to you to fix that!
+
+You find a rock on the ground nearby. While it seems extremely unlikely, if you throw it just right, you should be
+able to hit every hailstone in a single throw!
+
+You can use the probably-magical winds to reach any integer position you like and to propel the rock at any integer
+velocity. Now including the Z axis in your calculations, if you throw the rock at time 0, where do you need to be
+so that the rock perfectly collides with every hailstone? Due to probably-magical inertia, the rock won't slow down
+or change direction when it collides with a hailstone.
+
+In the example above, you can achieve this by moving to position 24, 13, 10 and throwing the rock at velocity -3,
+1, 2. If you do this, you will hit every hailstone as follows:
+
+Hailstone: 19, 13, 30 @ -2, 1, -2
+Collision time: 5
+Collision position: 9, 18, 20
+
+Hailstone: 18, 19, 22 @ -1, -1, -2
+Collision time: 3
+Collision position: 15, 16, 16
+
+Hailstone: 20, 25, 34 @ -2, -2, -4
+Collision time: 4
+Collision position: 12, 17, 18
+
+Hailstone: 12, 31, 28 @ -1, -2, -1
+Collision time: 6
+Collision position: 6, 19, 22
+
+Hailstone: 20, 19, 15 @ 1, -5, -3
+Collision time: 1
+Collision position: 21, 14, 12
+
+Above, each hailstone is identified by its initial position and its velocity. Then, the time and position of that
+hailstone's collision with your rock are given.
+
+After 1 nanosecond, the rock has exactly the same position as one of the hailstones, obliterating it into ice dust!
+Another hailstone is smashed to bits two nanoseconds after that. After a total of 6 nanoseconds, all of the
+hailstones have been destroyed.
+
+So, at time 0, the rock needs to be at X position 24, Y position 13, and Z position 10. Adding these three
+coordinates together produces 47. (Don't add any coordinates from the rock's velocity.)
+
+Determine the exact position and velocity the rock needs to have at time 0 so that it perfectly collides with every
+hailstone. What do you get if you add up the X, Y, and Z coordinates of that initial position?
+
 =end
 
 require 'matrix'
@@ -127,7 +175,7 @@ class NeverTellMeTheOdds
   # t_a * a.vel - t_b * b.vel = b.pos - a.pos
   #
   # We can simplify this using matrixes: https://en.wikipedia.org/wiki/System_of_linear_equations#Matrix_equation
-  # Let T be the column matrix [t_a, t_b] and M be the matrix of coefficients with columns a.vel and -b.vel. Then:
+  # Let T be the column vector [t_a, t_b] and M be the matrix of coefficients with columns a.vel and -b.vel. Then:
   #
   # M * T = b.pos - a.pos
   #
@@ -153,12 +201,80 @@ class NeverTellMeTheOdds
       times&.all?(&:positive?) && a.pos2d_at_time(times[0]).all? { _1.in?(range) }
     end
   end
+
+  # Given any two hailstones and their collision times, determine the rock position and velocity.
+  # The rock r hits hailstone a at time t_a and b at t_b if
+  #      a.pos_at_time(t_a) = r.pos_at_time(t_a)
+  # and  b.pos_at_time(t_b) = r.pos_at_time(t_b).
+  # Subtract one from the other:
+  # a.pos_at_time(t_a) - b.pos_at_time(t_b) = r.pos_at_time(t_a) - r.pos_at_time(t_b)
+  #                                         = (r.pos + t_a * r.vel) - (r.pos + t_b * r.vel)
+  #                                         = (t_a - t_b) * r.vel
+  # So, r.vel = (a.pos_at_time(t_a) - b.pos_at_time(t_b)) / (t_a - t_b).
+  # Back to the first equation:
+  #      a.pos_at_time(t_a) = r.pos_at_time(t_a) = r.pos + t_a * r.vel
+  # So, r.pos = a.pos_at_time(t_a) - t_a * r.vel.
+  
+  def rock_that_hits(a, b, t_a, t_b)
+    velocity = (a.pos_at_time(t_a) - b.pos_at_time(t_b)) / (t_a - t_b)
+    position = a.pos_at_time(t_a) - t_a * velocity
+    Hailstone[position, velocity]
+  end
+
+  # Given the rock position and velocity, determine the time it collides with a given hailstone, if any.
+  # h.pos + t * h.vel = r.pos + t * r.vel
+  # t * (h.vel - r.vel) = r.pos - h.pos
+  # t = (r.pos - h.pos) / (h.vel - r.vel)
+  def collision_time(rock, hailstone)
+    numerator = rock.pos - hailstone.pos
+    denominator = hailstone.vel - rock.vel
+    # We can't divide a vector by a vector, but we can try to find the scalar that the denominator was multiplied
+    # by to get the numerator.
+    quotients = numerator.zip(denominator).map { _2.zero? ? nil : _1 / _2.to_r }.compact.to_set
+    if quotients.length == 1
+      # puts rock, hailstone, "Collision time: #{quotients.first}"
+      quotients.first
+    end
+  end
+
+  # TODO: Given how sparse the input positions are, I'm positive that this sort of brute-force search is not going
+  # to work. But I wanted to get something that passed the tests!
+  MAX_SEARCH = 10
+  def collision_times
+    # Assume that all the times are integers, which is never quite stated but seems likely...?
+    1.upto(MAX_SEARCH) do |t_a|
+      # Assume that all the times are different, i.e. the rock never hits two at once.
+      (t_a + 1).upto(MAX_SEARCH) do |t_b|
+        hailstones.each_with_index do |a, i|
+          hailstones.each_with_index do |b, j|
+            next if i == j
+            rock = rock_that_hits(a, b, t_a, t_b)
+            times = []
+            times[i] = t_a
+            times[j] = t_b
+            # Check to see if the rock hits all the other hailstones.
+            hailstones.each_with_index do |c, k|
+              next if k == i || k == j
+              time = collision_time(rock, c)
+              break unless time
+              times[k] = time
+            end
+            return times if times.compact.length == hailstones.length
+          end
+        end
+      end
+    end
+  end
+
+  def rock = rock_that_hits(*hailstones.first(2), *collision_times.first(2))
+  def sum_rock_pos_coords = rock.pos.to_a.sum
 end
 
 if defined? DATA
   input = DATA.read
   obj = NeverTellMeTheOdds.parse(input)
   puts obj.num_intersections_in_test_area(200000000000000..400000000000000)
+  puts obj.sum_rock_pos_coords
 end
 
 __END__

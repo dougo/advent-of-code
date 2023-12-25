@@ -55,4 +55,25 @@ END
   def test_num_intersections_in_test_area
     assert_equal 2, @subject.num_intersections_in_test_area(7..27)
   end
+
+  def test_rock_that_hits
+    a, b = @subject.hailstones.values_at(0, 1)
+    rock = @subject.rock_that_hits(a, b, 5, 3)
+    assert_equal Vector[24,13,10], rock.pos
+    assert_equal Vector[-3,1,2], rock.vel
+  end
+
+  def test_collision_times
+    assert_equal [5, 3, 4, 6, 1], @subject.collision_times
+  end
+
+  def test_rock
+    rock = @subject.rock
+    assert_equal Vector[24,13,10], rock.pos
+    assert_equal Vector[-3,1,2], rock.vel
+  end
+
+  def test_sum_rock_pos_coords
+    assert_equal 47, @subject.sum_rock_pos_coords
+  end
 end
