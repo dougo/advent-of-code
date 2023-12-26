@@ -163,36 +163,51 @@ how many garden plots could the Elf reach in exactly 26501365 steps?
 require_relative '../util'
 
 class StepCounter
-  def self.parse(text, infinite: false)
+  def self.parse(text)
     lines = text.lines(chomp: true).map(&:chars)
-    new(Grid.new(lines), infinite:)
+    new(Grid.new(lines))
   end
 
-  def initialize(grid, infinite: false)
-    @grid, @infinite = grid, infinite
+  def initialize(grid)
+    @grid = grid
     @start = grid.each_position.find { grid[_1] == 'S' }
   end
   attr :grid, :start
-  def infinite? = @infinite
 
-  def plot_at(pos)
-    grid[infinite? ? Position[pos.row % grid.height, pos.col % grid.width] : pos]
+  # Can pos be reached in an even number of steps?
+  def even?(pos)
+    ((pos.row - start.row) + (pos.col - start.col)).even?
+  end      
+
+  def plot_at(pos, infinite: false)
+    grid[infinite ? Position[pos.row % grid.height, pos.col % grid.width] : pos]
   end
 
-  def empty?(pos) = plot_at(pos).in?(['.', 'S'])
+  def empty?(pos, ...) = plot_at(pos, ...).in?(['.', 'S'])
 
-  def empty_neighbors(pos) = pos.neighbors.filter { empty?(_1) }
+  def empty_neighbors(pos, ...) = pos.neighbors.filter { empty?(_1, ...) }
 
-  def num_plots_in_steps(steps)
+  def plots_in_steps(max_steps, infinite: false)
     visited = Set[start]
-    last_count, count = 0, 1
     frontier = [start]
-    1.upto(steps) do
-      frontier = frontier.flat_map { empty_neighbors(_1) }.to_set - visited
+    steps_map = [frontier]
+    1.upto(max_steps) do |i|
+      break if frontier.empty?
+      frontier = frontier.flat_map { empty_neighbors(_1, infinite:) }.to_set - visited
       visited.merge(frontier)
-      last_count, count = count, last_count + frontier.length
+      steps_map << frontier
+      # pp [i, frontier.length, visited.length] if infinite
     end
-    count
+    steps_map
+  end
+
+  def num_plots_in_steps(steps, ...)
+    plots_in_steps(steps, ...).each_slice(2).sum { |even, odd| (steps.even? ? even : odd).length }
+  end
+
+  # The number of steps to reach every reachable plot.
+  def max_steps
+    plots_in_steps(Float::INFINITY).length - 1
   end
 end
 
@@ -200,8 +215,10 @@ if defined? DATA
   input = DATA.read
   obj = StepCounter.parse(input)
   puts obj.num_plots_in_steps(64)
-  obj = StepCounter.parse(input, infinite: true)
+  puts obj.max_steps
   puts obj.num_plots_in_steps(500)
+  puts obj.num_plots_in_steps(501)
+  puts obj.num_plots_in_steps(500, infinite: true)
 end
 
 __END__
