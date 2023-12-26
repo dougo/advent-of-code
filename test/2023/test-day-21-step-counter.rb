@@ -38,10 +38,6 @@ END
     assert offcenter.even?(Position[0,1])
   end
 
-  def test_max_steps
-    assert_equal 15, @subject.max_steps
-  end
-
   def test_infinite_grid
     assert_equal 6, @subject.num_plots_in_steps(3, infinite: true)
     assert_equal 16, @subject.num_plots_in_steps(6, infinite: true)
@@ -49,7 +45,6 @@ END
     assert_equal 50, @subject.num_plots_in_steps(10, infinite: true)
     assert_equal 1594, @subject.num_plots_in_steps(50, infinite: true)
     assert_equal 6536, @subject.num_plots_in_steps(100, infinite: true)
-    skip
     assert_equal 167004, @subject.num_plots_in_steps(500, infinite: true)
     assert_equal 668697, @subject.num_plots_in_steps(1000, infinite: true)
     assert_equal 16733044, @subject.num_plots_in_steps(5000, infinite: true)

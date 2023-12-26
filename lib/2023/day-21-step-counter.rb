@@ -200,22 +200,30 @@ class StepCounter
 
   def num_plots_in_home_grid(plots) = plots.count { _1.in?(grid) }
 
-  def num_plots_in_steps(steps, infinite: false)
-    step! while step_count < steps
-    steps_map.each_slice(2).sum do |even, odd|
-      plots_at_steps = (steps.even? ? even : odd)
-      if infinite
-        plots_at_steps.length
-      else
-        num_plots_in_home_grid(plots_at_steps)
-      end
+  # The number of plots that were newly reached after the given steps.
+  def num_new_plots_in_steps(steps)
+    # After 4 * N steps, this starts to repeat every N steps, where N is the size of the grid.
+    # TODO: prove/explain this??
+    # TODO: this assumes the grid is square, probably
+    period = grid.height
+    q, r = steps.divmod(period)
+    if q > 4
+      steps_per_period = steps_map[period * 5 + r].length - steps_map[period * 4 + r].length
+      steps_per_period * (q - 4) + steps_map[period * 4 + r].length
+    else
+      steps_map[steps].length
     end
   end
 
-  # The number of steps to reach every reachable plot.
-  def max_steps
-    step! while num_plots_in_home_grid(frontier) > 0
-    step_count
+  def num_plots_in_steps(steps, infinite: false)
+    step! while step_count < [steps, 6 * grid.height].min
+    (steps.even? ? 0 : 1).step(to: steps, by: 2).sum do |i|
+      if infinite
+        num_new_plots_in_steps(i)
+      else
+        num_plots_in_home_grid(steps_map[i])
+      end
+    end
   end
 end
 
@@ -223,8 +231,7 @@ if defined? DATA
   input = DATA.read
   obj = StepCounter.parse(input)
   puts obj.num_plots_in_steps(64)
-  puts obj.max_steps
-  puts obj.num_plots_in_steps(500, infinite: true)
+  puts obj.num_plots_in_steps(26501365, infinite: true)
 end
 
 __END__
