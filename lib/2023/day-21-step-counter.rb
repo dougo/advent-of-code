@@ -171,43 +171,51 @@ class StepCounter
   def initialize(grid)
     @grid = grid
     @start = grid.each_position.find { grid[_1] == 'S' }
+    @visited = Set[start]
+    @frontier = [start]
+    @steps_map = [frontier]
   end
-  attr :grid, :start
+  attr :grid, :start, :visited, :frontier, :steps_map
 
   # Can pos be reached in an even number of steps?
   def even?(pos)
     ((pos.row - start.row) + (pos.col - start.col)).even?
   end      
 
-  def plot_at(pos, infinite: false)
-    grid[infinite ? Position[pos.row % grid.height, pos.col % grid.width] : pos]
+  def plot_at(pos)
+    grid[Position[pos.row % grid.height, pos.col % grid.width]]
   end
 
   def empty?(pos, ...) = plot_at(pos, ...).in?(['.', 'S'])
 
   def empty_neighbors(pos, ...) = pos.neighbors.filter { empty?(_1, ...) }
 
-  def plots_in_steps(max_steps, infinite: false)
-    visited = Set[start]
-    frontier = [start]
-    steps_map = [frontier]
-    1.upto(max_steps) do |i|
-      break if frontier.empty?
-      frontier = frontier.flat_map { empty_neighbors(_1, infinite:) }.to_set - visited
-      visited.merge(frontier)
-      steps_map << frontier
-      # pp [i, frontier.length, visited.length] if infinite
-    end
-    steps_map
+  def step!
+    @frontier = frontier.flat_map { empty_neighbors(_1) }.to_set - visited
+    visited.merge(frontier)
+    steps_map << frontier
   end
 
-  def num_plots_in_steps(steps, ...)
-    plots_in_steps(steps, ...).each_slice(2).sum { |even, odd| (steps.even? ? even : odd).length }
+  def step_count = steps_map.length - 1
+
+  def num_plots_in_home_grid(plots) = plots.count { _1.in?(grid) }
+
+  def num_plots_in_steps(steps, infinite: false)
+    step! while step_count < steps
+    steps_map.each_slice(2).sum do |even, odd|
+      plots_at_steps = (steps.even? ? even : odd)
+      if infinite
+        plots_at_steps.length
+      else
+        num_plots_in_home_grid(plots_at_steps)
+      end
+    end
   end
 
   # The number of steps to reach every reachable plot.
   def max_steps
-    plots_in_steps(Float::INFINITY).length - 1
+    step! while num_plots_in_home_grid(frontier) > 0
+    step_count
   end
 end
 
@@ -216,8 +224,6 @@ if defined? DATA
   obj = StepCounter.parse(input)
   puts obj.num_plots_in_steps(64)
   puts obj.max_steps
-  puts obj.num_plots_in_steps(500)
-  puts obj.num_plots_in_steps(501)
   puts obj.num_plots_in_steps(500, infinite: true)
 end
 
