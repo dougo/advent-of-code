@@ -76,7 +76,10 @@ broadcaster -> a
 %b -> con
 &con -> output
 
-This module configuration includes the broadcaster, two flip-flops (named a and b), a single-input conjunction module (inv), a multi-input conjunction module (con), and an untyped module named output (for testing purposes). The multi-input conjunction module con watches the two flip-flop modules and, if they're both on, sends a low pulse to the output module.
+This module configuration includes the broadcaster, two flip-flops (named a and b), a single-input conjunction
+module (inv), a multi-input conjunction module (con), and an untyped module named output (for testing
+purposes). The multi-input conjunction module con watches the two flip-flop modules and, if they're both on, sends
+a low pulse to the output module.
 
 Here's what happens if you push the button once:
 
@@ -89,7 +92,8 @@ con -high-> output
 b -high-> con
 con -low-> output
 
-Both flip-flops turn on and a low pulse is sent to output! However, now that both flip-flops are on and con remembers a high pulse from each of its two inputs, pushing the button a second time does something different:
+Both flip-flops turn on and a low pulse is sent to output! However, now that both flip-flops are on and con
+remembers a high pulse from each of its two inputs, pushing the button a second time does something different:
 
 button -low-> broadcaster
 broadcaster -low-> a
@@ -141,6 +145,14 @@ Consult your module configuration; determine the number of low pulses and high p
 pushing the button 1000 times, waiting for all pulses to be fully handled after each push of the button. What do
 you get if you multiply the total number of low pulses sent by the total number of high pulses sent?
 
+--- Part Two ---
+
+The final machine responsible for moving the sand down to Island Island has a module attached named rx. The machine
+turns on when a single low pulse is sent to rx.
+
+Reset all modules to their default states. Waiting for all pulses to be fully handled after each button press, what
+is the fewest number of button presses required to deliver a single low pulse to the module named rx?
+
 =end
 
 require_relative '../util'
@@ -156,18 +168,20 @@ class PulsePropagation
     connect_modules
     @pulse_queue = []
     @pulses_sent = { high: 0, low: 0 }
+    @button_presses = 0
+    @output_received_low = false
   end
 
   attr :modules, :pulse_queue, :pulses_sent
+  attr_accessor :button_presses, :output_received_low
 
   def connect_modules
     modules.values.each do |source|
       source.destinations.each do |dest|
-        if modules.has_key?(dest)
-          modules[dest].add_input(source.name)
-        else
+        unless modules.has_key?(dest)
           modules[dest] = Output.new(dest)
         end
+        modules[dest].add_input(source.name)
       end
     end
   end
@@ -186,11 +200,13 @@ class PulsePropagation
 
     def initialize(*args)
       @name, @destinations = *args
+      @inputs = []
     end
 
-    attr :name, :destinations
+    attr :name, :destinations, :inputs
 
     def add_input(source)
+      @inputs << source
     end
 
     def send_pulse(system, pulse_type)
@@ -228,6 +244,7 @@ class PulsePropagation
     attr :remembered_pulse_types
 
     def add_input(source)
+      super
       remembered_pulse_types[source] = :low
     end
 
@@ -253,6 +270,7 @@ class PulsePropagation
     end
 
     def push(system)
+      system.button_presses += 1
       send_pulse(system, :low)
     end
   end
@@ -260,6 +278,10 @@ class PulsePropagation
   class Output < Module
     def initialize(name)
       super(name, [])
+    end
+
+    def receive_pulse(system, pulse)
+      system.output_received_low = true if pulse.type == :low
     end
   end
 
@@ -286,13 +308,51 @@ class PulsePropagation
     1000.times { push_button }
     pulses_sent[:low] * pulses_sent[:high]
   end
+
+  def num_button_presses_for_output_to_receive_low
+    5000.times do
+      push_button
+      break if output_received_low
+    end
+    self.output_received_low = false
+    button_presses
+  end
+
+  def print_graphml
+    puts <<END
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"  
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns
+     http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <graph id="G" edgedefault="directed">
+END
+    modules.keys.each { puts "    <node id='#{_1}'/>" }
+    modules.each do |source, mod|
+      mod.destinations.each do |target|
+        puts "    <edge source='#{source}' target='#{target}'/>"
+      end
+    end
+    puts <<END
+  </graph>
+</graphml>
+END
+  end
 end
 
 if defined? DATA
   input = DATA.read
   system = PulsePropagation.parse(input)
   puts system.pulse_product
+  # system.print_graphml
+
+  # After loading the graphml into a visualizer, I saw that there are four subconfigs in parallel.
+  # I ran those separately to get their periods:
+  puts [4057, 3793, 3947, 3733].reduce(:lcm)
+  # TODO: write code to actually figure this out?
 end
+
+# see graph: http://graphonline.ru/en/?graph=YdaBwmeOKqGuEehw
 
 __END__
 %hb -> mj
