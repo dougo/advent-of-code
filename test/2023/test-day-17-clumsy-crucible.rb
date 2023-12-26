@@ -18,9 +18,21 @@ class TestClumsyCrucible < Minitest::Test
 2546548887735
 4322674655533
 END
+    @subject2 = ClumsyCrucible.parse <<END
+111111111111
+999999999991
+999999999991
+999999999991
+999999999991
+END
   end
 
   def test_minimal_heat_loss
     assert_equal 102, @subject.minimal_heat_loss
+  end
+
+  def test_minimal_heat_loss_ultra
+    assert_equal 94, @subject.minimal_heat_loss(ultra: true)
+    assert_equal 71, @subject2.minimal_heat_loss(ultra: true)
   end
 end
