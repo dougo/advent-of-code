@@ -1,0 +1,89 @@
+=begin
+
+--- Day 2: Gift Shop ---
+
+You get inside and take the elevator to its only other stop: the gift shop. "Thank you for visiting the North
+Pole!" gleefully exclaims a nearby sign. You aren't sure who is even allowed to visit the North Pole, but you know
+you can access the lobby through here, and from there you can access the rest of the North Pole base.
+
+As you make your way through the surprisingly extensive selection, one of the clerks recognizes you and asks for
+your help.
+
+As it turns out, one of the younger Elves was playing on a gift shop computer and managed to add a whole bunch of
+invalid product IDs to their gift shop database! Surely, it would be no trouble for you to identify the invalid
+product IDs for them, right?
+
+They've even checked most of the product ID ranges already; they only have a few product ID ranges (your puzzle
+input) that you'll need to check. For example:
+
+11-22,95-115,998-1012,1188511880-1188511890,222220-222224,
+1698522-1698528,446443-446449,38593856-38593862,565653-565659,
+824824821-824824827,2121212118-2121212124
+
+(The ID ranges are wrapped here for legibility; in your input, they appear on a single long line.)
+
+The ranges are separated by commas (,); each range gives its first ID and last ID separated by a dash (-).
+
+Since the young Elf was just doing silly patterns, you can find the invalid IDs by looking for any ID which is made
+only of some sequence of digits repeated twice. So, 55 (5 twice), 6464 (64 twice), and 123123 (123 twice) would all
+be invalid IDs.
+
+None of the numbers have leading zeroes; 0101 isn't an ID at all. (101 is a valid ID that you would ignore.)
+
+Your job is to find all of the invalid IDs that appear in the given ranges. In the above example:
+
+ - 11-22 has two invalid IDs, 11 and 22.
+ - 95-115 has one invalid ID, 99.
+ - 998-1012 has one invalid ID, 1010.
+ - 1188511880-1188511890 has one invalid ID, 1188511885.
+ - 222220-222224 has one invalid ID, 222222.
+ - 1698522-1698528 contains no invalid IDs.
+ - 446443-446449 has one invalid ID, 446446.
+ - 38593856-38593862 has one invalid ID, 38593859.
+ - The rest of the ranges contain no invalid IDs.
+
+Adding up all the invalid IDs in this example produces 1227775554.
+
+What do you get if you add up all of the invalid IDs?
+
+=end
+
+class GiftShop
+  attr :id_ranges
+
+  def initialize(text)
+    @id_ranges = text.split(',').map { new_id_range(_1) }
+  end
+
+  def new_id_range(text)
+    Range.new(*text.split('-').map(&:to_i))
+  end
+
+  def invalid_id?(id)
+    id = id.to_s
+    id.length.even? && id[0...id.length/2] == id[id.length/2..]
+  end
+
+  def invalid_ids
+    invalid = []
+    id_ranges.each do |id_range|
+      id_range.each do |id|
+        invalid << id if invalid_id?(id)
+      end
+    end
+    invalid
+  end
+
+  def sum_of_invalid_ids
+    invalid_ids.sum
+  end
+end
+
+
+if defined? DATA
+  input = DATA.read
+  puts GiftShop.new(input).sum_of_invalid_ids
+end
+
+__END__
+4487-9581,755745207-755766099,954895848-955063124,4358832-4497315,15-47,1-12,9198808-9258771,657981-762275,6256098346-6256303872,142-282,13092529-13179528,96201296-96341879,19767340-19916378,2809036-2830862,335850-499986,172437-315144,764434-793133,910543-1082670,2142179-2279203,6649545-6713098,6464587849-6464677024,858399-904491,1328-4021,72798-159206,89777719-90005812,91891792-91938279,314-963,48-130,527903-594370,24240-60212
