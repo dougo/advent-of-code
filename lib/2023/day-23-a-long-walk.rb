@@ -230,7 +230,7 @@ class ALongWalk
       if state.pos == goal && current_steps < min_steps
         min_steps = current_steps
         # TODO: figure out how to actually terminate once the best guess is correct
-        puts "new best guess: #{-current_steps} ?"
+        # puts "new best guess: #{-current_steps} ?"
       end
       state_edges(state, dry).each do |edge|
         target_state = next_state(state, edge)

@@ -3,14 +3,14 @@ My solutions in Ruby for the puzzles at [adventofcode.com](http://adventofcode.c
 
 SPOILER ALERT! Don't read the code in the `lib` directory if you haven't already solved the puzzles yourself.
 
-To print a puzzle's answer(s), run the source file: `ruby lib/2015/day-1-not-quite-lisp.rb`. Note that this will use my
-personalized input data, which is probably different from yours.
+To print a puzzle's answer(s), run the source file: `ruby lib/2015/day-01-not-quite-lisp.rb`. Note that this will
+use my personalized input data, which is probably different from yours.
 
-Run all the tests with `rake`. Or run a single test file with `rake TEST=test/2015/test-day-1-not-quite-lisp`.
+Run all the tests with `rake`. Or run a single test file with `rake TEST=test/2015/test-day-01-not-quite-lisp`.
 
 ---
 
-Copyright (C) 2015,2023 Doug Orleans
+Copyright (C) 2015,2023,2025 Doug Orleans
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
 Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option)
