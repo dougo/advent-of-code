@@ -60,6 +60,43 @@ Because the dial points at 0 a total of three times during this process, the pas
 
 Analyze the rotations in your attached document. What's the actual password to open the door?
 
+--- Part Two ---
+
+You're sure that's the right password, but the door won't open. You knock, but nobody answers. You build a snowman
+while you think.
+
+As you're rolling the snowballs for your snowman, you find another security document that must have fallen into the
+snow:
+
+"Due to newer security protocols, please use password method 0x434C49434B until further notice."
+
+You remember from the training seminar that "method 0x434C49434B" means you're actually supposed to count the
+number of times any click causes the dial to point at 0, regardless of whether it happens during a rotation or at
+the end of one.
+
+Following the same rotations as in the above example, the dial points at zero a few extra times during its
+rotations:
+
+The dial starts by pointing at 50.
+The dial is rotated L68 to point at 82; during this rotation, it points at 0 once.
+The dial is rotated L30 to point at 52.
+The dial is rotated R48 to point at 0.
+The dial is rotated L5 to point at 95.
+The dial is rotated R60 to point at 55; during this rotation, it points at 0 once.
+The dial is rotated L55 to point at 0.
+The dial is rotated L1 to point at 99.
+The dial is rotated L99 to point at 0.
+The dial is rotated R14 to point at 14.
+The dial is rotated L82 to point at 32; during this rotation, it points at 0 once.
+
+In this example, the dial points at 0 three times at the end of a rotation, plus three more times during a
+rotation. So, in this example, the new password would be 6.
+
+Be careful: if the dial were pointing at 50, a single rotation like R1000 would cause the dial to point at 0 ten
+times before returning back to 50!
+
+Using password method 0x434C49434B, what is the password to open the door?
+
 =end
 
 class Safe
@@ -76,40 +113,62 @@ class Safe
       @direction = text[0]
       @distance = text[1..].to_i
     end
+
+    def apply_to(dial)
+      dial.rotate!(direction, distance)
+    end
   end
 
   class Dial
-    attr :location
+    attr :location, :locations, :times_pointed_at_zero, :times_passed_zero
 
-    def initialize
+    def initialize(rotations = [])
       @location = 50
+      @locations = [location]
+      @times_pointed_at_zero = 0
+      @times_passed_zero = 0
+      rotations.each { _1.apply_to(self) }
     end
 
-    def rotate(direction, distance)
+    def click!(direction)
       case direction
       when 'L'
-        @location -= distance
+        @location -= 1
       when 'R'
-        @location += distance
+        @location += 1
       end
       @location %= 100
-      location
+      @times_passed_zero += 1 if location.zero?
+    end
+
+    def rotate!(direction, distance)
+      distance.times { click!(direction) }
+      @times_pointed_at_zero += 1 if location.zero?
+      locations << location
     end
   end
 
   def dial_locations
-    dial = Dial.new
-    [dial.location] + dial_rotations.map { dial.rotate(_1.direction, _1.distance) }
+    Dial.new(dial_rotations).locations
   end
 
-  def password
-    dial_locations.count { _1.zero? }
+  def password(method = 0)
+    dial = Dial.new(dial_rotations)
+
+    case method
+    when 0
+      dial.times_pointed_at_zero
+    when 0x434C49434B
+      dial.times_passed_zero
+    end
   end
 end
 
 if defined? DATA
   input = DATA.read
-  puts Safe.new(input).password
+  safe = Safe.new(input)
+  puts safe.password
+  puts safe.password(0x434C49434B)
 end
 
 __END__

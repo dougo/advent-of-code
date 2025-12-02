@@ -24,4 +24,42 @@ END
 
     assert_equal 3, @subject.password
   end
+
+  def test_safe_part_2
+    @subject = Safe.new(@part1)
+
+    assert_equal 6, @subject.password(0x434C49434B)
+  end
+
+  def test_rotate_right_passes_zero_multiple_times
+    @subject = Safe.new <<END
+R1000
+END
+    assert_equal 10, @subject.password(0x434C49434B)
+  end
+
+  def test_rotate_left_passes_zero_multiple_times
+    @subject = Safe.new <<END
+L500
+END
+    assert_equal 5, @subject.password(0x434C49434B)
+  end
+
+  def test_rotate_left_starting_at_zero_passes_zero_multiple_times
+    @subject = Safe.new <<END
+L50
+L250
+END
+    # points at zero, then passes it twice
+    assert_equal 3, @subject.password(0x434C49434B)
+  end
+
+  def test_rotate_left_starting_at_zero_passes_zero_multiple_times_ending_at_zero
+    @subject = Safe.new <<END
+L50
+L300
+END
+    # points at zero, then passes it twice, then ends at zero
+    assert_equal 4, @subject.password(0x434C49434B)
+  end
 end
