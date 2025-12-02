@@ -14,4 +14,12 @@ END
     assert_equal [11, 22, 99, 1010, 1188511885, 222222, 446446, 38593859], @subject.invalid_ids
     assert_equal 1227775554, @subject.sum_of_invalid_ids
   end
+
+  def test_gift_shop_part_2
+    @subject = GiftShop.new(@part1)
+
+    assert_equal [11, 22, 99, 111, 999, 1010, 1188511885, 222222, 446446, 38593859, 565656,
+                  824824824, 2121212121], @subject.invalid_ids(repeated_more_than_twice: true)
+    assert_equal 4174379265, @subject.sum_of_invalid_ids(repeated_more_than_twice: true)
+  end
 end
