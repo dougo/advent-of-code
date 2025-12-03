@@ -1,5 +1,5 @@
 require 'test-helper'
-require '2025/day-03'
+require '2025/day-03-lobby'
 
 class TestLobby < Minitest::Test
   def setup
