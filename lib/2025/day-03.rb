@@ -6,31 +6,51 @@ class Lobby
   attr :banks
 
   def initialize(text)
-    @banks = text.lines(chomp: true).map { Bank.new(_1) }
+    @banks = text.lines(chomp: true).map { Bank.new(_1.chars.map(&:to_i)) }
   end
 
-  def maximum_joltages
-    banks.map &:maximum_joltage
+  def maximum_joltages(num_batteries: 2)
+    banks.map { _1.maximum_joltage(num_batteries:) }
+  end
+
+  def maximum_joltages_overcoming_static_friction
+    maximum_joltages(num_batteries: 12)
   end
 
   def total_output_joltage
     maximum_joltages.sum
   end
 
+  def new_total_output_joltage
+    maximum_joltages_overcoming_static_friction.sum
+  end
+
   class Bank
     attr :batteries
 
-    def initialize(text)
-      @batteries = text.chars.map &:to_i
+    def initialize(batteries)
+      @batteries = batteries
     end
 
-    def maximum_joltage
-      tens_digits = batteries[...(batteries.length - 1)]
-      max_tens_digit = tens_digits.max
-      i = tens_digits.find_index(max_tens_digit) # TODO: what if more than one? e.g. 9798
-      ones_digits = batteries[(i+1)..]
-      max_ones_digit = ones_digits.max
-      max_tens_digit * 10 + max_ones_digit
+    def maximum_joltage(num_batteries: 2)
+      return batteries.max if num_batteries == 1
+
+      first_digits = batteries_butlast(num_batteries - 1)
+      max_first_digit = first_digits.max
+      i = first_digits.find_index(max_first_digit) # TODO: what if more than one? e.g. 9798
+
+      rest = batteries_butfirst(i)
+      max_rest = self.class.new(rest).maximum_joltage(num_batteries: num_batteries - 1)
+
+      max_first_digit * (10 ** (num_batteries - 1)) + max_rest
+    end
+
+    def batteries_butlast(i)
+      batteries[...(batteries.length - i)]
+    end
+
+    def batteries_butfirst(i)
+      batteries[(i+1)..]
     end
   end
 
@@ -40,6 +60,7 @@ if defined? DATA
   input = DATA.read
   lobby = Lobby.new(input)
   puts lobby.total_output_joltage
+  puts lobby.new_total_output_joltage
 end
 
 __END__
