@@ -1,18 +1,8 @@
 require_relative '../util'
 
-class Day04
-  attr :grid
-
-  def initialize(grid)
-    @grid = grid
-  end
-
-  def self.parse(text)
-    new(Grid.parse(text))
-  end
-
+class Day04 < Grid
   def occupied?(pos)
-    grid[pos] == '@'
+    self[pos] == '@'
   end
 
   def accessible?(pos)
@@ -20,11 +10,11 @@ class Day04
   end
 
   def accessible_positions
-    grid.each_position.select { occupied?(it) && accessible?(it) }
+    each_position.select { occupied?(it) && accessible?(it) }
   end
 
   def remove_accessible_rolls!
-    accessible_positions.each { grid[it] = '.' }
+    accessible_positions.each { self[it] = '.' }
   end
 
   def remove_recursively_accessible_rolls!
@@ -34,10 +24,6 @@ class Day04
     else
       removed + remove_recursively_accessible_rolls!
     end
-  end
-
-  def dup
-    self.class.new(grid.dup)
   end
 
   def part_1
