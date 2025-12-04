@@ -16,6 +16,7 @@ end
 Position = Data.define(:row, :col) do
   def move(dir, dist=1) = self.class.new(row + dir.drow * dist, col + dir.dcol * dist)
   def neighbors = DIRECTIONS_CLOCKWISE.map { move(_1) }
+  def all_8_neighbors = ALL_8_DIRECTIONS_CLOCKWISE.map { move(it) }
   def to_s = "[#{row},#{col}]"
   def inspect = to_s
 end
@@ -36,6 +37,13 @@ EAST = Direction[0,1]
 WEST = Direction[0,-1]
 
 DIRECTIONS_CLOCKWISE = [NORTH, EAST, SOUTH, WEST]
+
+NORTHWEST = Direction[-1,-1]
+NORTHEAST = Direction[-1,1]
+SOUTHEAST = Direction[1,1]
+SOUTHWEST = Direction[1,-1]
+
+ALL_8_DIRECTIONS_CLOCKWISE = [NORTHWEST, NORTH, NORTHEAST, EAST, SOUTHEAST, SOUTH, SOUTHWEST, WEST]
 
 class Grid
   def self.parse(text) = new(text.lines(chomp: true))

@@ -24,6 +24,8 @@ class TestUtil < Minitest::Test
     assert_equal Position[34, 45], pos.move(SOUTH, 11)
     assert_equal Position[24, 45], pos.move(SOUTH)
     assert_equal [Position[22, 45], Position[23, 46], Position[24, 45], Position[23, 44]], pos.neighbors
+    assert_equal [Position[22, 44], Position[22, 45], Position[22, 46], Position[23, 46],
+                  Position[24, 46], Position[24, 45], Position[24, 44], Position[23, 44]], pos.all_8_neighbors
     assert_equal '[23,45]', pos.to_s
     assert_equal '[[23,45]]', [pos].to_s
   end

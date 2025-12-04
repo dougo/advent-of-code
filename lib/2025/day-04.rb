@@ -11,26 +11,20 @@ class Day04
     new(Grid.parse(text))
   end
 
-  DIAGONAL_DIRECTIONS = [Direction[-1,-1], Direction[-1,1], Direction[1,-1], Direction[1,1]]
-  DIRECTIONS = DIRECTIONS_CLOCKWISE + DIAGONAL_DIRECTIONS
+  def occupied?(pos)
+    grid[pos] == '@'
+  end
 
   def accessible?(pos)
-    neighbors = DIRECTIONS.map { pos.move(_1) }
-    occupied_neighbors = neighbors.select { |npos| @grid[npos] == '@' }
-    occupied_neighbors.size < 4
+    pos.all_8_neighbors.select { occupied?(it) }.size < 4
   end
 
   def accessible_positions
-    # TODO: return an enumerator instead?
-    grid.each_position.select do |pos|
-      grid[pos] == '@' && accessible?(pos)
-    end
+    grid.each_position.select { occupied?(it) && accessible?(it) }
   end
 
   def remove_accessible_rolls!
-    accessible_positions.each do |pos|
-      grid[pos] = '.'
-    end
+    accessible_positions.each { grid[it] = '.' }
   end
 
   def dup
