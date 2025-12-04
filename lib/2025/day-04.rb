@@ -32,17 +32,17 @@ class Day04
   end
 
   def part_1
-    accessible_positions.count
+    accessible_positions.size
   end
 
   def part_2
-    total = 0
     copy = dup
-    begin
-      removed = copy.remove_accessible_rolls!
-      total += removed.length
-    end until removed.empty?
-    total
+    removed = copy.remove_accessible_rolls!
+    if removed.empty?
+      0
+    else
+      removed.size + copy.part_2
+    end
   end
 end
 
