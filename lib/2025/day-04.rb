@@ -6,7 +6,7 @@ class Day04 < Grid
   end
 
   def accessible?(pos)
-    pos.all_8_neighbors.select { occupied?(it) }.size < 4
+    pos.all_8_neighbors.count { occupied?(it) } < 4
   end
 
   def accessible_positions
