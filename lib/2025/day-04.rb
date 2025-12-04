@@ -1,8 +1,14 @@
 require_relative '../util'
 
 class Day04
-  def initialize(text)
-    @grid = Grid.parse(text)
+  attr :grid
+
+  def initialize(grid)
+    @grid = grid
+  end
+
+  def self.parse(text)
+    new(Grid.parse(text))
   end
 
   DIAGONAL_DIRECTIONS = [Direction[-1,-1], Direction[-1,1], Direction[1,-1], Direction[1,1]]
@@ -14,16 +20,42 @@ class Day04
     occupied_neighbors.size < 4
   end
 
-  def part_1
-    @grid.each_position.count do |pos|
-      @grid[pos] == '@' && accessible?(pos)
+  def accessible_positions
+    # TODO: return an enumerator instead?
+    grid.each_position.select do |pos|
+      grid[pos] == '@' && accessible?(pos)
     end
+  end
+
+  def remove_accessible_rolls!
+    accessible_positions.each do |pos|
+      grid[pos] = '.'
+    end
+  end
+
+  def dup
+    self.class.new(grid.dup)
+  end
+
+  def part_1
+    accessible_positions.count
+  end
+
+  def part_2
+    total = 0
+    copy = dup
+    begin
+      removed = copy.remove_accessible_rolls!
+      total += removed.length
+    end until removed.empty?
+    total
   end
 end
 
 if defined? DATA
-  day = Day04.new(DATA.read)
+  day = Day04.parse(DATA.read)
   puts day.part_1
+  puts day.part_2
 end
 
 __END__
