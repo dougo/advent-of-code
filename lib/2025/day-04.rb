@@ -27,6 +27,15 @@ class Day04
     accessible_positions.each { grid[it] = '.' }
   end
 
+  def remove_recursively_accessible_rolls!
+    removed = remove_accessible_rolls!
+    if removed.empty?
+      []
+    else
+      removed + remove_recursively_accessible_rolls!
+    end
+  end
+
   def dup
     self.class.new(grid.dup)
   end
@@ -36,13 +45,7 @@ class Day04
   end
 
   def part_2
-    copy = dup
-    removed = copy.remove_accessible_rolls!
-    if removed.empty?
-      0
-    else
-      removed.size + copy.part_2
-    end
+    dup.remove_recursively_accessible_rolls!.size
   end
 end
 
