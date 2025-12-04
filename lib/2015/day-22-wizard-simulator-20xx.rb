@@ -254,7 +254,7 @@ end
 class CombatState
   def initialize(player, boss, effects: {}, hard_mode: false)
     @player, @boss, @effects, @hard_mode = player, boss, effects, hard_mode
-    @output = ''
+    @output = +''
   end
 
   attr_accessor :player, :boss, :output
