@@ -1,6 +1,6 @@
 require_relative '../util'
 
-class Day04 < Grid
+class PrintingDepartment < Grid
   def occupied?(pos)
     self[pos] == '@'
   end
@@ -26,11 +26,11 @@ class Day04 < Grid
     end
   end
 
-  def part_1
+  def num_accessible_positions
     accessible_positions.size
   end
 
-  def part_2
+  def num_recursively_accessible_positions
     dup.remove_recursively_accessible_rolls!.size
   end
 end
