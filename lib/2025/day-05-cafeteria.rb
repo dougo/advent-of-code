@@ -20,19 +20,37 @@ class Cafeteria
     ranges.any? { id.in?(it) }
   end
 
-  def fresh_ingredient_ids
+  def available_fresh_ingredient_ids
     available.select { fresh?(it) }
   end
 
-  def num_fresh_ingredient_ids
-    fresh_ingredient_ids.count
+  def num_available_fresh_ingredients
+    available_fresh_ingredient_ids.size
+  end
+
+  def fresh_ingredient_ids
+    ranges.flat_map(&:to_a).uniq.sort
+  end
+
+  def num_fresh_ingredients
+    ranges = @ranges.sort_by(&:begin)
+    ranges[1..].reduce([ranges.first]) do |ranges, range2|
+      range1 = ranges.last
+      if range1.overlap?(range2)
+        combined_range = [range1.begin, range2.begin].min .. [range1.end, range2.end].max
+        ranges[...-1] + [combined_range]
+      else
+        ranges + [range2]
+      end
+    end.sum(&:size)
   end
 end
 
 if defined? DATA
   input = DATA.read
   obj = Cafeteria.parse(input)
-  puts obj.num_fresh_ingredient_ids
+  puts obj.num_available_fresh_ingredients
+  puts obj.num_fresh_ingredients
 end
 
 __END__
