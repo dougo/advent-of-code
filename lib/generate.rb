@@ -1,6 +1,11 @@
 require 'date'
 require 'erb'
 
+if ARGV.size < 2
+  puts 'Usage: ruby lib/generate.rb <class> <method>'
+  exit -1
+end
+
 year = ENV['YEAR'] || Date.today.year
 day = (ENV['DAY'] || Date.today.day.to_s).rjust(2, '0')
 class_name = ARGV[0]
