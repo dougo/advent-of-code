@@ -15,4 +15,8 @@ END
   def test_grand_total
     assert_equal 4277556, @subject.grand_total
   end
+
+  def test_correct_grand_total
+    assert_equal 3263827, @subject.correct_grand_total
+  end
 end

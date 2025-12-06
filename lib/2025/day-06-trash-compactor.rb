@@ -2,15 +2,22 @@ require_relative '../util'
 
 class TrashCompactor
   def self.parse(text)
-    matrix = text.lines(chomp: true).map &:split
-    columns = matrix.transpose.map { Column.parse(it) }
-    new(columns)
+    lines = text.lines(chomp: true)
+    matrix = lines.map(&:split).transpose
+    columns = matrix.map { Column.parse(it) }
+
+    correct_matrix = lines.map(&:chars).transpose.map(&:join)
+    correct_matrix = correct_matrix.map(&:strip).join('\n').split('\n\n').map { it.split('\n') }
+    # TODO: Ugh, there must be a cleaner way to split an array by blank-string delimiters.
+    correct_columns = correct_matrix.map { Column.parse_correct(it) }
+
+    new(columns, correct_columns)
   end
 
-  attr :columns
+  attr :columns, :correct_columns
 
-  def initialize(columns)
-    @columns = columns
+  def initialize(*args)
+    @columns, @correct_columns = *args
   end
 
   class Column
@@ -18,6 +25,11 @@ class TrashCompactor
 
     def self.parse(text_entries)
       new(text_entries[...-1].map(&:to_i), text_entries.last)
+    end
+
+    def self.parse_correct(text_entries)
+      # The first entry has the operator at the end, e.g. ["123   +", "456", "78"]
+      new(text_entries.map(&:to_i), text_entries[0][-1])
     end
 
     def initialize(*args)
@@ -37,12 +49,17 @@ class TrashCompactor
   def grand_total
     columns.map(&:total).sum
   end
+
+  def correct_grand_total
+    correct_columns.map(&:total).sum
+  end
 end
 
 if defined? DATA
   input = DATA.read
   obj = TrashCompactor.parse(input)
   puts obj.grand_total
+  puts obj.correct_grand_total
 end
 
 __END__
