@@ -1,4 +1,4 @@
-# These methods are shamelessly stolen from ActiveSupport!
+# These first four methods are shamelessly stolen from ActiveSupport!
 
 module Enumerable
   # Convert to a hash, computing the indices with a given block.
@@ -10,6 +10,32 @@ end
 class Object
   def in?(things)
     things.include?(self)
+  end
+end
+
+class String
+  BLANK_RE = /\A[[:space:]]*\z/
+  def blank?
+    empty? || BLANK_RE.match?(self)
+  end
+end
+
+class Array
+  def split(value = nil, &block)
+    arr = dup
+    result = []
+    if block_given?
+      while (idx = arr.index(&block))
+        result << arr.shift(idx)
+        arr.shift
+      end
+    else
+      while (idx = arr.index(value))
+        result << arr.shift(idx)
+        arr.shift
+      end
+    end
+    result << arr
   end
 end
 

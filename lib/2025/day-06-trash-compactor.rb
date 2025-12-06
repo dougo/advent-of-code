@@ -6,9 +6,7 @@ class TrashCompactor
     matrix = lines.map(&:split).transpose
     columns = matrix.map { Column.parse(it) }
 
-    correct_matrix = lines.map(&:chars).transpose.map(&:join)
-    correct_matrix = correct_matrix.map(&:strip).join('\n').split('\n\n').map { it.split('\n') }
-    # TODO: Ugh, there must be a cleaner way to split an array by blank-string delimiters.
+    correct_matrix = lines.map(&:chars).transpose.map(&:join).split(&:blank?)
     correct_columns = correct_matrix.map { Column.parse_correct(it) }
 
     new(columns, correct_columns)
