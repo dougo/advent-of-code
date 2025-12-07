@@ -1,7 +1,7 @@
 require_relative '../util'
 
 class Laboratories < Grid
-  attr :row, :cols, :num_beam_splits
+  attr :row, :cols, :num_beam_splits, :num_copies
 
   def initialize(*args)
     super
@@ -13,6 +13,9 @@ class Laboratories < Grid
     @cols = [rows.first.chars.find_index('S')] 
     @row = 0
     @num_beam_splits = 0
+    @num_copies = {}
+    (0...width).each { num_copies[it] = 0 }
+    num_copies[cols[0]] = 1
   end
 
   def propagate!
@@ -26,11 +29,18 @@ class Laboratories < Grid
       when '^'
         @cols -= [col]
         @cols += [col-1, col+1]
+        num_copies[col - 1] += num_copies[col]
+        num_copies[col + 1] += num_copies[col]
+        num_copies[col] = 0
         @num_beam_splits += 1
       end
     end
     @cols.uniq!
     propagate!
+  end
+
+  def num_timelines
+    num_copies.values.sum
   end
 end
 
@@ -38,6 +48,7 @@ if defined? DATA
   input = DATA.read
   obj = Laboratories.parse(input)
   puts obj.num_beam_splits
+  puts obj.num_timelines
 end
 
 __END__

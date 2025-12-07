@@ -27,4 +27,8 @@ END
   def test_num_beam_splits
     assert_equal 21, @subject.num_beam_splits
   end
+
+  def test_num_tachyon_beam_splits
+    assert_equal 40, @subject.num_timelines
+  end
 end
