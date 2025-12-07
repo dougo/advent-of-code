@@ -5,16 +5,12 @@ class Laboratories < Grid
 
   def initialize(*args)
     super
-    start!
-    propagate!
-  end
-
-  def start!
-    start_col = rows.first.chars.find_index('S')
     @row = 0
     @num_beam_splits = 0
+    start_col = rows.first.chars.find_index('S')
     @num_copies = Hash.new(0)
     num_copies[start_col] = 1
+    propagate!
   end
 
   def cols = num_copies.keys
