@@ -1,7 +1,7 @@
 require_relative '../util'
 
 class Laboratories < Grid
-  attr :row, :cols, :num_beam_splits, :num_copies
+  attr :row, :num_beam_splits, :num_copies
 
   def initialize(*args)
     super
@@ -10,13 +10,14 @@ class Laboratories < Grid
   end
 
   def start!
-    @cols = [rows.first.chars.find_index('S')] 
+    start_col = rows.first.chars.find_index('S')
     @row = 0
     @num_beam_splits = 0
-    @num_copies = {}
-    (0...width).each { num_copies[it] = 0 }
-    num_copies[cols[0]] = 1
+    @num_copies = Hash.new(0)
+    num_copies[start_col] = 1
   end
+
+  def cols = num_copies.keys
 
   def propagate!
     return if row >= height
@@ -27,15 +28,12 @@ class Laboratories < Grid
       when '.'
         self[pos] = '|'
       when '^'
-        @cols -= [col]
-        @cols += [col-1, col+1]
         num_copies[col - 1] += num_copies[col]
         num_copies[col + 1] += num_copies[col]
-        num_copies[col] = 0
+        num_copies.delete(col)
         @num_beam_splits += 1
       end
     end
-    @cols.uniq!
     propagate!
   end
 
