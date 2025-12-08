@@ -16,24 +16,22 @@ end
 
 Pair3D = Data.define(:distance, :positions)
 
-class Circuit
-  attr :positions
-
-  def initialize(*positions)
-    @positions = Set[*positions]
-  end
-
-  def merge!(circuit)
-    positions.merge(circuit.positions)
-  end
-
-  def size = positions.size
-end
-
 class Playground
   def self.parse(text)
     positions = text.lines(chomp: true).map { Position3D.parse(it) }
     new(positions)
+  end
+
+  class Circuit
+    attr :positions
+
+    def initialize(*positions)
+      @positions = Set[*positions]
+    end
+
+    def merge!(circuit) = positions.merge(circuit.positions)
+
+    def size = positions.size
   end
 
   attr :positions, :circuit_map, :circuits, :pairs, :last_pair
