@@ -16,53 +16,74 @@ end
 
 Pair3D = Data.define(:distance, :positions)
 
+class Circuit
+  attr :positions
+
+  def initialize(*positions)
+    @positions = Set[*positions]
+  end
+
+  def merge!(circuit)
+    positions.merge(circuit.positions)
+  end
+
+  def size = positions.size
+end
+
 class Playground
   def self.parse(text)
     positions = text.lines(chomp: true).map { Position3D.parse(it) }
     new(positions)
   end
 
-  attr :positions, :circuits, :unconnected_pairs
+  attr :positions, :circuit_map, :circuits, :pairs, :last_pair
 
   def initialize(positions)
     @positions = positions
-    @circuits = positions.to_h { [it, Set[it]] }
-    @unconnected_pairs = positions.product(positions).map do |pair|
+    @circuit_map = positions.to_h { [it, Circuit.new(it)] }
+    @circuits = circuit_map.values.to_set
+    @pairs = positions.product(positions).map do |pair|
       p1, p2 = *pair
       Pair3D[p1.distance_from(p2), Set[*pair]] # TODO: move this to the Pair3D initializer
     end.sort_by(&:distance).to_set.drop_while { it.distance.zero? }
   end
 
   def connect!(p1, p2)
-    circuits[p1].merge(circuits[p2])
-    circuits[p2].each { circuits[it] = circuits[p1] }
+    return if connected?(p1, p2)
+    c1 = circuit_map[p1]
+    c2 = circuit_map[p2]
+    c1.merge!(c2)
+    c2.positions.each { circuit_map[it] = c1 }
+    circuits.delete(c2)
+    @last_pair = [p1, p2]
   end
 
   def connected?(p1, p2)
-    circuits[p1] == circuits[p2]
-  end
-
-  def connect_closest_unconnected_pair!
-    pair = unconnected_pairs.shift
-    connect!(*pair.positions)
-  end
-
-  def connect_closest_unconnected_pairs!(num_pairs_to_connect)
-    return if num_pairs_to_connect.zero? || unconnected_pairs.empty?
-    connect_closest_unconnected_pair!
-    connect_closest_unconnected_pairs!(num_pairs_to_connect - 1)
+    circuit_map[p1] == circuit_map[p2]
   end
 
   def connect_closest_pairs!(num_pairs_to_connect)
-    unconnected_pairs.first(num_pairs_to_connect).each { connect!(*it.positions) }
+    pairs.first(num_pairs_to_connect).each { connect!(*it.positions) }
+  end
+
+  def connect_all_pairs!
+    pairs.each do
+      return if circuits.size == 1
+      connect!(*it.positions)
+    end
   end
 
   def circuit_sizes
-    circuits.values.uniq.map(&:size).sort.reverse
+    circuits.map(&:size).sort.reverse
   end
 
   def product_of_three_largest_circuit_sizes
     circuit_sizes.first(3).reduce(&:*)
+  end
+
+  def product_of_x_coords_of_last_two_connected
+    p1, p2 = last_pair
+    p1.x * p2.x
   end
 end
 
@@ -71,6 +92,8 @@ if defined? DATA
   obj = Playground.parse(input)
   obj.connect_closest_pairs!(1000)
   puts obj.product_of_three_largest_circuit_sizes
+  obj.connect_all_pairs!
+  puts obj.product_of_x_coords_of_last_two_connected
 end
 
 __END__

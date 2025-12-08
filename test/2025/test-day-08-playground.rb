@@ -33,14 +33,6 @@ END
 
   attr :p1, :p2, :p3
 
-  def test_connect_closest_unconnected_pair!
-    assert_equal Set[p1, p2], @subject.unconnected_pairs.first.positions
-    refute @subject.connected?(p1, p2)
-    @subject.connect_closest_unconnected_pair!
-    assert @subject.connected?(p1, p2)
-    assert_equal Set[p1, p3], @subject.unconnected_pairs.first.positions
-  end
-
   def test_circuit_sizes
     @subject.connect_closest_pairs!(10)
     assert_equal [5, 4, 2, 2, 1, 1, 1, 1, 1, 1, 1], @subject.circuit_sizes
@@ -49,5 +41,10 @@ END
   def test_product_of_three_largest_circuit_sizes
     @subject.connect_closest_pairs!(10)
     assert_equal 40, @subject.product_of_three_largest_circuit_sizes
+  end
+
+  def test_product_of_x_coords_of_last_two_connected
+    @subject.connect_all_pairs!
+    assert_equal 25272, @subject.product_of_x_coords_of_last_two_connected
   end
 end
