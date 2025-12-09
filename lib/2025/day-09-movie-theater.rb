@@ -29,21 +29,13 @@ class MovieTheater
     Position[row_index, col_index]
   end
 
-  def [](pos)
-    grid[position(pos)]
-  end
-
-  def []=(pos, char)
-    grid[position(pos)] = char
-  end
-
   def make_grid!
     height = row_indices.size
     width  = col_indices.size
     rows = height.times.map { '.' * width }
 
     @grid = Grid.new(rows)
-    positions.each { self[it] = '#' }
+    positions.each { grid[position(it)] = '#' }
 
     p1 = position(positions.last)
     positions.map { position(it) }.each do |p2|
@@ -96,8 +88,7 @@ class MovieTheater
     end
   end
 
-  def rectangle_area(pair)
-    p1, p2 = *pair
+  def rectangle_area((p1, p2))
     ((p1.row - p2.row).abs + 1) * ((p1.col - p2.col).abs + 1)
   end
 

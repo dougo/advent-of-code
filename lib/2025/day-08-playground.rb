@@ -40,10 +40,9 @@ class Playground
     @positions = positions
     @circuit_map = positions.to_h { [it, Circuit.new(it)] }
     @circuits = circuit_map.values.to_set
-    @pairs = positions.product(positions).map do |pair|
-      p1, p2 = *pair
-      Pair3D[p1.distance_from(p2), Set[*pair]] # TODO: move this to the Pair3D initializer
-    end.sort_by(&:distance).to_set.drop_while { it.distance.zero? }
+    @pairs = positions.combination(2).map do |(p1, p2)|
+      Pair3D[p1.distance_from(p2), [p1, p2]] # TODO: move this to the Pair3D initializer
+    end.sort_by(&:distance)
   end
 
   def connect!(p1, p2)
