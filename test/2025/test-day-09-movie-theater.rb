@@ -19,4 +19,8 @@ END
   def test_largest_rectangle_area
     assert_equal 50, @subject.largest_rectangle_area
   end
+
+  def test_largest_rectangle_using_only_red_green_area
+    assert_equal 24, @subject.largest_rectangle_using_only_red_green_area
+  end
 end

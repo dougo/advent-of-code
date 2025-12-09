@@ -3,15 +3,97 @@ require_relative '../util'
 class MovieTheater
   def self.parse(text)
     lines = text.lines(chomp: true)
-    positions = lines.map { Position[*it.split(',').map(&:to_i)] }
+    positions = lines.map { Position[*it.split(',').map(&:to_i).reverse] }
     new(positions)
   end
 
-  attr :positions, :pairs
+  attr :positions, :grid, :row_indices, :col_indices, :row_map, :col_map
 
   def initialize(positions)
     @positions = positions
-    @pairs = positions.combination(2)
+
+    @row_indices = positions.map(&:row).sort.uniq
+    @col_indices = positions.map(&:col).sort.uniq
+
+    @row_map = row_indices.each_with_index.map { |row, i| [row, i] }.to_h
+    @col_map = col_indices.each_with_index.map { |col, i| [col, i] }.to_h
+
+    make_grid!
+  end
+
+  # The actual grid is compressed to only the rows and columns that are mentioned in the input.
+
+  def position(pos)
+    row_index = row_map[pos.row]
+    col_index = col_map[pos.col]
+    Position[row_index, col_index]
+  end
+
+  def [](pos)
+    grid[position(pos)]
+  end
+
+  def []=(pos, char)
+    grid[position(pos)] = char
+  end
+
+  def make_grid!
+    height = row_indices.size
+    width  = col_indices.size
+    rows = height.times.map { '.' * width }
+
+    @grid = Grid.new(rows)
+    positions.each { self[it] = '#' }
+
+    p1 = position(positions.last)
+    positions.map { position(it) }.each do |p2|
+      if p1.row == p2.row
+        row = p1.row
+        if p1.col < p2.col
+          range = p1.col+1 ... p2.col
+        else
+          range = p2.col+1 ... p1.col
+        end
+        range.each { |col| grid[Position[row, col]] = 'X' }
+      else
+        col = p1.col
+        if p1.row < p2.row
+          range = p1.row+1 ... p2.row
+        else
+          range = p2.row+1 ... p1.row
+        end
+        range.each { |row| grid[Position[row, col]] = 'X' }
+      end
+      p1 = p2
+    end
+
+    inside = false
+    on_edge = false
+    grid.each_position do |pos|
+      if pos.col == 0
+        inside = false
+        on_edge = false
+      end
+      case grid[pos]
+      when '#'
+        # TODO: this logic still isn't quite right... make a failing test
+        if on_edge
+          char = grid[pos.move(NORTHEAST)]
+          if char == 'X' || char == '#'
+            inside = true
+          end
+        end
+        on_edge = !on_edge
+      when 'X'
+        unless on_edge
+          inside = !inside
+        end
+      else
+        if inside
+          grid[pos] = 'X'
+        end
+      end
+    end
   end
 
   def rectangle_area(pair)
@@ -20,7 +102,27 @@ class MovieTheater
   end
 
   def largest_rectangle_area
+    pairs = positions.combination(2)
     pairs.map { rectangle_area(it) }.max
+  end
+
+  def rectangle_using_only_red_green?(pair)
+    pair = pair.map { position(it) }
+    rows = pair.map &:row
+    cols = pair.map &:col
+    (rows.min .. rows.max).all? do |row|
+      (cols.min .. cols.max).all? do |col|
+        grid[Position[row, col]] != '.'
+      end
+    end
+  end
+
+  def largest_rectangle_using_only_red_green_area
+    # puts
+    # puts grid.rows
+    # puts
+    pairs = positions.combination(2)
+    pairs.select { rectangle_using_only_red_green?(it) }.map { rectangle_area(it) }.max
   end
 end
 
@@ -28,6 +130,7 @@ if defined? DATA
   input = DATA.read
   obj = MovieTheater.parse(input)
   puts obj.largest_rectangle_area
+  puts obj.largest_rectangle_using_only_red_green_area
 end
 
 __END__
