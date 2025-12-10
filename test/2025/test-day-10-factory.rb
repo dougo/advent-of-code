@@ -14,4 +14,8 @@ END
   def test_fewest_button_presses
     assert_equal 7, @subject.fewest_button_presses
   end
+
+  def test_fewest_button_presses_for_joltage
+    assert_equal 33, @subject.fewest_button_presses(for_joltage: true)
+  end
 end

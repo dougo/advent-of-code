@@ -15,13 +15,13 @@ class Factory
   class Machine
     def self.parse(line)
       lights, *buttons, joltage = line.split
-      new(Lights.parse(lights), Button.parse_list(buttons))
+      new(Lights.parse(lights), Joltage.parse(joltage), Button.parse_list(buttons))
     end
 
-    attr :lights, :buttons
+    attr :lights, :joltage, :buttons
 
     def initialize(*args)
-      @lights, @buttons = *args
+      @lights, @joltage, @buttons = *args
     end
 
     class Lights
@@ -41,8 +41,33 @@ class Factory
         @state = goals.map { false }
       end
 
-      def toggle!(i)
-        state[i] = !state[i]
+      def toggle!(i, num_times)
+        state[i] = !state[i] if num_times.odd?
+      end
+
+      def correct?
+        state == goals
+      end
+    end
+
+    class Joltage
+      def self.parse(text)
+        new(text[1...-1].split(',').map(&:to_i))
+      end
+
+      attr :state, :goals
+
+      def initialize(goals)
+        @goals = goals
+        reset!
+      end
+
+      def reset!
+        @state = goals.map { 0 }
+      end
+
+      def increase!(i, num_times)
+        state[i] += num_times
       end
 
       def correct?
@@ -59,33 +84,47 @@ class Factory
         new(text[1...-1].split(',').map(&:to_i))
       end
 
-      attr :lights
+      attr :output
 
-      def initialize(lights)
-        @lights = lights
+      def initialize(output)
+        @output = output
       end
     end
 
-    def press_button!(i)
-      buttons[i].lights.each { lights.toggle!(it) }
+    def reset!
+      lights.reset!
+      joltage.reset!
     end
 
-    def fewest_button_presses
-      max_presses = 10
+    def press_button!(i, num_times = 1)
+      buttons[i].output.each do
+        lights.toggle!(it, num_times)
+        joltage.increase!(it, num_times)
+      end
+    end
+
+    def fewest_button_presses(for_joltage: false)
+      # puts "{#{joltage.goals.join(',')}}" if for_joltage
       num_buttons = buttons.size
-      (0..max_presses).each do |num_presses|
-        (0...num_buttons).to_a.combination(num_presses).each do |to_press|
-          to_press.each { |i| press_button!(i) }
-          return num_presses if lights.correct?
-          lights.reset!
+      (0..).each do |num_presses|
+        (0...num_buttons).to_a.repeated_combination(num_presses).each do |to_press|
+          # puts "Pressing: #{to_press}" if for_joltage
+          to_press.tally.each { |i, ntimes| press_button!(i, ntimes) }
+          # to_press.each { |i| press_button!(i) }
+          # pp joltage.state if for_joltage
+          if for_joltage ? joltage.correct? : lights.correct?
+            # puts "=> #{num_presses}" if for_joltage
+            # puts to_press.tally if for_joltage
+            return num_presses
+          end
+          reset!
         end
       end
-      Float::INFINITY
     end
   end
 
-  def fewest_button_presses
-    machines.sum(&:fewest_button_presses)
+  def fewest_button_presses(for_joltage: false)
+    machines.sum { it.fewest_button_presses(for_joltage:) }
   end
 end
 
@@ -93,6 +132,7 @@ if defined? DATA
   input = DATA.read
   obj = Factory.parse(input)
   puts obj.fewest_button_presses
+  puts obj.fewest_button_presses(for_joltage: true)
 end
 
 __END__
